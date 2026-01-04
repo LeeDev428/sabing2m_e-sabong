@@ -13,7 +13,7 @@ class TransactionController extends Controller
     {
         $transactions = Transaction::with('user')
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->get();
 
         return Inertia::render('admin/transactions/index', [
             'transactions' => $transactions,
