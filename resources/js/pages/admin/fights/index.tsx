@@ -4,10 +4,10 @@ import { Fight } from '@/types';
 import { useState } from 'react';
 
 interface FightsIndexProps {
-    fights: Fight[];
+    fights?: Fight[];
 }
 
-export default function FightsIndex({ fights }: FightsIndexProps) {
+export default function FightsIndex({ fights = [] }: FightsIndexProps) {
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
 
