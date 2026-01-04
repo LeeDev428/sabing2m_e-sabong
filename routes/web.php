@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\FightController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Teller\BetController;
 use App\Http\Controllers\Teller\TransactionController;
 use App\Http\Controllers\Declarator\ResultController;
@@ -40,10 +42,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     })->name('dashboard');
     
     Route::resource('fights', FightController::class);
+    Route::post('fights/{fight}/status', [FightController::class, 'updateStatus'])->name('fights.update-status');
     Route::post('fights/{fight}/open-betting', [FightController::class, 'openBetting'])->name('fights.open-betting');
     Route::post('fights/{fight}/close-betting', [FightController::class, 'closeBetting'])->name('fights.close-betting');
     
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
+    
+    Route::get('transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
+    
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
 });
 
 // Declarator Routes
@@ -59,8 +67,10 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
         ]);
     })->name('dashboard');
     
-    Route::get('fights', [ResultController::class, 'index'])->name('fights.index');
-    Route::post('fights/{fight}/declare', [ResultController::class, 'declare'])->name('fights.declare');
+    Route::get('pending', [ResultController::class, 'pending'])->name('pending');
+    Route::get('declared', [ResultController::class, 'declared'])->name('declared');
+    Route::get('history', [ResultController::class, 'history'])->name('history');
+    Route::post('declare/{fight}', [ResultController::class, 'declare'])->name('declare');
 });
 
 // Teller Routes
