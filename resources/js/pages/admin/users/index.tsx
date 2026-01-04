@@ -4,10 +4,10 @@ import { User } from '@/types';
 import { useState } from 'react';
 
 interface UsersIndexProps {
-    users: User[];
+    users?: User[];
 }
 
-export default function UsersIndex({ users }: UsersIndexProps) {
+export default function UsersIndex({ users = [] }: UsersIndexProps) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
