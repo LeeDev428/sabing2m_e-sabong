@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import AdminLayout from '@/layouts/admin-layout';
 import { useState } from 'react';
 
 export default function CreateFight() {
@@ -22,27 +23,25 @@ export default function CreateFight() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white">
+        <AdminLayout>
             <Head title="Create Fight - Admin" />
 
             {/* Header */}
-            <div className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold">Create New Fight</h1>
-                        <p className="text-sm text-gray-400">Add a new fight to the system</p>
-                    </div>
-                    <button
-                        onClick={() => router.visit('/admin/dashboard')}
-                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
-                    >
-                        ← Back
-                    </button>
+            <div className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold">Create New Fight</h1>
+                    <p className="text-gray-400">Add a new fight to the system</p>
                 </div>
+                <button
+                    onClick={() => router.visit('/admin/dashboard')}
+                    className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold"
+                >
+                    ← Back to Dashboard
+                </button>
             </div>
 
             {/* Form */}
-            <div className="p-6 max-w-4xl mx-auto">
+            <div className="max-w-4xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="bg-gray-800 rounded-lg p-6 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,6 +158,6 @@ export default function CreateFight() {
                     </div>
                 </form>
             </div>
-        </div>
+        </AdminLayout>
     );
 }
