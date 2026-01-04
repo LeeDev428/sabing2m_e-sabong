@@ -49,9 +49,17 @@ export default function TellerDashboard({ fights = [] }: TellerDashboardProps) {
             <Head title="Teller - eSabong" />
 
             {/* Header */}
-            <div className="mb-4">
-                <h1 className="text-2xl font-bold">eSabong</h1>
-                <div className="text-sm text-gray-400">BET SUMMARY</div>
+            <div className="mb-4 flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold">eSabong</h1>
+                    <div className="text-sm text-gray-400">BET SUMMARY</div>
+                </div>
+                <button
+                    onClick={() => router.post('/logout')}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium"
+                >
+                    🚪 Logout
+                </button>
             </div>
 
             {/* Main Betting Interface */}
