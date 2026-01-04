@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import AdminLayout from '@/layouts/admin-layout';
 import { Fight, PaginatedData } from '@/types';
 import { useState } from 'react';
 
@@ -31,49 +32,11 @@ export default function AdminDashboard({ fights }: AdminDashboardProps) {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white">
+        <AdminLayout>
             <Head title="Admin Dashboard" />
 
-            {/* Sidebar */}
-            <div className="fixed left-0 top-0 bottom-0 w-64 bg-gray-800 border-r border-gray-700 p-6">
-                <div className="mb-8">
-                    <h2 className="text-xl font-bold">eSabong</h2>
-                    <p className="text-xs text-gray-400">Admin Panel</p>
-                </div>
-                
-                <nav className="space-y-2">
-                    <button className="w-full text-left px-4 py-3 bg-gray-700 rounded-lg font-medium">
-                        📊 Dashboard
-                    </button>
-                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
-                        🎮 Fights
-                    </button>
-                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
-                        👥 Users
-                    </button>
-                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
-                        💰 Transactions
-                    </button>
-                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
-                        📈 Reports
-                    </button>
-                </nav>
-
-                <div className="absolute bottom-6 left-6 right-6">
-                    <div className="bg-gray-700 rounded-lg p-3">
-                        <div className="text-sm font-medium">Admin User</div>
-                        <div className="text-xs text-gray-400">admin@esabong.com</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="ml-64 p-8">
-
-            {/* Main Content */}
-            <div className="ml-64 p-8">
-                {/* Header */}
-                <div className="mb-8 flex items-center justify-between">
+            {/* Header */}
+            <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
                         <p className="text-gray-400">Manage fights, users, and system operations</p>
@@ -197,10 +160,9 @@ export default function AdminDashboard({ fights }: AdminDashboardProps) {
                         )}
                     </div>
                 </div>
-            </div>
 
-            {/* Betting Modal */}
-            {showBettingModal && selectedFight && (
+                {/* Betting Modal */}
+                {showBettingModal && selectedFight && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
                     <div className="bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-auto">
                         <div className="p-6 border-b border-gray-700 flex items-center justify-between">
@@ -272,6 +234,6 @@ export default function AdminDashboard({ fights }: AdminDashboardProps) {
                     </div>
                 </div>
             )}
-        </div>
+        </AdminLayout>
     );
 }
