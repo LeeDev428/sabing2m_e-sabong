@@ -11,6 +11,57 @@ use Inertia\Inertia;
 
 class ResultController extends Controller
 {
+    public function pending()
+    {
+        $pending_fights = Fight::whereIn('status', ['open', 'lastcall', 'closed'])
+            ->with(['creator'])
+            ->latest()
+            ->get();
+
+        return Inertia::render('declarator/pending', [
+            'pending_fights' => $pending_fights,
+        ]);
+    }
+
+    public function declared()
+    {
+        $declared_fights = Fight::where('status', 'result_declared')
+            ->with(['creator'])
+            ->withCount('bets')
+            ->latest()
+            ->get()
+            ->map(function($fight) {
+                $fight->total_payouts = $fight->bets()->where('status', 'won')->sum('actual_payout');
+                $fight->declared_at = $fight->result_declared_at ?? $fight->updated_at;
+                return $fight;
+            });
+
+        return Inertia::render('declarator/declared', [
+            'declared_fights' => $declared_fights,
+        ]);
+    }
+
+    public function history()
+    {
+        $history = Fight::where('status', 'result_declared')
+            ->with(['creator'])
+            ->withCount('bets')
+            ->latest()
+            ->get()
+            ->map(function($fight) {
+                $fight->meron_total = $fight->bets()->where('bet_on', 'meron')->sum('amount');
+                $fight->wala_total = $fight->bets()->where('bet_on', 'wala')->sum('amount');
+                $fight->draw_total = $fight->bets()->where('bet_on', 'draw')->sum('amount');
+                $fight->total_payouts = $fight->bets()->where('status', 'won')->sum('actual_payout');
+                $fight->declared_at = $fight->result_declared_at ?? $fight->updated_at;
+                return $fight;
+            });
+
+        return Inertia::render('declarator/history', [
+            'history' => $history,
+        ]);
+    }
+
     public function index()
     {
         $fights = Fight::whereIn('status', ['betting_closed'])
