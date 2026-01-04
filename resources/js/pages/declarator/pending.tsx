@@ -14,10 +14,10 @@ interface Fight {
 }
 
 interface Props {
-    pending_fights: Fight[];
+    pending_fights?: Fight[];
 }
 
-export default function PendingResults({ pending_fights }: Props) {
+export default function PendingResults({ pending_fights = [] }: Props) {
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [result, setResult] = useState('');
     const [showModal, setShowModal] = useState(false);
