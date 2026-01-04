@@ -17,14 +17,14 @@ interface Transaction {
 }
 
 interface Props {
-    transactions: {
+    transactions?: {
         data: Transaction[];
         current_page: number;
         last_page: number;
     };
 }
 
-export default function TransactionsIndex({ transactions }: Props) {
+export default function TransactionsIndex({ transactions = { data: [], current_page: 1, last_page: 1 } }: Props) {
     const getTypeColor = (type: string) => {
         switch (type) {
             case 'bet':
