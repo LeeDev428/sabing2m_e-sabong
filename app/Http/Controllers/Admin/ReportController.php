@@ -19,8 +19,8 @@ class ReportController extends Controller
         $stats = [
             'total_bets' => Bet::count(),
             'total_amount' => Bet::sum('amount'),
-            'total_payouts' => Bet::where('status', 'paid')->sum('payout'),
-            'total_revenue' => Bet::sum('amount') - Bet::where('status', 'paid')->sum('payout'),
+            'total_payouts' => Bet::where('status', 'won')->sum('actual_payout'),
+            'total_revenue' => Bet::sum('amount') - Bet::where('status', 'won')->sum('actual_payout'),
             'fights_today' => Fight::whereDate('scheduled_at', today())->count(),
             'active_users' => User::count(),
         ];
@@ -31,8 +31,8 @@ class ReportController extends Controller
             DB::raw('COUNT(*) as fights'),
             DB::raw('(SELECT COUNT(*) FROM bets WHERE fight_id = fights.id) as bets'),
             DB::raw('(SELECT SUM(amount) FROM bets WHERE fight_id = fights.id) as amount'),
-            DB::raw('(SELECT SUM(payout) FROM bets WHERE fight_id = fights.id AND status = "paid") as payouts'),
-            DB::raw('(SELECT SUM(amount) - COALESCE(SUM(payout), 0) FROM bets WHERE fight_id = fights.id) as revenue')
+            DB::raw('(SELECT SUM(actual_payout) FROM bets WHERE fight_id = fights.id AND status = "won") as payouts'),
+            DB::raw('(SELECT SUM(amount) - COALESCE(SUM(actual_payout), 0) FROM bets WHERE fight_id = fights.id) as revenue')
         )
         ->where('scheduled_at', '>=', now()->subDays(30))
         ->groupBy('date')
@@ -64,7 +64,7 @@ class ReportController extends Controller
         foreach ($fights as $fight) {
             $totalBets = $fight->bets->count();
             $totalAmount = $fight->bets->sum('amount');
-            $payouts = $fight->bets->where('status', 'paid')->sum('payout');
+            $payouts = $fight->bets->where('status', 'won')->sum('actual_payout');
             $revenue = $totalAmount - $payouts;
 
             $csv .= sprintf(
