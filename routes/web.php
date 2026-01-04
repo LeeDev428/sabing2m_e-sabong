@@ -30,7 +30,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Admin Routes
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('admin/dashboard');
+        $fights = \App\Models\Fight::with(['creator', 'declarator'])
+            ->latest()
+            ->paginate(20);
+            
+        return Inertia::render('admin/dashboard', [
+            'fights' => $fights,
+        ]);
     })->name('dashboard');
     
     Route::resource('fights', FightController::class);
@@ -43,10 +49,24 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 // Declarator Routes
 Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')->name('declarator.')->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('declarator/dashboard');
+        $fights = \App\Models\Fight::with(['creator', 'declarator'])
+            ->whereIn('status', ['betting_closed', 'result_declared'])
+            ->latest()
+            ->get();
+            
+        return Inertia::render('declarator/dashboard', [
+            'fights' => $fights,
+        ]);
     })->name('dashboard');
     
-    Route::get('fights', [ResultController::class, 'index'])->name('fights.index');
+    Rout$fights = \App\Models\Fight::with(['creator'])
+            ->where('status', 'betting_open')
+            ->latest()
+            ->get();
+            
+        return Inertia::render('teller/dashboard', [
+            'fights' => $fights,
+        ], 'index'])->name('fights.index');
     Route::post('fights/{fight}/declare', [ResultController::class, 'declare'])->name('fights.declare');
 });
 
