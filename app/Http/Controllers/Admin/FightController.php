@@ -13,7 +13,7 @@ class FightController extends Controller
     {
         $fights = Fight::with(['creator', 'declarator'])
             ->latest()
-            ->paginate(20);
+            ->get();
 
         return Inertia::render('admin/fights/index', [
             'fights' => $fights,
