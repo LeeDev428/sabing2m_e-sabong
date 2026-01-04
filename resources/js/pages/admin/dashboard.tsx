@@ -1,28 +1,17 @@
-import { Head, Link, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Head, router } from '@inertiajs/react';
 import { Fight, PaginatedData } from '@/types';
-import { Plus, Play, Square, Eye } from 'lucide-react';
-import * as routes from '@/routes';
+import { useState } from 'react';
 
 interface AdminDashboardProps {
     fights?: PaginatedData<Fight>;
 }
 
 export default function AdminDashboard({ fights }: AdminDashboardProps) {
-    const getStatusBadge = (status: Fight['status']) => {
-        const variants = {
-            scheduled: 'secondary',
-            betting_open: 'default',
-            betting_closed: 'destructive',
-            result_declared: 'outline',
-        } as const;
-
-        return <Badge variant={variants[status]}>{status.replace('_', ' ').toUpperCase()}</Badge>;
-    };
-
+    const [showBettingModal, setShowBettingModal] = useState(false);
+    const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
+    const [activeTab, setActiveTab] = useState<'meron' | 'draw' | 'wala' | null>(null);
+    
+    const fightsList = fights?.data || [];
     const handleOpenBetting = (fightId: number) => {
         router.post(`/admin/fights/${fightId}/open-betting`, {}, {
             preserveScroll: true,
@@ -35,161 +24,254 @@ export default function AdminDashboard({ fights }: AdminDashboardProps) {
         });
     };
 
+    const openBettingView = (fight: Fight) => {
+        setSelectedFight(fight);
+        setShowBettingModal(true);
+        setActiveTab('meron');
+    };
+
     return (
-        <AppLayout>
+        <div className="min-h-screen bg-gray-900 text-white">
             <Head title="Admin Dashboard" />
 
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-                        <p className="text-muted-foreground">
-                            Manage fights, users, and system operations
-                        </p>
+            {/* Sidebar */}
+            <div className="fixed left-0 top-0 bottom-0 w-64 bg-gray-800 border-r border-gray-700 p-6">
+                <div className="mb-8">
+                    <h2 className="text-xl font-bold">eSabong</h2>
+                    <p className="text-xs text-gray-400">Admin Panel</p>
+                </div>
+                
+                <nav className="space-y-2">
+                    <button className="w-full text-left px-4 py-3 bg-gray-700 rounded-lg font-medium">
+                        📊 Dashboard
+                    </button>
+                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
+                        🎮 Fights
+                    </button>
+                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
+                        👥 Users
+                    </button>
+                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
+                        💰 Transactions
+                    </button>
+                    <button className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300">
+                        📈 Reports
+                    </button>
+                </nav>
+
+                <div className="absolute bottom-6 left-6 right-6">
+                    <div className="bg-gray-700 rounded-lg p-3">
+                        <div className="text-sm font-medium">Admin User</div>
+                        <div className="text-xs text-gray-400">admin@esabong.com</div>
                     </div>
-                    <Link href="/admin/fights/create">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create Fight
-                        </Button>
-                    </Link>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="ml-64 p-8">
+
+            {/* Main Content */}
+            <div className="ml-64 p-8">
+                {/* Header */}
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+                        <p className="text-gray-400">Manage fights, users, and system operations</p>
+                    </div>
+                    <button
+                        onClick={() => router.visit('/admin/fights/create')}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold flex items-center gap-2"
+                    >
+                        ➕ Create Fight
+                    </button>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Fights</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{fights?.total ?? 0}</div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Betting Open</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {fights?.data.filter(f => f.status === 'betting_open').length ?? 0}
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Betting Closed</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {fights?.data.filter(f => f.status === 'betting_closed').length ?? 0}
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {fights?.data.filter(f => f.status === 'result_declared').length ?? 0}
-                            </div>
-                        </CardContent>
-                    </Card>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-4 gap-6 mb-8">
+                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                        <div className="text-sm text-gray-400 mb-2">Total Fights</div>
+                        <div className="text-4xl font-bold">{fights?.total ?? 0}</div>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                        <div className="text-sm text-gray-400 mb-2">Betting Open</div>
+                        <div className="text-4xl font-bold text-green-400">
+                            {fightsList.filter(f => f.status === 'betting_open').length}
+                        </div>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                        <div className="text-sm text-gray-400 mb-2">Betting Closed</div>
+                        <div className="text-4xl font-bold text-yellow-400">
+                            {fightsList.filter(f => f.status === 'betting_closed').length}
+                        </div>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                        <div className="text-sm text-gray-400 mb-2">Completed</div>
+                        <div className="text-4xl font-bold text-blue-400">
+                            {fightsList.filter(f => f.status === 'result_declared').length}
+                        </div>
+                    </div>
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Recent Fights</CardTitle>
-                        <CardDescription>
-                            Latest fight events and their current status
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {fights && fights.data.length > 0 ? (
+                {/* Recent Fights */}
+                <div className="bg-gray-800 rounded-lg border border-gray-700">
+                    <div className="p-6 border-b border-gray-700">
+                        <h2 className="text-xl font-bold">Recent Fights</h2>
+                        <p className="text-sm text-gray-400">Latest fight events and their current status</p>
+                    </div>
+                    <div className="p-6">
+                    </div>
+                    <div className="p-6">
+                        {fightsList.length > 0 ? (
                             <div className="space-y-4">
-                                {fights.data.slice(0, 10).map((fight) => (
+                                {fightsList.slice(0, 10).map((fight) => (
                                     <div
                                         key={fight.id}
-                                        className="flex items-center justify-between border-b pb-4 last:border-0"
+                                        className="bg-gray-700 rounded-lg p-4 flex items-center justify-between hover:bg-gray-600 transition-colors"
                                     >
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-semibold">Fight #{fight.fight_number}</span>
-                                                {getStatusBadge(fight.status)}
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <span className="font-bold text-lg">Fight #{fight.fight_number}</span>
+                                                <span
+                                                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                                        fight.status === 'betting_open'
+                                                            ? 'bg-green-600'
+                                                            : fight.status === 'betting_closed'
+                                                            ? 'bg-yellow-600'
+                                                            : fight.status === 'result_declared'
+                                                            ? 'bg-blue-600'
+                                                            : 'bg-gray-600'
+                                                    }`}
+                                                >
+                                                    {fight.status.replace('_', ' ').toUpperCase()}
+                                                </span>
                                             </div>
-                                            <div className="text-sm text-muted-foreground">
-                                                <span className="text-red-600 font-medium">MERON: {fight.meron_fighter}</span>
-                                                {' vs '}
-                                                <span className="text-blue-600 font-medium">WALA: {fight.wala_fighter}</span>
+                                            <div className="flex items-center gap-4 text-sm">
+                                                <span className="text-red-400 font-medium">
+                                                    MERON: {fight.meron_fighter} ({fight.meron_odds || 'N/A'})
+                                                </span>
+                                                <span className="text-gray-500">vs</span>
+                                                <span className="text-blue-400 font-medium">
+                                                    WALA: {fight.wala_fighter} ({fight.wala_odds || 'N/A'})
+                                                </span>
                                             </div>
-                                            {(fight.meron_odds || fight.wala_odds) && (
-                                                <div className="text-xs text-muted-foreground">
-                                                    Odds: {fight.meron_odds || 'N/A'} / {fight.wala_odds || 'N/A'}
-                                                </div>
-                                            )}
                                         </div>
                                         <div className="flex gap-2">
-                                            <Link href={`/admin/fights/${fight.id}`}>
-                                                <Button variant="outline" size="sm">
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                            </Link>
                                             {fight.status === 'scheduled' && (
-                                                <Button
-                                                    variant="default"
-                                                    size="sm"
+                                                <button
                                                     onClick={() => handleOpenBetting(fight.id)}
+                                                    className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-semibold"
                                                 >
-                                                    <Play className="h-4 w-4 mr-1" />
-                                                    Open
-                                                </Button>
+                                                    ▶️ Open Betting
+                                                </button>
                                             )}
                                             {fight.status === 'betting_open' && (
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={() => handleCloseBetting(fight.id)}
-                                                >
-                                                    <Square className="h-4 w-4 mr-1" />
-                                                    Close
-                                                </Button>
+                                                <>
+                                                    <button
+                                                        onClick={() => openBettingView(fight)}
+                                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-semibold"
+                                                    >
+                                                        👁️ View Bets
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleCloseBetting(fight.id)}
+                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold"
+                                                    >
+                                                        ⏹️ Close Betting
+                                                    </button>
+                                                </>
                                             )}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                                No fights found. Create your first fight to get started.
+                            <div className="text-center py-12">
+                                <p className="text-gray-400 mb-4">No fights found. Create your first fight to get started.</p>
+                                <button
+                                    onClick={() => router.visit('/admin/fights/create')}
+                                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
+                                >
+                                    ➕ Create New Fight
+                                </button>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Quick Actions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <Link href="/admin/fights/create">
-                                <Button className="w-full" variant="outline">
-                                    Create New Fight
-                                </Button>
-                            </Link>
-                            <Link href="/admin/fights">
-                                <Button className="w-full" variant="outline">
-                                    View All Fights
-                                </Button>
-                            </Link>
-                            <Link href="/admin/users">
-                                <Button className="w-full" variant="outline">
-                                    Manage Users
-                                </Button>
-                            </Link>
-                        </CardContent>
-                    </Card>
+                    </div>
                 </div>
             </div>
-        </AppLayout>
+
+            {/* Betting Modal */}
+            {showBettingModal && selectedFight && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-auto">
+                        <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-bold">Fight #{selectedFight.fight_number}</h2>
+                                <p className="text-sm text-gray-400">
+                                    {selectedFight.meron_fighter} vs {selectedFight.wala_fighter}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowBettingModal(false)}
+                                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+                            >
+                                ✕ Close
+                            </button>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex border-b border-gray-700">
+                            <button
+                                onClick={() => setActiveTab('meron')}
+                                className={`flex-1 px-6 py-4 font-semibold ${
+                                    activeTab === 'meron' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'
+                                }`}
+                            >
+                                MERON ({selectedFight.meron_odds || 'N/A'})
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('draw')}
+                                className={`flex-1 px-6 py-4 font-semibold ${
+                                    activeTab === 'draw' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'
+                                }`}
+                            >
+                                DRAW
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('wala')}
+                                className={`flex-1 px-6 py-4 font-semibold ${
+                                    activeTab === 'wala' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
+                                }`}
+                            >
+                                WALA ({selectedFight.wala_odds || 'N/A'})
+                            </button>
+                        </div>
+
+                        {/* Betting Content */}
+                        <div className="p-6">
+                            <div className="bg-gray-700 rounded-lg p-6 mb-6">
+                                <div className="grid grid-cols-3 gap-6 text-center">
+                                    <div>
+                                        <div className="text-sm text-gray-400 mb-2">Total Bets</div>
+                                        <div className="text-3xl font-bold">0</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm text-gray-400 mb-2">Total Amount</div>
+                                        <div className="text-3xl font-bold">₱0.00</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm text-gray-400 mb-2">Potential Payout</div>
+                                        <div className="text-3xl font-bold">₱0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="text-center py-8 text-gray-400">
+                                No bets placed yet for {activeTab?.toUpperCase()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
