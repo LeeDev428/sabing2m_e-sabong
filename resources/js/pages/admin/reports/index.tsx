@@ -3,7 +3,7 @@ import AdminLayout from '@/layouts/admin-layout';
 import { useState } from 'react';
 
 interface Props {
-    stats: {
+    stats?: {
         total_bets: number;
         total_amount: number;
         total_payouts: number;
@@ -11,7 +11,7 @@ interface Props {
         fights_today: number;
         active_users: number;
     };
-    daily_reports: Array<{
+    daily_reports?: Array<{
         date: string;
         fights: number;
         bets: number;
@@ -21,7 +21,10 @@ interface Props {
     }>;
 }
 
-export default function ReportsIndex({ stats, daily_reports }: Props) {
+export default function ReportsIndex({ 
+    stats = { total_bets: 0, total_amount: 0, total_payouts: 0, total_revenue: 0, fights_today: 0, active_users: 0 }, 
+    daily_reports = [] 
+}: Props) {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
 
