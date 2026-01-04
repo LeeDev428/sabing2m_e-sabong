@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Fight } from '@/types';
 import { Clock } from 'lucide-react';
+import * as routes from '@/routes';
 
 interface DeclaratorDashboardProps {
     fights?: Fight[];
@@ -96,7 +97,7 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                                                 </div>
                                             )}
                                         </div>
-                                        <Link href={route('declarator.fights.index')}>
+                                        <Link href="/declarator/fights">
                                             <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
                                                 Declare Result
                                             </button>
