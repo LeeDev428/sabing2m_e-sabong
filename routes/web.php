@@ -59,21 +59,21 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
         ]);
     })->name('dashboard');
     
-    Rout$fights = \App\Models\Fight::with(['creator'])
-            ->where('status', 'betting_open')
-            ->latest()
-            ->get();
-            
-        return Inertia::render('teller/dashboard', [
-            'fights' => $fights,
-        ], 'index'])->name('fights.index');
+    Route::get('fights', [ResultController::class, 'index'])->name('fights.index');
     Route::post('fights/{fight}/declare', [ResultController::class, 'declare'])->name('fights.declare');
 });
 
 // Teller Routes
 Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('teller.')->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('teller/dashboard');
+        $fights = \App\Models\Fight::with(['creator'])
+            ->where('status', 'betting_open')
+            ->latest()
+            ->get();
+            
+        return Inertia::render('teller/dashboard', [
+            'fights' => $fights,
+        ]);
     })->name('dashboard');
     
     Route::get('fights', [BetController::class, 'index'])->name('fights.index');
