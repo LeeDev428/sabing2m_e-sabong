@@ -26,7 +26,7 @@ class BetController extends Controller
     {
         $validated = $request->validate([
             'fight_id' => 'required|exists:fights,id',
-            'side' => 'required|in:meron,wala',
+            'side' => 'required|in:meron,wala,draw',
             'amount' => 'required|numeric|min:1',
         ]);
 
@@ -37,8 +37,9 @@ class BetController extends Controller
                 ->with('error', 'Betting is not open for this fight.');
         }
 
-        // Get current odds
-        $odds = $validated['side'] === 'meron' ? $fight->meron_odds : $fight->wala_odds;
+        // Get current odds based on side
+        $odds = $validated['side'] === 'meron' ? $fight->meron_odds : 
+               ($validated['side'] === 'wala' ? $fight->wala_odds : $fight->draw_odds);
 
         if (!$odds) {
             return redirect()->back()
