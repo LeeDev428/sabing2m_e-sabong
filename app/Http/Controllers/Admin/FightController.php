@@ -275,4 +275,45 @@ class FightController extends Controller
             'actual_payout' => 0,
         ]);
     }
+
+    public function history(Request $request)
+    {
+        $query = Fight::with(['creator', 'declarator']);
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('fight_number', 'like', "%{$search}%")
+                  ->orWhere('meron_fighter', 'like', "%{$search}%")
+                  ->orWhere('wala_fighter', 'like', "%{$search}%");
+            });
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Result filter
+        if ($request->filled('result')) {
+            $query->where('result', $request->result);
+        }
+
+        // Date filters
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $fights = $query->latest()->paginate(15)->withQueryString();
+
+        return Inertia::render('admin/history', [
+            'fights' => $fights,
+            'filters' => $request->only(['search', 'status', 'result', 'date_from', 'date_to']),
+        ]);
+    }
 }
