@@ -85,7 +85,7 @@ export default function FightsIndex({ fights }: FightsIndexProps) {
 
                 {/* Fights Grid */}
                 <div className="grid gap-6">
-                    {fights.map((fight) => (
+                    {fights.data.map((fight) => (
                         <div
                             key={fight.id}
                             className="bg-gray-800 border border-gray-700 rounded-lg p-8 hover:bg-gray-750 transition-colors"
