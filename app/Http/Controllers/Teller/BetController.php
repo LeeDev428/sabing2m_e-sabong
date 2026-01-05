@@ -12,7 +12,7 @@ class BetController extends Controller
 {
     public function index()
     {
-        $fights = Fight::where('status', 'betting_open')
+        $fights = Fight::whereIn('status', ['open', 'lastcall'])
             ->with(['creator'])
             ->latest()
             ->get();
