@@ -13,14 +13,10 @@ interface Fight {
 }
 
 interface Props {
-    declared_fights?: {
-        data: Fight[];
-        current_page: number;
-        last_page: number;
-    };
+    declared_fights?: Fight[];
 }
 
-export default function DeclaredFights({ declared_fights = { data: [], current_page: 1, last_page: 1 } }: Props) {
+export default function DeclaredFights({ declared_fights = [] }: Props) {
     const getResultBadge = (result: string) => {
         switch (result) {
             case 'meron':
@@ -60,14 +56,14 @@ export default function DeclaredFights({ declared_fights = { data: [], current_p
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {declared_fights.data.length === 0 ? (
+                            {!declared_fights || declared_fights.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                                         No declared fights yet.
                                     </td>
                                 </tr>
                             ) : (
-                                declared_fights.data.map((fight) => (
+                                declared_fights.map((fight) => (
                                     <tr key={fight.id} className="hover:bg-gray-700/50">
                                         <td className="px-6 py-4 text-white font-semibold">
                                             {fight.fight_number}
