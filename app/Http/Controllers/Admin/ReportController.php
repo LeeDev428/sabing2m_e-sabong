@@ -26,18 +26,21 @@ class ReportController extends Controller
         ];
 
         // Daily reports (last 30 days)
-        $daily_reports = Fight::select(
-            DB::raw('DATE(scheduled_at) as date'),
-            DB::raw('COUNT(*) as fights'),
-            DB::raw('(SELECT COUNT(*) FROM bets WHERE fight_id = fights.id) as bets'),
-            DB::raw('(SELECT SUM(amount) FROM bets WHERE fight_id = fights.id) as amount'),
-            DB::raw('(SELECT SUM(actual_payout) FROM bets WHERE fight_id = fights.id AND status = "won") as payouts'),
-            DB::raw('(SELECT SUM(amount) - COALESCE(SUM(actual_payout), 0) FROM bets WHERE fight_id = fights.id) as revenue')
-        )
-        ->where('scheduled_at', '>=', now()->subDays(30))
-        ->groupBy('date')
-        ->orderBy('date', 'desc')
-        ->get();
+        $daily_reports = DB::table('fights')
+            ->leftJoin('bets', 'fights.id', '=', 'bets.fight_id')
+            ->select(
+                DB::raw('DATE(fights.scheduled_at) as date'),
+                DB::raw('COUNT(DISTINCT fights.id) as fights'),
+                DB::raw('COUNT(bets.id) as bets'),
+                DB::raw('COALESCE(SUM(bets.amount), 0) as amount'),
+                DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as payouts'),
+                DB::raw('COALESCE(SUM(bets.amount), 0) - COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as revenue')
+            )
+            ->where('fights.scheduled_at', '>=', now()->subDays(30))
+            ->whereNull('fights.deleted_at')
+            ->groupBy('date')
+            ->orderBy('date', 'desc')
+            ->get();
 
         return Inertia::render('admin/reports/index', [
             'stats' => $stats,
