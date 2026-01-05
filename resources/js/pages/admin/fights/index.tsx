@@ -2,12 +2,29 @@ import AdminLayout from '@/layouts/admin-layout';
 import { Head, router } from '@inertiajs/react';
 import { Fight } from '@/types';
 import { useState } from 'react';
+import Pagination from '@/components/pagination';
 
-interface FightsIndexProps {
-    fights?: Fight[];
+interface PaginationLinks {
+    url: string | null;
+    label: string;
+    active: boolean;
 }
 
-export default function FightsIndex({ fights = [] }: FightsIndexProps) {
+interface PaginatedFights {
+    data: Fight[];
+    current_page: number;
+    last_page: number;
+    from: number;
+    to: number;
+    total: number;
+    links: PaginationLinks[];
+}
+
+interface FightsIndexProps {
+    fights: PaginatedFights;
+}
+
+export default function FightsIndex({ fights }: FightsIndexProps) {
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
 
