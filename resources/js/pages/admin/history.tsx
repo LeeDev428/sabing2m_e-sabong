@@ -2,6 +2,7 @@ import AdminLayout from '@/layouts/admin-layout';
 import { Head, router } from '@inertiajs/react';
 import { Fight } from '@/types';
 import { useState } from 'react';
+import Pagination from '@/components/pagination';
 
 interface PaginationLinks {
     url: string | null;
