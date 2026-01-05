@@ -279,44 +279,50 @@ export default function AdminDashboard({
                                 ))}
                             </g>
                             
-                            {/* Line graph */}
-                            <polyline
-                                fill="none"
-                                stroke="#3B82F6"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                points={dailyRevenue
-                                    .map((day, index) => {
-                                        const x = (index / (dailyRevenue.length - 1)) * 800;
-                                        const y = 250 - (day.total / maxRevenue) * 240;
-                                        return `${x},${y}`;
-                                    })
-                                    .join(' ')}
-                            />
-                            
-                            {/* Gradient area under line */}
-                            <defs>
-                                <linearGradient id="revenueGradient" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3" />
-                                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-                                </linearGradient>
-                            </defs>
-                            <polygon
-                                fill="url(#revenueGradient)"
-                                points={`0,250 ${dailyRevenue
-                                    .map((day, index) => {
-                                        const x = (index / (dailyRevenue.length - 1)) * 800;
-                                        const y = 250 - (day.total / maxRevenue) * 240;
-                                        return `${x},${y}`;
-                                    })
-                                    .join(' ')} 800,250`}
-                            />
+                            {dailyRevenue.length > 1 ? (
+                                <>
+                                    {/* Line graph */}
+                                    <polyline
+                                        fill="none"
+                                        stroke="#3B82F6"
+                                        strokeWidth="3"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        points={dailyRevenue
+                                            .map((day, index) => {
+                                                const x = (index / (dailyRevenue.length - 1)) * 800;
+                                                const y = 250 - ((Number(day.total) || 0) / maxRevenue) * 240;
+                                                return `${x},${y}`;
+                                            })
+                                            .join(' ')}
+                                    />
+                                    
+                                    {/* Gradient area under line */}
+                                    <defs>
+                                        <linearGradient id="revenueGradient" x1="0" x2="0" y1="0" y2="1">
+                                            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3" />
+                                            <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <polygon
+                                        fill="url(#revenueGradient)"
+                                        points={`0,250 ${dailyRevenue
+                                            .map((day, index) => {
+                                                const x = (index / (dailyRevenue.length - 1)) * 800;
+                                                const y = 250 - ((Number(day.total) || 0) / maxRevenue) * 240;
+                                                return `${x},${y}`;
+                                            })
+                                            .join(' ')} 800,250`}
+                                    />
+                                </>
+                            ) : null}
                             
                             {/* Data points */}
                             {dailyRevenue.map((day, index) => {
-                                const x = (index / (dailyRevenue.length - 1)) * 800;
-                                const y = 250 - (day.total / maxRevenue) * 240;
+                                const x = dailyRevenue.length > 1 
+                                    ? (index / (dailyRevenue.length - 1)) * 800 
+                                    : 400; // Center point if only 1 data point
+                                const y = 250 - ((Number(day.total) || 0) / maxRevenue) * 240;
                                 return (
                                     <g key={index}>
                                         <circle
@@ -353,7 +359,7 @@ export default function AdminDashboard({
                                 {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </div>
                             <div className="text-sm font-bold text-blue-400 mt-1">
-                                ₱{(day.total / 1000).toFixed(1)}k
+                                ₱{((Number(day.total) || 0) / 1000).toFixed(1)}k
                             </div>
                         </div>
                     ))}
