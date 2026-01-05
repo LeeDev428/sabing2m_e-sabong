@@ -151,4 +151,48 @@ class FightController extends Controller
         return redirect()->back()
             ->with('success', 'Betting closed successfully.');
     }
+
+    public function updateStatus(Request $request, Fight $fight)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:standby,open,lastcall,closed,result_declared,cancelled',
+        ]);
+
+        $newStatus = $validated['status'];
+
+        // Validate status transitions
+        $allowedTransitions = [
+            'standby' => ['open', 'cancelled'],
+            'open' => ['lastcall', 'closed', 'cancelled'],
+            'lastcall' => ['closed', 'cancelled'],
+            'closed' => ['result_declared'],
+            'result_declared' => [],
+            'cancelled' => [],
+        ];
+
+        if (!in_array($newStatus, $allowedTransitions[$fight->status] ?? [])) {
+            return redirect()->back()
+                ->with('error', "Invalid status transition from {$fight->status} to {$newStatus}.");
+        }
+
+        // Update status with appropriate timestamps
+        $updateData = ['status' => $newStatus];
+
+        switch ($newStatus) {
+            case 'open':
+                $updateData['betting_opened_at'] = now();
+                break;
+            case 'closed':
+                $updateData['betting_closed_at'] = now();
+                break;
+            case 'result_declared':
+                $updateData['result_declared_at'] = now();
+                break;
+        }
+
+        $fight->update($updateData);
+
+        return redirect()->back()
+            ->with('success', "Fight status updated to {$newStatus}.");
+    }
 }
