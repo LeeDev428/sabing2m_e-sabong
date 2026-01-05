@@ -8,7 +8,7 @@ interface TellerDashboardProps {
 
 export default function TellerDashboard({ fights = [] }: TellerDashboardProps) {
     const [amount, setAmount] = useState('50');
-    const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'betting_open') || null);
+    const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | 'draw' | null>(null);
     const [showCashIn, setShowCashIn] = useState(false);
     const [showCashOut, setShowCashOut] = useState(false);
@@ -63,7 +63,7 @@ export default function TellerDashboard({ fights = [] }: TellerDashboardProps) {
             </div>
 
             {/* Main Betting Interface */}
-            {!showCashIn && !showCashOut && !showSummary && currentFight?.status === 'betting_open' && (
+            {!showCashIn && !showCashOut && !showSummary && currentFight && (currentFight.status === 'open' || currentFight.status === 'lastcall') && (
                 <div className="space-y-4">
                     {/* Fighter Buttons */}
                     <div className="grid grid-cols-3 gap-2">
