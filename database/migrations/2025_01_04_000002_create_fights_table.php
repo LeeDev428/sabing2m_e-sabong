@@ -16,6 +16,7 @@ return new class extends Migration
             $table->enum('status', ['scheduled', 'betting_open', 'betting_closed', 'result_declared'])->default('scheduled');
             $table->decimal('meron_odds', 8, 2)->nullable();
             $table->decimal('wala_odds', 8, 2)->nullable();
+            $table->decimal('draw_odds', 8, 2)->nullable();
             $table->boolean('auto_odds')->default(false);
             $table->enum('result', ['meron', 'wala', 'draw', 'cancelled'])->nullable();
             $table->text('remarks')->nullable();
