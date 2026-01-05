@@ -2,9 +2,13 @@ import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/layouts/admin-layout';
 import { useState } from 'react';
 
-export default function CreateFight() {
+interface Props {
+    nextFightNumber: number;
+}
+
+export default function CreateFight({ nextFightNumber }: Props) {
     const [formData, setFormData] = useState({
-        fight_number: '',
+        fight_number: nextFightNumber,
         meron_fighter: '',
         wala_fighter: '',
         meron_odds: '1.5',
@@ -48,13 +52,13 @@ export default function CreateFight() {
                             <div>
                                 <label className="block text-sm font-medium mb-2">Fight Number</label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={formData.fight_number}
-                                    onChange={(e) => setFormData({ ...formData, fight_number: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="e.g., FIGHT-001"
-                                    required
+                                    readOnly
+                                    className="w-full px-4 py-2 bg-gray-600 border border-gray-600 rounded-lg text-gray-300 cursor-not-allowed"
+                                    placeholder="Auto-generated"
                                 />
+                                <p className="text-xs text-gray-500 mt-1">Auto-generated fight number</p>
                             </div>
 
                             <div>
