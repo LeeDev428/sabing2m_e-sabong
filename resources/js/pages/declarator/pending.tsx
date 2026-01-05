@@ -87,7 +87,7 @@ export default function PendingResults({ pending_fights = [] }: Props) {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-400">Odds</span>
-                                    <span className="text-white font-semibold">{fight.meron_odds.toFixed(2)}</span>
+                                    <span className="text-white font-semibold">{fight.meron_odds ? Number(fight.meron_odds).toFixed(2) : 'N/A'}</span>
                                 </div>
                                 <div className="border-t border-gray-700 my-2"></div>
                                 <div className="flex justify-between items-center">
@@ -96,7 +96,7 @@ export default function PendingResults({ pending_fights = [] }: Props) {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-400">Odds</span>
-                                    <span className="text-white font-semibold">{fight.wala_odds.toFixed(2)}</span>
+                                    <span className="text-white font-semibold">{fight.wala_odds ? Number(fight.wala_odds).toFixed(2) : 'N/A'}</span>
                                 </div>
                             </div>
 
