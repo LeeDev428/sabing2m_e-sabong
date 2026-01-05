@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Fight;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class FightController extends Controller
@@ -196,5 +197,82 @@ class FightController extends Controller
 
         return redirect()->back()
             ->with('success', "Fight status updated to {$newStatus}.");
+    }
+
+    public function declareResult(Fight $fight)
+    {
+        if (!in_array($fight->status, ['closed', 'lastcall'])) {
+            return redirect()->back()
+                ->with('error', 'Can only declare results for closed fights.');
+        }
+
+        return Inertia::render('admin/fights/declare-result', [
+            'fight' => $fight->load(['creator', 'bets.teller']),
+            'stats' => [
+                'total_meron_bets' => $fight->bets()->where('side', 'meron')->sum('amount'),
+                'total_wala_bets' => $fight->bets()->where('side', 'wala')->sum('amount'),
+                'total_draw_bets' => $fight->bets()->where('side', 'draw')->sum('amount'),
+                'total_bets_count' => $fight->bets()->count(),
+            ],
+        ]);
+    }
+
+    public function storeResult(Request $request, Fight $fight)
+    {
+        if (!in_array($fight->status, ['closed', 'lastcall'])) {
+            return redirect()->back()
+                ->with('error', 'Can only declare results for closed fights.');
+        }
+
+        $validated = $request->validate([
+            'result' => 'required|in:meron,wala,draw,cancelled',
+            'remarks' => 'nullable|string|max:500',
+        ]);
+
+        DB::transaction(function () use ($fight, $validated) {
+            // Update fight result
+            $fight->update([
+                'result' => $validated['result'],
+                'remarks' => $validated['remarks'] ?? null,
+                'status' => 'result_declared',
+                'result_declared_at' => now(),
+                'declared_by' => auth()->id(),
+            ]);
+
+            // Process payouts if not cancelled
+            if ($validated['result'] !== 'cancelled') {
+                $this->processPayouts($fight, $validated['result']);
+            } else {
+                // Refund all bets if cancelled
+                $fight->bets()->update(['status' => 'refunded']);
+            }
+        });
+
+        return redirect()->route('admin.fights.index')
+            ->with('success', 'Result declared successfully.');
+    }
+
+    private function processPayouts(Fight $fight, string $result)
+    {
+        // Get winning bets
+        $winningBets = $fight->bets()->where('side', $result)->get();
+
+        foreach ($winningBets as $bet) {
+            $odds = $result === 'meron' ? $fight->meron_odds : 
+                   ($result === 'wala' ? $fight->wala_odds : $fight->draw_odds);
+            
+            $payout = $bet->amount * ($odds ?? 1);
+            
+            $bet->update([
+                'status' => 'won',
+                'actual_payout' => $payout,
+            ]);
+        }
+
+        // Mark losing bets
+        $fight->bets()->where('side', '!=', $result)->update([
+            'status' => 'lost',
+            'actual_payout' => 0,
+        ]);
     }
 }
