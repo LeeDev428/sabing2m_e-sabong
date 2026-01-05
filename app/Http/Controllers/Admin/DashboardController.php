@@ -44,9 +44,9 @@ class DashboardController extends Controller
 
         // Bet Distribution
         $betDistribution = [
-            'meron_amount' => Bet::where('side', 'meron')->sum('amount'),
-            'wala_amount' => Bet::where('side', 'wala')->sum('amount'),
-            'draw_amount' => Bet::where('side', 'draw')->sum('amount'),
+            'meron_amount' => (float) Bet::where('side', 'meron')->sum('amount'),
+            'wala_amount' => (float) Bet::where('side', 'wala')->sum('amount'),
+            'draw_amount' => (float) Bet::where('side', 'draw')->sum('amount'),
             'meron_bets' => Bet::where('side', 'meron')->count(),
             'wala_bets' => Bet::where('side', 'wala')->count(),
             'draw_bets' => Bet::where('side', 'draw')->count(),
