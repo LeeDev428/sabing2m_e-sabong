@@ -54,7 +54,10 @@ export default function AdminDashboard({
     dailyRevenue,
     resultsDistribution
 }: AdminDashboardProps) {
-    const maxRevenue = Math.max(...dailyRevenue.map(d => d.total), 1);
+    const maxRevenue = Math.max(...(dailyRevenue || []).map(d => d.total), 1);
+    
+    // Calculate total bet amount for distribution percentages
+    const totalBetAmount = (betDistribution?.meron_amount || 0) + (betDistribution?.wala_amount || 0) + (betDistribution?.draw_amount || 0);
 
     const getResultColor = (result: string) => {
         switch (result) {
@@ -159,17 +162,17 @@ export default function AdminDashboard({
                             <div className="flex justify-between mb-2">
                                 <span className="text-red-400 font-semibold">Meron</span>
                                 <span className="text-white">
-                                    {betDistribution.meron_bets} bets - ₱{betDistribution.meron_amount.toLocaleString()}
+                                    {betDistribution?.meron_bets || 0} bets - ₱{(betDistribution?.meron_amount || 0).toLocaleString()}
                                 </span>
                             </div>
                             <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
                                 <div
                                     className="bg-red-600 h-6 flex items-center justify-center text-white text-xs font-bold"
                                     style={{
-                                        width: `${(betDistribution.meron_amount / (betDistribution.meron_amount + betDistribution.wala_amount + betDistribution.draw_amount)) * 100}%`
+                                        width: totalBetAmount > 0 ? `${((betDistribution?.meron_amount || 0) / totalBetAmount) * 100}%` : '0%'
                                     }}
                                 >
-                                    {((betDistribution.meron_amount / (betDistribution.meron_amount + betDistribution.wala_amount + betDistribution.draw_amount)) * 100).toFixed(1)}%
+                                    {totalBetAmount > 0 ? (((betDistribution?.meron_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
                                 </div>
                             </div>
                         </div>
@@ -177,17 +180,17 @@ export default function AdminDashboard({
                             <div className="flex justify-between mb-2">
                                 <span className="text-blue-400 font-semibold">Wala</span>
                                 <span className="text-white">
-                                    {betDistribution.wala_bets} bets - ₱{betDistribution.wala_amount.toLocaleString()}
+                                    {betDistribution?.wala_bets || 0} bets - ₱{(betDistribution?.wala_amount || 0).toLocaleString()}
                                 </span>
                             </div>
                             <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
                                 <div
                                     className="bg-blue-600 h-6 flex items-center justify-center text-white text-xs font-bold"
                                     style={{
-                                        width: `${(betDistribution.wala_amount / (betDistribution.meron_amount + betDistribution.wala_amount + betDistribution.draw_amount)) * 100}%`
+                                        width: totalBetAmount > 0 ? `${((betDistribution?.wala_amount || 0) / totalBetAmount) * 100}%` : '0%'
                                     }}
                                 >
-                                    {((betDistribution.wala_amount / (betDistribution.meron_amount + betDistribution.wala_amount + betDistribution.draw_amount)) * 100).toFixed(1)}%
+                                    {totalBetAmount > 0 ? (((betDistribution?.wala_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
                                 </div>
                             </div>
                         </div>
@@ -195,17 +198,17 @@ export default function AdminDashboard({
                             <div className="flex justify-between mb-2">
                                 <span className="text-green-400 font-semibold">Draw</span>
                                 <span className="text-white">
-                                    {betDistribution.draw_bets} bets - ₱{betDistribution.draw_amount.toLocaleString()}
+                                    {betDistribution?.draw_bets || 0} bets - ₱{(betDistribution?.draw_amount || 0).toLocaleString()}
                                 </span>
                             </div>
                             <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
                                 <div
                                     className="bg-green-600 h-6 flex items-center justify-center text-white text-xs font-bold"
                                     style={{
-                                        width: `${(betDistribution.draw_amount / (betDistribution.meron_amount + betDistribution.wala_amount + betDistribution.draw_amount)) * 100}%`
+                                        width: totalBetAmount > 0 ? `${((betDistribution?.draw_amount || 0) / totalBetAmount) * 100}%` : '0%'
                                     }}
                                 >
-                                    {((betDistribution.draw_amount / (betDistribution.meron_amount + betDistribution.wala_amount + betDistribution.draw_amount)) * 100).toFixed(1)}%
+                                    {totalBetAmount > 0 ? (((betDistribution?.draw_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
                                 </div>
                             </div>
                         </div>
