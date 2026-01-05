@@ -22,6 +22,7 @@ export default function TellerDashboard({ fights = [], summary }: TellerDashboar
     const [showCashIn, setShowCashIn] = useState(false);
     const [showCashOut, setShowCashOut] = useState(false);
     const [showSummary, setShowSummary] = useState(false);
+    const [cashAmount, setCashAmount] = useState('0');
 
     const handleNumberClick = (num: string) => {
         if (amount === '50' || amount === '0') {
@@ -37,6 +38,42 @@ export default function TellerDashboard({ fights = [], summary }: TellerDashboar
 
     const handleQuickAmount = (quickAmount: number) => {
         setAmount(quickAmount.toString());
+    };
+
+    const handleIncrement = () => {
+        const current = parseInt(amount) || 0;
+        setAmount((current + 1).toString());
+    };
+
+    const handleDecrement = () => {
+        const current = parseInt(amount) || 0;
+        if (current > 0) {
+            setAmount((current - 1).toString());
+        }
+    };
+
+    const handleCashNumberClick = (num: string) => {
+        if (cashAmount === '0') {
+            setCashAmount(num);
+        } else {
+            setCashAmount(cashAmount + num);
+        }
+    };
+
+    const handleCashClear = () => {
+        setCashAmount('0');
+    };
+
+    const handleCashIn = () => {
+        console.log('Cash in:', cashAmount);
+        setCashAmount('0');
+        setShowCashIn(false);
+    };
+
+    const handleCashOut = () => {
+        console.log('Cash out:', cashAmount);
+        setCashAmount('0');
+        setShowCashOut(false);
     };
 
     const handleSubmit = () => {
@@ -65,11 +102,11 @@ export default function TellerDashboard({ fights = [], summary }: TellerDashboar
     };
 
     return (
-        <div className="min-h-screen bg-[#1a2332] text-white">
+        <div className="min-h-screen bg-[#2d2d2d] text-white">
             <Head title="Teller - eSabong" />
 
             {/* Header */}
-            <div className="bg-[#0f1419] px-4 py-3 flex justify-between items-center border-b border-gray-800">
+            <div className="bg-[#1a1a1a] px-4 py-3 flex justify-between items-center border-b border-gray-700">
                 <div>
                     <h1 className="text-xl font-bold text-orange-500">eSabong</h1>
                     <div className="text-xs text-gray-400">BET SUMMARY</div>
@@ -86,58 +123,87 @@ export default function TellerDashboard({ fights = [], summary }: TellerDashboar
             {!showCashIn && !showCashOut && !showSummary && currentFight && (currentFight.status === 'open' || currentFight.status === 'lastcall') && (
                 <div className="p-4 max-w-md mx-auto">
                     {/* Fighter Selection Buttons */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                        {/* MERON Button */}
                         <button
                             onClick={() => setBetSide('meron')}
-                            className={`relative rounded-lg py-8 px-4 flex flex-col items-center justify-center transition-all ${
-                                betSide === 'meron'
-                                    ? 'bg-red-600 scale-105 ring-4 ring-red-400'
-                                    : 'bg-red-700/90 hover:bg-red-600'
+                            className={`relative rounded-xl overflow-hidden transition-all ${
+                                betSide === 'meron' ? 'ring-4 ring-red-400' : ''
                             }`}
                         >
-                            <div className="text-xs mb-1 font-semibold">MERON</div>
-                            <div className="text-3xl font-bold">{currentFight.meron_odds || '1.50'}</div>
-                            <div className="text-xs mt-1 truncate max-w-full">{currentFight.meron_fighter}</div>
+                            <div className="bg-red-600 pt-4 pb-3 px-3">
+                                <div className="text-white text-sm font-bold mb-1">MERON</div>
+                                <div className="text-xs text-red-200 mb-1">ODDS</div>
+                                <div className="text-white text-3xl font-bold">{currentFight.meron_odds ? Number(currentFight.meron_odds).toFixed(2) : '1.57'}</div>
+                                <div className="text-white text-xs mt-1 truncate">{currentFight.meron_fighter || 'Meron'}</div>
+                            </div>
+                            <div className="bg-red-700 py-1 text-xs text-white">0/20,000</div>
                         </button>
 
+                        {/* DRAW Button */}
                         <button
                             onClick={() => setBetSide('draw')}
-                            className={`relative rounded-lg py-8 px-4 flex flex-col items-center justify-center transition-all ${
-                                betSide === 'draw'
-                                    ? 'bg-green-600 scale-105 ring-4 ring-green-400'
-                                    : 'bg-green-700/90 hover:bg-green-600'
+                            className={`relative rounded-xl overflow-hidden transition-all ${
+                                betSide === 'draw' ? 'ring-4 ring-green-400' : ''
                             }`}
                         >
-                            <div className="absolute top-2 bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">
-                                123
+                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
+                                <div className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full" style={{ clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)' }}>
+                                    123
+                                </div>
                             </div>
-                            <div className="text-xs mb-1 font-semibold">DRAW</div>
-                            <div className="text-3xl font-bold">2</div>
-                            <div className="text-xs mt-1">Equal</div>
+                            <div className="bg-green-600 pt-6 pb-3 px-3">
+                                <div className="text-white text-sm font-bold mb-1">DRAW</div>
+                                <div className="text-xs text-green-200 mb-1">ODDS</div>
+                                <div className="text-white text-3xl font-bold">{currentFight.draw_odds ? Number(currentFight.draw_odds).toFixed(2) : '9.00'}</div>
+                                <div className="text-white text-xs mt-1">Equal</div>
+                            </div>
+                            <div className="bg-green-700 py-1 text-xs text-white">0/2,000</div>
                         </button>
 
+                        {/* WALA Button */}
                         <button
                             onClick={() => setBetSide('wala')}
-                            className={`relative rounded-lg py-8 px-4 flex flex-col items-center justify-center transition-all ${
-                                betSide === 'wala'
-                                    ? 'bg-blue-600 scale-105 ring-4 ring-blue-400'
-                                    : 'bg-blue-700/90 hover:bg-blue-600'
+                            className={`relative rounded-xl overflow-hidden transition-all ${
+                                betSide === 'wala' ? 'ring-4 ring-blue-400' : ''
                             }`}
                         >
-                            <div className="text-xs mb-1 font-semibold">WALA</div>
-                            <div className="text-3xl font-bold">{currentFight.wala_odds || '2.00'}</div>
-                            <div className="text-xs mt-1 truncate max-w-full">{currentFight.wala_fighter}</div>
+                            <div className="bg-blue-600 pt-4 pb-3 px-3">
+                                <div className="text-white text-sm font-bold mb-1">WALA</div>
+                                <div className="text-xs text-blue-200 mb-1">ODDS</div>
+                                <div className="text-white text-3xl font-bold">{currentFight.wala_odds ? Number(currentFight.wala_odds).toFixed(2) : '2.00'}</div>
+                                <div className="text-white text-xs mt-1 truncate">{currentFight.wala_fighter || 'Wala'}</div>
+                            </div>
+                            <div className="bg-blue-700 py-1 text-xs text-white">0/20,000</div>
                         </button>
                     </div>
 
-                    {/* BET SUMMARY Header */}
-                    <div className="bg-[#0f1419] text-center py-2 rounded mb-3">
-                        <span className="text-sm font-semibold">BET SUMMARY</span>
+                    {/* Min/Total Info */}
+                    <div className="flex justify-between items-center mb-3 text-xs text-gray-400">
+                        <div>Min: 20 &nbsp; Min: 5,000</div>
+                        <div className="bg-[#1a1a1a] px-3 py-1 rounded flex items-center gap-2">
+                            <span className="text-white">Total</span>
+                            <span className="text-white">0</span>
+                        </div>
                     </div>
 
-                    {/* Amount Display */}
-                    <div className="bg-[#0f1419] rounded-lg py-6 px-4 mb-3 border border-gray-800">
-                        <div className="text-5xl font-bold text-center">{amount}</div>
+                    {/* Amount Input with +/- buttons */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                        <button
+                            onClick={handleDecrement}
+                            className="bg-white hover:bg-gray-200 text-black font-bold text-3xl rounded-lg py-4 flex items-center justify-center"
+                        >
+                            −
+                        </button>
+                        <div className="bg-white text-black rounded-lg py-4 flex items-center justify-center">
+                            <div className="text-5xl font-bold">{amount}</div>
+                        </div>
+                        <button
+                            onClick={handleIncrement}
+                            className="bg-white hover:bg-gray-200 text-black font-bold text-3xl rounded-lg py-4 flex items-center justify-center"
+                        >
+                            +
+                        </button>
                     </div>
 
                     {/* Number Pad */}
@@ -146,37 +212,38 @@ export default function TellerDashboard({ fights = [], summary }: TellerDashboar
                             <button
                                 key={num}
                                 onClick={() => handleNumberClick(num.toString())}
-                                className="bg-[#2a3544] hover:bg-[#3a4554] rounded-lg py-6 text-2xl font-semibold"
+                                className="bg-white hover:bg-gray-200 text-black rounded-lg py-5 text-2xl font-bold"
                             >
                                 {num}
                             </button>
                         ))}
-                        <button className="bg-[#2a3544] rounded-lg py-6 text-xl font-semibold opacity-50 cursor-default">
+                        <button className="bg-white text-black rounded-lg py-5 text-2xl font-bold opacity-50 cursor-default">
                             .
                         </button>
                         <button
                             onClick={() => handleNumberClick('0')}
-                            className="bg-[#2a3544] hover:bg-[#3a4554] rounded-lg py-6 text-2xl font-semibold"
+                            className="bg-white hover:bg-gray-200 text-black rounded-lg py-5 text-2xl font-bold"
                         >
                             0
                         </button>
                         <button
                             onClick={handleClear}
-                            className="bg-red-700 hover:bg-red-600 rounded-lg py-6 text-lg font-semibold"
+                            className="bg-white hover:bg-gray-200 text-black rounded-lg py-5 text-lg font-bold"
                         >
                             CLEAR
                         </button>
                     </div>
 
                     {/* Quick Amount Buttons */}
-                    <div className="grid grid-cols-5 gap-1 mb-3 text-xs">
+                    <div className="grid grid-cols-5 gap-2 mb-3">
                         {[50, 100, 200, 500, 1000].map((quickAmount) => (
                             <button
                                 key={quickAmount}
                                 onClick={() => handleQuickAmount(quickAmount)}
-                                className="bg-[#2a3544] hover:bg-[#3a4554] rounded py-2 font-semibold"
+                                className="bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white rounded-lg py-2.5 text-xs font-semibold border border-gray-600 flex items-center justify-center gap-1"
                             >
-                                ₱ {quickAmount}
+                                <span>💵</span>
+                                <span>{quickAmount}</span>
                             </button>
                         ))}
                     </div>
@@ -185,7 +252,9 @@ export default function TellerDashboard({ fights = [], summary }: TellerDashboar
                     <button
                         onClick={handleSubmit}
                         disabled={!betSide}
-                        className={`w-full py-4 rounded-lg text-xl font-bold mb-3 ${getSubmitButtonClass()}`}
+                        className={`w-full py-4 rounded-lg text-xl font-bold mb-3 ${
+                            betSide ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white' : 'bg-gray-600 cursor-not-allowed text-gray-400'
+                        }`}
                     >
                         SUBMIT
                     </button>
