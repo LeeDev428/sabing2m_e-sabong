@@ -56,8 +56,11 @@ export default function AdminDashboard({
 }: AdminDashboardProps) {
     const maxRevenue = Math.max(...(dailyRevenue || []).map(d => d.total), 1);
     
-    // Calculate total bet amount for distribution percentages
-    const totalBetAmount = (betDistribution?.meron_amount || 0) + (betDistribution?.wala_amount || 0) + (betDistribution?.draw_amount || 0);
+    // Calculate total bet amount for distribution percentages (ensure numbers)
+    const meronAmount = Number(betDistribution?.meron_amount) || 0;
+    const walaAmount = Number(betDistribution?.wala_amount) || 0;
+    const drawAmount = Number(betDistribution?.draw_amount) || 0;
+    const totalBetAmount = meronAmount + walaAmount + drawAmount;
 
     const getResultColor = (result: string) => {
         switch (result) {
@@ -170,12 +173,12 @@ export default function AdminDashboard({
                                     <div
                                         className="bg-red-600 h-6 transition-all absolute top-0 left-0"
                                         style={{
-                                            width: totalBetAmount > 0 ? `${Math.max(((betDistribution?.meron_amount || 0) / totalBetAmount) * 100, 2)}%` : '2%'
+                                            width: totalBetAmount > 0 ? `${Math.max((meronAmount / totalBetAmount) * 100, 2)}%` : '2%'
                                         }}
                                     ></div>
                                 </div>
                                 <span className="text-white font-bold text-sm min-w-[50px] text-right">
-                                    {totalBetAmount > 0 ? (((betDistribution?.meron_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                                    {totalBetAmount > 0 ? ((meronAmount / totalBetAmount) * 100).toFixed(1) : '0'}%
                                 </span>
                             </div>
                         </div>
@@ -191,12 +194,12 @@ export default function AdminDashboard({
                                     <div
                                         className="bg-blue-600 h-6 transition-all absolute top-0 left-0"
                                         style={{
-                                            width: totalBetAmount > 0 ? `${Math.max(((betDistribution?.wala_amount || 0) / totalBetAmount) * 100, 2)}%` : '2%'
+                                            width: totalBetAmount > 0 ? `${Math.max((walaAmount / totalBetAmount) * 100, 2)}%` : '2%'
                                         }}
                                     ></div>
                                 </div>
                                 <span className="text-white font-bold text-sm min-w-[50px] text-right">
-                                    {totalBetAmount > 0 ? (((betDistribution?.wala_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                                    {totalBetAmount > 0 ? ((walaAmount / totalBetAmount) * 100).toFixed(1) : '0'}%
                                 </span>
                             </div>
                         </div>
@@ -212,12 +215,12 @@ export default function AdminDashboard({
                                     <div
                                         className="bg-green-600 h-6 transition-all absolute top-0 left-0"
                                         style={{
-                                            width: totalBetAmount > 0 ? `${Math.max(((betDistribution?.draw_amount || 0) / totalBetAmount) * 100, 2)}%` : '2%'
+                                            width: totalBetAmount > 0 ? `${Math.max((drawAmount / totalBetAmount) * 100, 2)}%` : '2%'
                                         }}
                                     ></div>
                                 </div>
                                 <span className="text-white font-bold text-sm min-w-[50px] text-right">
-                                    {totalBetAmount > 0 ? (((betDistribution?.draw_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                                    {totalBetAmount > 0 ? ((drawAmount / totalBetAmount) * 100).toFixed(1) : '0'}%
                                 </span>
                             </div>
                         </div>
