@@ -23,13 +23,13 @@ export default function DeclaratorLayout({ children, title }: DeclaratorLayoutPr
                         📊 Dashboard
                     </button>
                     <button
-                        onClick={() => router.visit('/declarator/pending-results')}
+                        onClick={() => router.visit('/declarator/pending')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
                     >
                         🏆 Pending Results
                     </button>
                     <button
-                        onClick={() => router.visit('/declarator/declared-fights')}
+                        onClick={() => router.visit('/declarator/declared')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
                     >
                         ✅ Declared Fights
