@@ -34,7 +34,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('dashboard', function () {
         $fights = \App\Models\Fight::with(['creator', 'declarator'])
             ->latest()
-            ->paginate(20);
+            ->get();
             
         return Inertia::render('admin/dashboard', [
             'fights' => $fights,
