@@ -156,7 +156,7 @@ export default function AdminDashboard({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 {/* Bet Distribution */}
                 <div className="bg-gray-800 rounded-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">Bet Distribution</h2>
+                    <h2 className="text-xl font-bold mb-4">Bet Distribution by Side</h2>
                     <div className="space-y-4">
                         <div>
                             <div className="flex justify-between mb-2">
@@ -165,15 +165,18 @@ export default function AdminDashboard({
                                     {betDistribution?.meron_bets || 0} bets - ₱{(betDistribution?.meron_amount || 0).toLocaleString()}
                                 </span>
                             </div>
-                            <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
-                                <div
-                                    className="bg-red-600 h-6 flex items-center justify-center text-white text-xs font-bold"
-                                    style={{
-                                        width: totalBetAmount > 0 ? `${((betDistribution?.meron_amount || 0) / totalBetAmount) * 100}%` : '0%'
-                                    }}
-                                >
-                                    {totalBetAmount > 0 ? (((betDistribution?.meron_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 bg-gray-700 rounded-full h-6 overflow-hidden relative">
+                                    <div
+                                        className="bg-red-600 h-6 transition-all absolute top-0 left-0"
+                                        style={{
+                                            width: totalBetAmount > 0 ? `${Math.max(((betDistribution?.meron_amount || 0) / totalBetAmount) * 100, 2)}%` : '2%'
+                                        }}
+                                    ></div>
                                 </div>
+                                <span className="text-white font-bold text-sm min-w-[50px] text-right">
+                                    {totalBetAmount > 0 ? (((betDistribution?.meron_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                                </span>
                             </div>
                         </div>
                         <div>
@@ -183,15 +186,18 @@ export default function AdminDashboard({
                                     {betDistribution?.wala_bets || 0} bets - ₱{(betDistribution?.wala_amount || 0).toLocaleString()}
                                 </span>
                             </div>
-                            <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
-                                <div
-                                    className="bg-blue-600 h-6 flex items-center justify-center text-white text-xs font-bold"
-                                    style={{
-                                        width: totalBetAmount > 0 ? `${((betDistribution?.wala_amount || 0) / totalBetAmount) * 100}%` : '0%'
-                                    }}
-                                >
-                                    {totalBetAmount > 0 ? (((betDistribution?.wala_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 bg-gray-700 rounded-full h-6 overflow-hidden relative">
+                                    <div
+                                        className="bg-blue-600 h-6 transition-all absolute top-0 left-0"
+                                        style={{
+                                            width: totalBetAmount > 0 ? `${Math.max(((betDistribution?.wala_amount || 0) / totalBetAmount) * 100, 2)}%` : '2%'
+                                        }}
+                                    ></div>
                                 </div>
+                                <span className="text-white font-bold text-sm min-w-[50px] text-right">
+                                    {totalBetAmount > 0 ? (((betDistribution?.wala_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                                </span>
                             </div>
                         </div>
                         <div>
@@ -201,15 +207,18 @@ export default function AdminDashboard({
                                     {betDistribution?.draw_bets || 0} bets - ₱{(betDistribution?.draw_amount || 0).toLocaleString()}
                                 </span>
                             </div>
-                            <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden">
-                                <div
-                                    className="bg-green-600 h-6 flex items-center justify-center text-white text-xs font-bold"
-                                    style={{
-                                        width: totalBetAmount > 0 ? `${((betDistribution?.draw_amount || 0) / totalBetAmount) * 100}%` : '0%'
-                                    }}
-                                >
-                                    {totalBetAmount > 0 ? (((betDistribution?.draw_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 bg-gray-700 rounded-full h-6 overflow-hidden relative">
+                                    <div
+                                        className="bg-green-600 h-6 transition-all absolute top-0 left-0"
+                                        style={{
+                                            width: totalBetAmount > 0 ? `${Math.max(((betDistribution?.draw_amount || 0) / totalBetAmount) * 100, 2)}%` : '2%'
+                                        }}
+                                    ></div>
                                 </div>
+                                <span className="text-white font-bold text-sm min-w-[50px] text-right">
+                                    {totalBetAmount > 0 ? (((betDistribution?.draw_amount || 0) / totalBetAmount) * 100).toFixed(1) : '0'}%
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -217,7 +226,7 @@ export default function AdminDashboard({
 
                 {/* Results Distribution */}
                 <div className="bg-gray-800 rounded-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">Fight Results Distribution</h2>
+                    <h2 className="text-xl font-bold mb-4">Fight Results (Outcomes)</h2>
                     <div className="space-y-3">
                         {resultsDistribution.map((item) => (
                             <div key={item.result} className="flex items-center gap-4">
