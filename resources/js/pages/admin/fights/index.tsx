@@ -36,7 +36,7 @@ export default function FightsIndex({ fights = [] }: FightsIndexProps) {
     };
 
     const updateFightStatus = (fightId: number, newStatus: string) => {
-        router.post(`/admin/fights/${fightId}/update-status`, {
+        router.post(`/admin/fights/${fightId}/status`, {
             status: newStatus,
         }, {
             preserveScroll: true,
