@@ -13,6 +13,7 @@ export default function CreateFight({ nextFightNumber }: Props) {
         wala_fighter: '',
         meron_odds: '1.5',
         wala_odds: '2.0',
+        draw_odds: '9.0',
         auto_odds: false,
         scheduled_at: '',
     });
@@ -102,7 +103,7 @@ export default function CreateFight({ nextFightNumber }: Props) {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-medium mb-2 text-red-400">
                                     MERON Odds
@@ -113,6 +114,20 @@ export default function CreateFight({ nextFightNumber }: Props) {
                                     value={formData.meron_odds}
                                     onChange={(e) => setFormData({ ...formData, meron_odds: e.target.value })}
                                     className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    disabled={formData.auto_odds}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-green-400">
+                                    DRAW Odds
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.draw_odds}
+                                    onChange={(e) => setFormData({ ...formData, draw_odds: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                     disabled={formData.auto_odds}
                                 />
                             </div>
