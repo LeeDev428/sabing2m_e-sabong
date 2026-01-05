@@ -33,7 +33,7 @@ export default function DeclareResult({ fight, stats }: Props) {
         });
     };
 
-    const totalBets = stats.total_meron_bets + stats.total_wala_bets + stats.total_draw_bets;
+    const totalBets = (stats.total_meron_bets || 0) + (stats.total_wala_bets || 0) + (stats.total_draw_bets || 0);
 
     return (
         <AdminLayout>
