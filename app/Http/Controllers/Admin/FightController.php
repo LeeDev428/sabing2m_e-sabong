@@ -12,7 +12,9 @@ class FightController extends Controller
 {
     public function index()
     {
+        // Only show active fights (exclude result_declared and cancelled)
         $fights = Fight::with(['creator', 'declarator'])
+            ->whereNotIn('status', ['result_declared', 'cancelled'])
             ->latest()
             ->get();
 
