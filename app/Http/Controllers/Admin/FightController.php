@@ -16,7 +16,7 @@ class FightController extends Controller
         $fights = Fight::with(['creator', 'declarator'])
             ->whereNotIn('status', ['result_declared', 'cancelled'])
             ->latest()
-            ->get();
+            ->paginate(20);
 
         return Inertia::render('admin/fights/index', [
             'fights' => $fights,
