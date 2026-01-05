@@ -77,7 +77,7 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
 Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('teller.')->group(function () {
     Route::get('dashboard', function () {
         $fights = \App\Models\Fight::with(['creator'])
-            ->where('status', 'betting_open')
+            ->whereIn('status', ['open', 'lastcall'])
             ->latest()
             ->get();
             
