@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/layouts/admin-layout';
 import { useState } from 'react';
+import Pagination from '@/components/pagination';
 
 interface Bet {
     id: number;
