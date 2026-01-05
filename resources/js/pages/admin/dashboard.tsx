@@ -159,7 +159,7 @@ export default function AdminDashboard({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 {/* Bet Distribution */}
                 <div className="bg-gray-800 rounded-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">Bet Distribution by Side</h2>
+                    <h2 className="text-xl font-bold mb-4">Bet Distribution by Side (Today)</h2>
                     <div className="space-y-4">
                         <div>
                             <div className="flex justify-between mb-2">
@@ -229,7 +229,7 @@ export default function AdminDashboard({
 
                 {/* Results Distribution */}
                 <div className="bg-gray-800 rounded-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">Fight Results (Outcomes)</h2>
+                    <h2 className="text-xl font-bold mb-4">Fight Results Today</h2>
                     <div className="space-y-3">
                         {resultsDistribution.map((item) => (
                             <div key={item.result} className="flex items-center gap-4">
@@ -260,22 +260,100 @@ export default function AdminDashboard({
 
             {/* Daily Revenue Chart */}
             <div className="bg-gray-800 rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-bold mb-4">Daily Revenue (Last 7 Days)</h2>
-                <div className="flex items-end gap-4 h-64">
-                    {dailyRevenue.map((day) => (
-                        <div key={day.date} className="flex-1 flex flex-col items-center justify-end">
-                            <div className="text-white font-bold mb-2 text-sm">
-                                ₱{(day.total / 1000).toFixed(1)}k
-                            </div>
-                            <div
-                                className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all hover:from-blue-500 hover:to-blue-300"
-                                style={{
-                                    height: `${(day.total / maxRevenue) * 100}%`,
-                                    minHeight: '10px'
-                                }}
-                            ></div>
-                            <div className="text-gray-400 text-xs mt-2">
+                <h2 className="text-xl font-bold mb-6">Daily Revenue (Last 7 Days)</h2>
+                <div className="relative h-64">
+                    {dailyRevenue && dailyRevenue.length > 0 ? (
+                        <svg className="w-full h-full" viewBox="0 0 800 250" preserveAspectRatio="none">
+                            {/* Grid lines */}
+                            <g className="opacity-20">
+                                {[0, 1, 2, 3, 4].map((i) => (
+                                    <line
+                                        key={i}
+                                        x1="0"
+                                        y1={i * 50}
+                                        x2="800"
+                                        y2={i * 50}
+                                        stroke="#4B5563"
+                                        strokeWidth="1"
+                                    />
+                                ))}
+                            </g>
+                            
+                            {/* Line graph */}
+                            <polyline
+                                fill="none"
+                                stroke="#3B82F6"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                points={dailyRevenue
+                                    .map((day, index) => {
+                                        const x = (index / (dailyRevenue.length - 1)) * 800;
+                                        const y = 250 - (day.total / maxRevenue) * 240;
+                                        return `${x},${y}`;
+                                    })
+                                    .join(' ')}
+                            />
+                            
+                            {/* Gradient area under line */}
+                            <defs>
+                                <linearGradient id="revenueGradient" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3" />
+                                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <polygon
+                                fill="url(#revenueGradient)"
+                                points={`0,250 ${dailyRevenue
+                                    .map((day, index) => {
+                                        const x = (index / (dailyRevenue.length - 1)) * 800;
+                                        const y = 250 - (day.total / maxRevenue) * 240;
+                                        return `${x},${y}`;
+                                    })
+                                    .join(' ')} 800,250`}
+                            />
+                            
+                            {/* Data points */}
+                            {dailyRevenue.map((day, index) => {
+                                const x = (index / (dailyRevenue.length - 1)) * 800;
+                                const y = 250 - (day.total / maxRevenue) * 240;
+                                return (
+                                    <g key={index}>
+                                        <circle
+                                            cx={x}
+                                            cy={y}
+                                            r="5"
+                                            fill="#3B82F6"
+                                            stroke="#1E293B"
+                                            strokeWidth="2"
+                                        />
+                                        <circle
+                                            cx={x}
+                                            cy={y}
+                                            r="8"
+                                            fill="transparent"
+                                            className="hover:fill-blue-400/20 cursor-pointer transition-all"
+                                        />
+                                    </g>
+                                );
+                            })}
+                        </svg>
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-gray-500">
+                            No revenue data available
+                        </div>
+                    )}
+                </div>
+                
+                {/* X-axis labels */}
+                <div className="flex justify-between mt-4 px-2">
+                    {dailyRevenue && dailyRevenue.map((day, index) => (
+                        <div key={index} className="text-center flex-1">
+                            <div className="text-xs text-gray-400">
                                 {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </div>
+                            <div className="text-sm font-bold text-blue-400 mt-1">
+                                ₱{(day.total / 1000).toFixed(1)}k
                             </div>
                         </div>
                     ))}
