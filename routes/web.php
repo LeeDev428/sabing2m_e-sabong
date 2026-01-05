@@ -76,13 +76,29 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
 // Teller Routes
 Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('teller.')->group(function () {
     Route::get('dashboard', function () {
+        $tellerId = auth()->id();
+        
         $fights = \App\Models\Fight::with(['creator'])
             ->whereIn('status', ['open', 'lastcall'])
             ->latest()
             ->get();
+        
+        // Get teller's bet statistics
+        $tellerBets = \App\Models\Bet::where('teller_id', $tellerId);
+        
+        $summary = [
+            'total_bets' => $tellerBets->count(),
+            'total_bet_amount' => $tellerBets->sum('amount'),
+            'total_payouts' => $tellerBets->where('status', 'won')->sum('actual_payout'),
+            'active_bets' => $tellerBets->where('status', 'active')->sum('amount'),
+            'meron_bets' => $tellerBets->where('side', 'meron')->count(),
+            'wala_bets' => $tellerBets->where('side', 'wala')->count(),
+            'draw_bets' => $tellerBets->where('side', 'draw')->count(),
+        ];
             
         return Inertia::render('teller/dashboard', [
             'fights' => $fights,
+            'summary' => $summary,
         ]);
     })->name('dashboard');
     
