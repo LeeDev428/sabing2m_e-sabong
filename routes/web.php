@@ -48,6 +48,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('fights/{fight}/declare-result', [FightController::class, 'declareResult'])->name('fights.declare-result');
     Route::post('fights/{fight}/declare-result', [FightController::class, 'storeResult'])->name('fights.store-result');
     
+    Route::get('history', [FightController::class, 'history'])->name('history');
+    
     Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
     
     Route::get('transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
