@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\FightController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Teller\BetController;
 use App\Http\Controllers\Teller\TransactionController;
 use App\Http\Controllers\Declarator\ResultController;
@@ -31,15 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Admin Routes
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('dashboard', function () {
-        $fights = \App\Models\Fight::with(['creator', 'declarator'])
-            ->latest()
-            ->get();
-            
-        return Inertia::render('admin/dashboard', [
-            'fights' => $fights,
-        ]);
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     Route::resource('fights', FightController::class);
     Route::post('fights/{fight}/status', [FightController::class, 'updateStatus'])->name('fights.update-status');
