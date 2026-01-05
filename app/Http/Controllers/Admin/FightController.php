@@ -311,7 +311,7 @@ class FightController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $fights = $query->latest()->paginate(15)->withQueryString();
+        $fights = $query->latest()->paginate(20)->withQueryString();
 
         return Inertia::render('admin/history', [
             'fights' => $fights,
