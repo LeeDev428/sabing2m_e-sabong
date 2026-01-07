@@ -21,18 +21,6 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
-    server: {
-        host: '0.0.0.0', // Allow external access
-        port: 5173,
-        strictPort: true,
-        hmr: {
-            host: 'localhost',
-        },
-        cors: {
-            origin: '*', // Allow all origins for development
-            credentials: true,
-        },
-    },
     esbuild: {
         jsx: 'automatic',
     },
