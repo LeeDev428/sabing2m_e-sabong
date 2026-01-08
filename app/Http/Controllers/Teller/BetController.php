@@ -37,6 +37,17 @@ class BetController extends Controller
                 ->with('error', 'Betting is not open for this fight.');
         }
 
+        // Check if the specific side is accepting bets (bet control)
+        if ($validated['side'] === 'meron' && !$fight->canAcceptMeronBets()) {
+            return redirect()->back()
+                ->with('error', 'Meron betting is temporarily closed by admin.');
+        }
+
+        if ($validated['side'] === 'wala' && !$fight->canAcceptWalaBets()) {
+            return redirect()->back()
+                ->with('error', 'Wala betting is temporarily closed by admin.');
+        }
+
         // Get current odds based on side
         $odds = $validated['side'] === 'meron' ? $fight->meron_odds : 
                ($validated['side'] === 'wala' ? $fight->wala_odds : $fight->draw_odds);
