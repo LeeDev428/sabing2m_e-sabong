@@ -115,14 +115,36 @@ class ResultController extends Controller
                     'actual_payout' => DB::raw('amount'),
                 ]);
         } else {
-            // Mark winning side
+            // Calculate total pot and commission
+            $totalPot = (float) Bet::where('fight_id', $fight->id)
+                ->where('status', 'active')
+                ->sum('amount');
+            
+            $commissionPercentage = $fight->commission_percentage ?? 7.5;
+            $commission = $totalPot * ($commissionPercentage / 100);
+            $netPot = $totalPot - $commission;
+
+            // Get total bets on winning side
+            $winningTotal = (float) Bet::where('fight_id', $fight->id)
+                ->where('status', 'active')
+                ->where('side', $result)
+                ->sum('amount');
+
+            // Calculate payout multiplier after commission
+            // Net Payout = (Net Pot / Winning Side Total) * Bet Amount
+            $payoutMultiplier = $winningTotal > 0 ? ($netPot / $winningTotal) : 0;
+
+            // Mark winning side with commission-adjusted payouts
             Bet::where('fight_id', $fight->id)
                 ->where('status', 'active')
                 ->where('side', $result)
-                ->update([
-                    'status' => 'won',
-                    'actual_payout' => DB::raw('potential_payout'),
-                ]);
+                ->get()
+                ->each(function ($bet) use ($payoutMultiplier) {
+                    $bet->update([
+                        'status' => 'won',
+                        'actual_payout' => round($bet->amount * $payoutMultiplier, 2),
+                    ]);
+                });
 
             // Mark losing side
             $losingSide = $result === 'meron' ? 'wala' : 'meron';
