@@ -118,6 +118,12 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         <div className="text-lg font-bold text-green-400">₱{tellerBalance.toLocaleString()}</div>
                     </div>
                     <button
+                        onClick={() => router.visit('/teller/settings/printer')}
+                        className="px-3 py-2 bg-orange-600 hover:bg-orange-700 rounded text-sm font-medium"
+                    >
+                        🖨️ Printer
+                    </button>
+                    <button
                         onClick={() => router.visit('/teller/bets')}
                         className="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium"
                     >
