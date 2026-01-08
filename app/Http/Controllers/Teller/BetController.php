@@ -131,4 +131,20 @@ class BetController extends Controller
             'fightNumbers' => $fightNumbers,
         ]);
     }
+
+    /**
+     * Get live odds for a specific fight (API endpoint)
+     */
+    public function getLiveOdds(Fight $fight)
+    {
+        return response()->json([
+            'id' => $fight->id,
+            'meron_odds' => $fight->meron_odds,
+            'wala_odds' => $fight->wala_odds,
+            'draw_odds' => $fight->draw_odds,
+            'meron_betting_open' => $fight->meron_betting_open,
+            'wala_betting_open' => $fight->wala_betting_open,
+            'status' => $fight->status,
+        ]);
+    }
 }
