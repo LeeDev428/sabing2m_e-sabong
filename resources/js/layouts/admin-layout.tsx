@@ -45,6 +45,13 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         💵 Commission Reports
                     </button>
                     <button
+                        onClick={() => router.visit('/admin/teller-balances')}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
+                    >
+                        💸 Teller Balances
+                    </button>
+                    <button
                         onClick={() => router.visit('/admin/history')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
                         style={{ fontSize: '14px' }}
