@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Declarator;
 use App\Http\Controllers\Controller;
 use App\Models\Bet;
 use App\Models\Fight;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -167,7 +168,8 @@ class ResultController extends Controller
                 ->where('status', 'active')
                 ->sum('amount');
             
-            $commissionPercentage = $fight->commission_percentage ?? 7.5;
+            // Get commission from settings (dynamic)
+            $commissionPercentage = $fight->commission_percentage ?? Setting::get('commission_percentage', 7.5);
             $commission = $totalPot * ($commissionPercentage / 100);
             $netPot = $totalPot - $commission;
 
