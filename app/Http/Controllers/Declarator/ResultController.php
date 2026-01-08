@@ -104,6 +104,53 @@ class ResultController extends Controller
             ->with('success', 'Result declared successfully. Payouts calculated.');
     }
 
+    public function changeResult(Request $request, Fight $fight)
+    {
+        if ($fight->status !== 'result_declared') {
+            return redirect()->back()
+                ->with('error', 'Can only change results for declared fights.');
+        }
+
+        $validated = $request->validate([
+            'new_result' => 'required|in:meron,wala,draw,cancelled',
+            'reason' => 'required|string|max:500',
+        ]);
+
+        DB::transaction(function () use ($fight, $validated) {
+            $oldResult = $fight->result;
+            
+            // Reset all bets to active status
+            Bet::where('fight_id', $fight->id)
+                ->whereIn('status', ['won', 'lost', 'refunded'])
+                ->update([
+                    'status' => 'active',
+                    'actual_payout' => null,
+                ]);
+
+            // Update fight with new result and audit trail
+            $auditMessage = sprintf(
+                "Result changed from '%s' to '%s' by %s. Reason: %s",
+                strtoupper($oldResult ?? 'None'),
+                strtoupper($validated['new_result']),
+                auth()->user()->name,
+                $validated['reason']
+            );
+
+            $fight->update([
+                'result' => $validated['new_result'],
+                'remarks' => $auditMessage,
+                'declared_by' => auth()->id(),
+                'result_declared_at' => now(),
+            ]);
+
+            // Reprocess payouts with new result
+            $this->processPayouts($fight, $validated['new_result']);
+        });
+
+        return redirect()->back()
+            ->with('success', 'Result changed successfully. Payouts recalculated.');
+    }
+
     private function processPayouts(Fight $fight, string $result)
     {
         if ($result === 'cancelled' || $result === 'draw') {
