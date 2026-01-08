@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\BetControlController;
 use App\Http\Controllers\Teller\BetController;
 use App\Http\Controllers\Teller\TransactionController;
 use App\Http\Controllers\Declarator\ResultController;
@@ -46,6 +47,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
     
     Route::get('transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
+    
+    // Bet Controls
+    Route::get('bet-controls', [BetControlController::class, 'index'])->name('bet-controls.index');
+    Route::post('bet-controls/{fight}/toggle-meron', [BetControlController::class, 'toggleMeron'])->name('bet-controls.toggle-meron');
+    Route::post('bet-controls/{fight}/toggle-wala', [BetControlController::class, 'toggleWala'])->name('bet-controls.toggle-wala');
+    Route::post('bet-controls/{fight}/commission', [BetControlController::class, 'updateCommission'])->name('bet-controls.commission');
     
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
