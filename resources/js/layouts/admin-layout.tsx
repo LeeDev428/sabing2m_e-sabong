@@ -33,36 +33,42 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     <button
                         onClick={() => router.visit('/admin/bet-controls')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
                     >
                         🎛️ Bet Controls
                     </button>
                     <button
                         onClick={() => router.visit('/admin/commissions')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
                     >
                         💵 Commission Reports
                     </button>
                     <button
                         onClick={() => router.visit('/admin/history')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
                     >
                         📜 History
                     </button>
                     <button
                         onClick={() => router.visit('/admin/users')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
                     >
                         👥 Users
                     </button>
                     <button 
                         onClick={() => router.visit('/admin/transactions')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
                     >
                         💰 Transactions
                     </button>
                     <button 
                         onClick={() => router.visit('/admin/reports')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
                     >
                         📈 Reports
                     </button>
