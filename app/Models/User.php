@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'teller_balance',
     ];
 
     /**
@@ -50,6 +51,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'is_active' => 'boolean',
+            'teller_balance' => 'decimal:2',
         ];
     }
 
