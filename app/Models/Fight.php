@@ -19,6 +19,9 @@ class Fight extends Model
         'wala_odds',
         'draw_odds',
         'auto_odds',
+        'meron_betting_open',
+        'wala_betting_open',
+        'commission_percentage',
         'result',
         'remarks',
         'scheduled_at',
@@ -33,6 +36,8 @@ class Fight extends Model
     {
         return [
             'auto_odds' => 'boolean',
+            'meron_betting_open' => 'boolean',
+            'wala_betting_open' => 'boolean',
             'scheduled_at' => 'datetime',
             'betting_opened_at' => 'datetime',
             'betting_closed_at' => 'datetime',
@@ -40,6 +45,7 @@ class Fight extends Model
             'meron_odds' => 'decimal:2',
             'wala_odds' => 'decimal:2',
             'draw_odds' => 'decimal:2',
+            'commission_percentage' => 'decimal:2',
         ];
     }
 
@@ -68,6 +74,16 @@ class Fight extends Model
     public function canAcceptBets(): bool
     {
         return in_array($this->status, ['open', 'lastcall']);
+    }
+
+    public function canAcceptMeronBets(): bool
+    {
+        return $this->canAcceptBets() && $this->meron_betting_open;
+    }
+
+    public function canAcceptWalaBets(): bool
+    {
+        return $this->canAcceptBets() && $this->wala_betting_open;
     }
 
     public function isResultDeclared(): bool
