@@ -3,9 +3,89 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\CashTransfer;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use DB;
 
 class TellerBalanceController extends Controller
 {
-    //
+    public function index()
+    {
+        $tellers = User::where('role', 'teller')
+            ->select('id', 'name', 'email', 'teller_balance')
+            ->orderBy('name')
+            ->get();
+
+        $recentTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return Inertia::render('admin/teller-balances/index', [
+            'tellers' => $tellers,
+            'recentTransfers' => $recentTransfers,
+        ]);
+    }
+
+    public function setBalance(Request $request, User $user)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        if ($user->role !== 'teller') {
+            return back()->withErrors(['error' => 'User is not a teller']);
+        }
+
+        DB::transaction(function () use ($user, $request) {
+            $oldBalance = $user->teller_balance;
+            $newBalance = $request->amount;
+            
+            $user->update([
+                'teller_balance' => $newBalance,
+            ]);
+
+            // Record as initial balance transfer
+            CashTransfer::create([
+                'from_teller_id' => $user->id,
+                'to_teller_id' => $user->id,
+                'amount' => abs($newBalance - $oldBalance),
+                'type' => 'initial_balance',
+                'remarks' => $request->remarks ?? "Balance set from {$oldBalance} to {$newBalance}",
+                'approved_by' => auth()->id(),
+            ]);
+        });
+
+        return back()->with('success', 'Teller balance updated successfully');
+    }
+
+    public function addBalance(Request $request, User $user)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        if ($user->role !== 'teller') {
+            return back()->withErrors(['error' => 'User is not a teller']);
+        }
+
+        DB::transaction(function () use ($user, $request) {
+            $user->increment('teller_balance', $request->amount);
+
+            CashTransfer::create([
+                'from_teller_id' => $user->id,
+                'to_teller_id' => $user->id,
+                'amount' => $request->amount,
+                'type' => 'initial_balance',
+                'remarks' => $request->remarks ?? "Admin added balance",
+                'approved_by' => auth()->id(),
+            ]);
+        });
+
+        return back()->with('success', 'Balance added successfully');
+    }
 }
