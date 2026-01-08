@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { Fight } from '@/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 interface TellerDashboardProps {
     fights?: Fight[];
