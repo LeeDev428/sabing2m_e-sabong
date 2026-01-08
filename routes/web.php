@@ -85,7 +85,23 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
         $fights = \App\Models\Fight::with(['creator'])
             ->whereIn('status', ['open', 'lastcall'])
             ->latest()
-            ->get();
+            ->get()
+            ->map(function ($fight) {
+                return [
+                    'id' => $fight->id,
+                    'fight_number' => $fight->fight_number,
+                    'meron_fighter' => $fight->meron_fighter,
+                    'wala_fighter' => $fight->wala_fighter,
+                    'status' => $fight->status,
+                    'meron_odds' => $fight->meron_odds,
+                    'wala_odds' => $fight->wala_odds,
+                    'draw_odds' => $fight->draw_odds,
+                    'meron_betting_open' => $fight->meron_betting_open,
+                    'wala_betting_open' => $fight->wala_betting_open,
+                    'scheduled_at' => $fight->scheduled_at,
+                    'created_at' => $fight->created_at,
+                ];
+            });
         
         // Get teller's bet statistics
         $tellerBets = \App\Models\Bet::where('teller_id', $tellerId);
