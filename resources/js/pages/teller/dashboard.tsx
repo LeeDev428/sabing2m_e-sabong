@@ -203,6 +203,34 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
             {/* Main Betting Interface */}
             {!showCashIn && !showCashOut && !showSummary && currentFight && (currentFight.status === 'open' || currentFight.status === 'lastcall') && (
                 <div className="p-4 max-w-md mx-auto">
+                    {/* Live Bet Totals */}
+                    {liveBetTotals && (
+                        <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl p-4 mb-4 border border-purple-500/30">
+                            <div className="text-center mb-3">
+                                <div className="text-sm text-purple-300 font-bold">LIVE BET TOTALS</div>
+                                <div className="text-xs text-gray-400">Updates every 2 seconds</div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                                <div className="bg-red-900/50 rounded-lg p-2">
+                                    <div className="text-xs text-red-300">MERON</div>
+                                    <div className="text-lg font-bold text-white transition-all duration-300">₱{liveBetTotals.meron_total.toLocaleString()}</div>
+                                </div>
+                                <div className="bg-green-900/50 rounded-lg p-2">
+                                    <div className="text-xs text-green-300">DRAW</div>
+                                    <div className="text-lg font-bold text-white transition-all duration-300">₱{liveBetTotals.draw_total.toLocaleString()}</div>
+                                </div>
+                                <div className="bg-blue-900/50 rounded-lg p-2">
+                                    <div className="text-xs text-blue-300">WALA</div>
+                                    <div className="text-lg font-bold text-white transition-all duration-300">₱{liveBetTotals.wala_total.toLocaleString()}</div>
+                                </div>
+                            </div>
+                            <div className="mt-3 text-center">
+                                <div className="text-xs text-gray-400">TOTAL POT</div>
+                                <div className="text-2xl font-bold text-yellow-400 transition-all duration-300">₱{liveBetTotals.total_pot.toLocaleString()}</div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Fighter Selection Buttons */}
                     <div className="grid grid-cols-3 gap-3 mb-4">
                         {/* MERON Button */}
