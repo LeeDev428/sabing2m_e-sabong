@@ -160,7 +160,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
             </div>
 
             {/* Main Betting Interface */}
-            {!showCashIn && !showCashOut && !showSummary && currentFight && (currentFight.status === 'betting_open' || currentFight.status === 'betting_closed') && (
+            {!showCashIn && !showCashOut && !showSummary && currentFight && (currentFight.status === 'open' || currentFight.status === 'lastcall') && (
                 <div className="p-4 max-w-md mx-auto">
                     {/* Fighter Selection Buttons */}
                     <div className="grid grid-cols-3 gap-3 mb-4">
@@ -557,7 +557,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
             )}
 
             {/* No Open Fights */}
-            {(!currentFight || (currentFight.status !== 'betting_open' && currentFight.status !== 'betting_closed')) && !showCashIn && !showCashOut && !showSummary && (
+            {(!currentFight || (currentFight.status !== 'open' && currentFight.status !== 'lastcall')) && !showCashIn && !showCashOut && !showSummary && (
                 <div className="text-center text-gray-400 mt-20 px-4">
                     <div className="text-6xl mb-4">🐓</div>
                     <h2 className="text-2xl font-bold mb-2">No Open Fights</h2>
