@@ -38,7 +38,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     useEffect(() => {
         const fetchLiveData = async () => {
             try {
-                const response = await axios.get('/api/teller/live-data');
+                const response = await axios.get('/teller/api/teller/live-data');
                 setLiveBalance(response.data.balance);
             } catch (error) {
                 console.error('Failed to fetch live data:', error);
@@ -56,7 +56,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
         const fetchBetTotals = async () => {
             try {
-                const response = await axios.get(`/api/fights/${selectedFight.id}/bet-totals`);
+                const response = await axios.get(`/teller/api/fights/${selectedFight.id}/bet-totals`);
                 setLiveBetTotals(response.data);
             } catch (error) {
                 console.error('Failed to fetch bet totals:', error);
