@@ -97,8 +97,8 @@ export default function BigScreen() {
 
     const getStatusColor = () => {
         switch (fight.status) {
-            case 'betting_open': return 'bg-green-600';
-            case 'betting_closed': return 'bg-yellow-600 animate-pulse';
+            case 'open': return 'bg-green-600';
+            case 'lastcall': return 'bg-yellow-600 animate-pulse';
             case 'declared': return 'bg-purple-600';
             default: return 'bg-gray-600';
         }
@@ -106,8 +106,8 @@ export default function BigScreen() {
 
     const getStatusText = () => {
         switch (fight.status) {
-            case 'betting_open': return 'BETTING OPEN';
-            case 'betting_closed': return 'BETTING CLOSED - LAST CALL!';
+            case 'open': return 'BETTING OPEN';
+            case 'lastcall': return 'LAST CALL!';
             case 'declared': return 'RESULT DECLARED';
             default: return fight.status.toUpperCase().replace('_', ' ');
         }
