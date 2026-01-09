@@ -186,4 +186,4 @@ class BetController extends Controller
         return response()->json([
             'balance' => (float) ($teller->balance ?? 0),
         ]);
-    }
+    }}
