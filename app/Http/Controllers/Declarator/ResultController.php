@@ -35,7 +35,8 @@ class ResultController extends Controller
                 $fight->total_payouts = $fight->bets()->where('status', 'won')->sum('actual_payout');
                 $fight->declared_at = $fight->result_declared_at ?? $fight->updated_at;
                 return $fight;
-            });
+            })
+            ->values();
 
         return Inertia::render('declarator/declared', [
             'declared_fights' => $declared_fights,
