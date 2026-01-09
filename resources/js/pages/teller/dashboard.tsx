@@ -19,7 +19,7 @@ interface TellerDashboardProps {
 
 export default function TellerDashboard({ fights = [], summary, tellerBalance = 0 }: TellerDashboardProps) {
     const [amount, setAmount] = useState('50');
-    const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'betting_open' || f.status === 'betting_closed') || null);
+    const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | 'draw' | null>(null);
     const [showCashIn, setShowCashIn] = useState(false);
     const [showCashOut, setShowCashOut] = useState(false);
