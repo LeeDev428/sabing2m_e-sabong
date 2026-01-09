@@ -147,4 +147,43 @@ class BetController extends Controller
             'status' => $fight->status,
         ]);
     }
-}
+
+    /**
+     * Get bet totals for a specific fight (API endpoint)
+     */
+    public function getBetTotals(Fight $fight)
+    {
+        $meronTotal = Bet::where('fight_id', $fight->id)
+            ->where('side', 'meron')
+            ->where('status', 'active')
+            ->sum('amount');
+
+        $walaTotal = Bet::where('fight_id', $fight->id)
+            ->where('side', 'wala')
+            ->where('status', 'active')
+            ->sum('amount');
+
+        $drawTotal = Bet::where('fight_id', $fight->id)
+            ->where('side', 'draw')
+            ->where('status', 'active')
+            ->sum('amount');
+
+        return response()->json([
+            'meron_total' => (float) $meronTotal,
+            'wala_total' => (float) $walaTotal,
+            'draw_total' => (float) $drawTotal,
+            'total_pot' => (float) ($meronTotal + $walaTotal + $drawTotal),
+        ]);
+    }
+
+    /**
+     * Get teller's live balance (API endpoint)
+     */
+    public function getTellerLiveData()
+    {
+        $teller = auth()->user();
+        
+        return response()->json([
+            'balance' => (float) ($teller->balance ?? 0),
+        ]);
+    }
