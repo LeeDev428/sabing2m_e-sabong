@@ -74,7 +74,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
         const fetchOdds = async () => {
             try {
-                const response = await axios.get(`/api/fights/${selectedFight.id}/odds`);
+                const response = await axios.get(`/teller/api/fights/${selectedFight.id}/odds`);
                 setLiveOdds(response.data);
             } catch (error) {
                 console.error('Failed to fetch odds:', error);
