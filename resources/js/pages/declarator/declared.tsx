@@ -288,7 +288,7 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setShowModal(false);
+                                        setShowResultModal(false);
                                         setSelectedFight(null);
                                     }}
                                     className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
@@ -304,6 +304,58 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Status Change Modal */}
+            {showStatusModal && selectedFight && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full border border-gray-700">
+                        <h3 className="text-xl font-bold mb-4">
+                            Change Status - Fight #{selectedFight.fight_number}
+                        </h3>
+                        
+                        <div className="space-y-3 mb-6">
+                            <button
+                                onClick={() => updateFightStatus(selectedFight.id, 'standby')}
+                                disabled={selectedFight.status === 'standby'}
+                                className="w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg text-left font-medium disabled:opacity-50"
+                            >
+                                ⏸️ STANDBY
+                            </button>
+                            <button
+                                onClick={() => updateFightStatus(selectedFight.id, 'open')}
+                                disabled={selectedFight.status === 'open'}
+                                className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-left font-medium disabled:opacity-50"
+                            >
+                                ✅ OPEN BETTING
+                            </button>
+                            <button
+                                onClick={() => updateFightStatus(selectedFight.id, 'lastcall')}
+                                disabled={selectedFight.status === 'lastcall'}
+                                className="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-left font-medium disabled:opacity-50"
+                            >
+                                ⚠️ LAST CALL
+                            </button>
+                            <button
+                                onClick={() => updateFightStatus(selectedFight.id, 'closed')}
+                                disabled={selectedFight.status === 'closed'}
+                                className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-left font-medium disabled:opacity-50"
+                            >
+                                🔒 CLOSE BETTING
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                setShowStatusModal(false);
+                                setSelectedFight(null);
+                            }}
+                            className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+                        >
+                            Cancel
+                        </button>
                     </div>
                 </div>
             )}
