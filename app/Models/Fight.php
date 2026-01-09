@@ -74,12 +74,12 @@ class Fight extends Model
     // Helper methods
     public function isBettingOpen(): bool
     {
-        return in_array($this->status, ['betting_open', 'betting_closed']);
+        return in_array($this->status, ['open', 'lastcall']);
     }
 
     public function canAcceptBets(): bool
     {
-        return in_array($this->status, ['betting_open', 'betting_closed']);
+        return in_array($this->status, ['open', 'lastcall']);
     }
 
     public function canAcceptMeronBets(): bool
