@@ -27,11 +27,11 @@ class ResultController extends Controller
     public function declared()
     {
         $declared_fights = Fight::where('status', 'result_declared')
-            ->with(['creator'])
-            ->withCount('bets')
+            ->with(['creator', 'declarator'])
             ->latest()
             ->get()
             ->map(function($fight) {
+                $fight->total_bets = $fight->bets()->count();
                 $fight->total_payouts = $fight->bets()->where('status', 'won')->sum('actual_payout');
                 $fight->declared_at = $fight->result_declared_at ?? $fight->updated_at;
                 return $fight;
