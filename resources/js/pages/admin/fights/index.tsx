@@ -68,113 +68,113 @@ export default function FightsIndex({ fights }: FightsIndexProps) {
         <AdminLayout>
             <Head title="Fights Management" />
 
-            <div className="p-8">
+            <div className="p-4 lg:p-8">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 lg:mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Fights Management</h1>
-                        <p className="text-gray-400">Manage and control all cockfighting events</p>
+                        <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1 lg:mb-2">Fights Management</h1>
+                        <p className="text-sm lg:text-base text-gray-400">Manage and control all cockfighting events</p>
                     </div>
                     <button
                         onClick={() => router.visit('/admin/fights/create')}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap"
                     >
                         + Create New Fight
                     </button>
                 </div>
 
                 {/* Fights Grid */}
-                <div className="grid gap-6">
+                <div className="grid gap-4 lg:gap-6">
                     {fights.data.map((fight) => (
                         <div
                             key={fight.id}
-                            className="bg-gray-800 border border-gray-700 rounded-lg p-8 hover:bg-gray-750 transition-colors"
+                            className="bg-gray-800 border border-gray-700 rounded-lg p-4 sm:p-6 lg:p-8 hover:bg-gray-750 transition-colors"
                         >
-                            <div className="flex items-start justify-between gap-6">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="text-3xl font-bold text-white">
+                            <div className="flex flex-col lg:flex-row items-start justify-between gap-4 lg:gap-6">
+                                <div className="flex-1 w-full lg:w-auto">
+                                    <div className="flex flex-wrap items-center gap-3 lg:gap-4 mb-3 lg:mb-4">
+                                        <div className="text-2xl lg:text-3xl font-bold text-white">
                                             #{fight.fight_number}
                                         </div>
-                                        <span className={`px-4 py-1 rounded-full text-sm font-medium ${getStatusColor(fight.status)}`}>
+                                        <span className={`px-3 lg:px-4 py-1 rounded-full text-xs lg:text-sm font-medium ${getStatusColor(fight.status)}`}>
                                             {getStatusLabel(fight.status)}
                                         </span>
                                         {fight.result && (
-                                            <span className="px-4 py-1 bg-purple-600 rounded-full text-sm font-medium">
+                                            <span className="px-3 lg:px-4 py-1 bg-purple-600 rounded-full text-xs lg:text-sm font-medium">
                                                 Result: {fight.result.toUpperCase()}
                                             </span>
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-4 gap-4 mb-6">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
                                         {/* MERON */}
-                                        <div className="bg-red-900/30 border border-red-700 rounded-lg p-4">
+                                        <div className="bg-red-900/30 border border-red-700 rounded-lg p-3 lg:p-4">
                                             <div className="text-xs text-red-300 mb-2">MERON</div>
-                                            <div className="font-bold text-white mb-2">{fight.meron_fighter}</div>
-                                            <div className="text-2xl font-bold text-red-400">
+                                            <div className="text-sm lg:text-base font-bold text-white mb-2 truncate">{fight.meron_fighter}</div>
+                                            <div className="text-xl lg:text-2xl font-bold text-red-400">
                                                 {fight.meron_odds || '---'}x
                                             </div>
                                         </div>
 
                                         {/* DRAW */}
-                                        <div className="bg-green-900/30 border border-green-700 rounded-lg p-4">
+                                        <div className="bg-green-900/30 border border-green-700 rounded-lg p-3 lg:p-4">
                                             <div className="text-xs text-green-300 mb-2">DRAW</div>
-                                            <div className="font-bold text-white mb-2">Match Draw</div>
-                                            <div className="text-2xl font-bold text-green-400">
+                                            <div className="text-sm lg:text-base font-bold text-white mb-2">Match Draw</div>
+                                            <div className="text-xl lg:text-2xl font-bold text-green-400">
                                                 {fight.draw_odds || '---'}x
                                             </div>
                                         </div>
 
                                         {/* WALA */}
-                                        <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
+                                        <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-3 lg:p-4">
                                             <div className="text-xs text-blue-300 mb-2">WALA</div>
-                                            <div className="font-bold text-white mb-2">{fight.wala_fighter}</div>
-                                            <div className="text-2xl font-bold text-blue-400">
+                                            <div className="text-sm lg:text-base font-bold text-white mb-2 truncate">{fight.wala_fighter}</div>
+                                            <div className="text-xl lg:text-2xl font-bold text-blue-400">
                                                 {fight.wala_odds || '---'}x
                                             </div>
                                         </div>
 
                                         {/* VS */}
-                                        <div className="flex items-center justify-center">
-                                            <div className="text-4xl font-bold text-gray-600">VS</div>
+                                        <div className="flex items-center justify-center col-span-2 sm:col-span-1">
+                                            <div className="text-3xl lg:text-4xl font-bold text-gray-600">VS</div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6 text-sm text-gray-400">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs lg:text-sm text-gray-400">
                                         <div>
                                             <span className="text-gray-500">Created:</span>{' '}
-                                            {new Date(fight.created_at).toLocaleString()}
+                                            <span className="block sm:inline">{new Date(fight.created_at).toLocaleString()}</span>
                                         </div>
                                         {fight.scheduled_at && (
                                             <div>
                                                 <span className="text-gray-500">Scheduled:</span>{' '}
-                                                {new Date(fight.scheduled_at).toLocaleString()}
+                                                <span className="block sm:inline">{new Date(fight.scheduled_at).toLocaleString()}</span>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex flex-col gap-3 min-w-[160px]">
+                                <div className="flex flex-row lg:flex-col gap-2 lg:gap-3 w-full lg:w-auto lg:min-w-[160px]">
                                     <button
                                         onClick={() => {
                                             setSelectedFight(fight);
                                             setShowStatusModal(true);
                                         }}
-                                        className="px-4 py-2.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium whitespace-nowrap"
+                                        className="flex-1 lg:flex-none px-3 lg:px-4 py-2 lg:py-2.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs lg:text-sm font-medium whitespace-nowrap"
                                     >
                                         Change Status
                                     </button>
                                     <button
                                         onClick={() => router.visit(`/admin/fights/${fight.id}/edit`)}
-                                        className="px-4 py-2.5 bg-blue-700 hover:bg-blue-600 rounded-lg text-sm font-medium whitespace-nowrap"
+                                        className="flex-1 lg:flex-none px-3 lg:px-4 py-2 lg:py-2.5 bg-blue-700 hover:bg-blue-600 rounded-lg text-xs lg:text-sm font-medium whitespace-nowrap"
                                     >
                                         Edit Details
                                     </button>
                                     {fight.status === 'closed' && !fight.result && (
                                         <button
                                             onClick={() => router.visit(`/admin/fights/${fight.id}/declare-result`)}
-                                            className="px-4 py-2.5 bg-green-700 hover:bg-green-600 rounded-lg text-sm font-medium whitespace-nowrap"
+                                            className="flex-1 lg:flex-none px-3 lg:px-4 py-2 lg:py-2.5 bg-green-700 hover:bg-green-600 rounded-lg text-xs lg:text-sm font-medium whitespace-nowrap"
                                         >
                                             Declare Result
                                         </button>

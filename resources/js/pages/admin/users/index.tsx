@@ -40,23 +40,23 @@ export default function UsersIndex({ users = [] }: UsersIndexProps) {
         <AdminLayout>
             <Head title="Users Management" />
 
-            <div className="p-8">
+            <div className="p-4 lg:p-8">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 lg:mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Users Management</h1>
-                        <p className="text-gray-400">Manage system users and their roles</p>
+                        <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1 lg:mb-2">Users Management</h1>
+                        <p className="text-sm lg:text-base text-gray-400">Manage system users and their roles</p>
                     </div>
                     <button
                         onClick={() => setShowCreateModal(true)}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap"
                     >
                         + Create New User
                     </button>
                 </div>
 
                 {/* Users Table */}
-                <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+                <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-700">
                             <tr>
