@@ -101,10 +101,42 @@ class ResultController extends Controller
 
             // Process payouts
             $this->processPayouts($fight, $validated['result']);
+
+            // Auto-add and open next fight
+            $this->autoOpenNextFight($fight);
         });
 
         return redirect()->back()
-            ->with('success', 'Result declared successfully. Payouts calculated.');
+            ->with('success', 'Result declared successfully. Next fight opened automatically.');
+    }
+
+    /**
+     * Automatically find and open the next pending fight
+     */
+    private function autoOpenNextFight(Fight $currentFight)
+    {
+        // Find the next standby fight with higher fight number in the same event
+        $nextFight = Fight::where('status', 'standby')
+            ->where('fight_number', '>', $currentFight->fight_number)
+            ->orderBy('fight_number', 'asc')
+            ->first();
+
+        // If no fight in current sequence, get the earliest standby fight
+        if (!$nextFight) {
+            $nextFight = Fight::where('status', 'standby')
+                ->orderBy('fight_number', 'asc')
+                ->first();
+        }
+
+        // Open the next fight automatically with betting enabled for both sides
+        if ($nextFight) {
+            $nextFight->update([
+                'status' => 'open',
+                'betting_opened_at' => now(),
+                'meron_betting_open' => true,  // Auto-enable Meron betting
+                'wala_betting_open' => true,   // Auto-enable Wala betting
+            ]);
+        }
     }
 
     public function changeResult(Request $request, Fight $fight)
