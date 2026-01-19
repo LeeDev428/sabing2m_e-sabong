@@ -205,7 +205,7 @@ class BetController extends Controller
             'bet_id' => 'required|exists:bets,id',
         ]);
 
-        $bet = Bet::with(['fight', 'user'])->findOrFail($validated['bet_id']);
+        $bet = Bet::with(['fight', 'teller'])->findOrFail($validated['bet_id']);
 
         // Check if bet has already been claimed
         if ($bet->status === 'claimed') {
@@ -253,7 +253,7 @@ class BetController extends Controller
         $teller = auth()->user();
 
         // Get today's bets
-        $bets = Bet::with(['fight', 'user'])
+        $bets = Bet::with(['fight', 'teller'])->where('teller_id', $teller->id)
             ->where('teller_id', $teller->id)
             ->whereDate('created_at', today())
             ->latest()
