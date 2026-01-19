@@ -119,7 +119,7 @@ export default function BigScreen() {
                 fightNumber={fight.fight_number} 
             />
 
-            <div className="container mx-auto px-6 py-8">
+            <div className="container mx-auto px-4 py-4">
                 {/* Fight Header with Event Info */}
                 <FightHeader
                     fightNumber={fight.fight_number}
@@ -138,7 +138,7 @@ export default function BigScreen() {
                 />
 
                 {/* Fighter Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
@@ -172,12 +172,6 @@ export default function BigScreen() {
                     commission={fight.commission}
                     commissionPercentage={fight.commission_percentage}
                     netPot={fight.net_pot}
-                />
-
-                {/* Notes & Special Conditions */}
-                <NotesDisplay
-                    notes={fight.notes}
-                    specialConditions={fight.special_conditions}
                 />
 
                 {/* Fight History */}
