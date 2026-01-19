@@ -73,7 +73,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
         return () => clearInterval(interval);
     }, [selectedFight?.id]);
 
-    // Real-time odds polling
+    // Real-time odds and status polling
     useEffect(() => {
         if (!selectedFight) return;
 
@@ -81,6 +81,11 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
             try {
                 const response = await axios.get(`/teller/api/fights/${selectedFight.id}/odds`);
                 setLiveOdds(response.data);
+                
+                // Update selectedFight status if it changed
+                if (response.data.status !== selectedFight.status) {
+                    setSelectedFight(response.data);
+                }
             } catch (error) {
                 console.error('Failed to fetch odds:', error);
             }
