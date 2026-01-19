@@ -96,7 +96,7 @@ export default function DeclaratorLayout({ children, title }: DeclaratorLayoutPr
                     >
                         📈 History
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => {
                             router.visit('/declarator/bet-controls');
                             setSidebarOpen(false);
@@ -104,7 +104,7 @@ export default function DeclaratorLayout({ children, title }: DeclaratorLayoutPr
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
                     >
                         🎛️ Bet Controls
-                    </button>
+                    </button> */}
                 </nav>
 
                 <div className="p-4 lg:p-6 mt-auto border-t border-gray-700">
