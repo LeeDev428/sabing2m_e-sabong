@@ -171,6 +171,12 @@ export default function FightsIndex({ fights }: FightsIndexProps) {
                                     >
                                         Edit Details
                                     </button>
+                                    <button
+                                        onClick={() => router.visit(`/admin/fights/${fight.id}`)}
+                                        className="flex-1 lg:flex-none px-3 lg:px-4 py-2 lg:py-2.5 bg-purple-700 hover:bg-purple-600 rounded-lg text-xs lg:text-sm font-medium whitespace-nowrap"
+                                    >
+                                        View
+                                    </button>
                                     {fight.status === 'closed' && !fight.result && (
                                         <button
                                             onClick={() => router.visit(`/admin/fights/${fight.id}/declare-result`)}
