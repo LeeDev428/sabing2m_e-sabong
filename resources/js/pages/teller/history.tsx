@@ -47,7 +47,7 @@ interface HistoryProps {
 }
 
 export default function History({ bets, summary }: HistoryProps) {
-    const [activeTab, setActiveTab] = useState<'bets' | 'transactions' | 'summary'>('summary');
+    const [activeTab, setActiveTab] = useState<'bets' | 'summary'>('summary');
     const [showVoidScanner, setShowVoidScanner] = useState(false);
     const [scanning, setScanning] = useState(false);
     const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
@@ -154,7 +154,7 @@ export default function History({ bets, summary }: HistoryProps) {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="grid grid-cols-2 gap-2 mb-4">
                     <button
                         onClick={() => setActiveTab('summary')}
                         className={`py-3 rounded-lg font-semibold transition-colors ${
@@ -175,16 +175,6 @@ export default function History({ bets, summary }: HistoryProps) {
                     >
                         🎰 Bets
                     </button>
-                    <button
-                        onClick={() => setActiveTab('transactions')}
-                        className={`py-3 rounded-lg font-semibold transition-colors ${
-                            activeTab === 'transactions'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
-                        }`}
-                    >
-                        💰 Cash
-                    </button>
                 </div>
 
                 {/* Summary Tab */}
@@ -192,7 +182,7 @@ export default function History({ bets, summary }: HistoryProps) {
                     <div className="space-y-3">
                         <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-6 border border-blue-500/30">
                             <div className="text-center">
-                                <div className="text-sm text-gray-300 mb-2">Total Bets</div>
+                                <div className="text-sm text-gray-300 mb-2">Total Bets Today</div>
                                 <div className="text-4xl font-bold text-white">{summary.total_bets}</div>
                             </div>
                         </div>
@@ -207,22 +197,30 @@ export default function History({ bets, summary }: HistoryProps) {
                         <div className="grid grid-cols-2 gap-3">
                             <div className="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
                                 <div className="text-center">
-                                    <div className="text-xs text-green-300 mb-1">Won</div>
-                                    <div className="text-2xl font-bold text-white">{summary.total_won}</div>
+                                    <div className="text-xs text-green-300 mb-1">Won Bets</div>
+                                    <div className="text-2xl font-bold text-white">{summary.won_bets}</div>
                                 </div>
                             </div>
                             <div className="bg-red-900/30 rounded-lg p-4 border border-red-500/30">
                                 <div className="text-center">
-                                    <div className="text-xs text-red-300 mb-1">Lost</div>
-                                    <div className="text-2xl font-bold text-white">{summary.total_lost}</div>
+                                    <div className="text-xs text-red-300 mb-1">Lost Bets</div>
+                                    <div className="text-2xl font-bold text-white">{summary.lost_bets}</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-700">
-                            <div className="text-center">
-                                <div className="text-sm text-gray-400 mb-2">Pending Bets</div>
-                                <div className="text-3xl font-bold text-orange-400">{summary.pending_bets}</div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-blue-900/30 rounded-lg p-4 border border-blue-500/30">
+                                <div className="text-center">
+                                    <div className="text-xs text-blue-300 mb-1">Claimed</div>
+                                    <div className="text-2xl font-bold text-white">{summary.claimed_bets}</div>
+                                </div>
+                            </div>
+                            <div className="bg-purple-900/30 rounded-lg p-4 border border-purple-500/30">
+                                <div className="text-center">
+                                    <div className="text-xs text-purple-300 mb-1">Voided</div>
+                                    <div className="text-2xl font-bold text-white">{summary.voided_bets}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -231,13 +229,13 @@ export default function History({ bets, summary }: HistoryProps) {
                 {/* Bets Tab */}
                 {activeTab === 'bets' && (
                     <div className="space-y-3">
-                        {bets.length === 0 ? (
+                        {bets.data.length === 0 ? (
                             <div className="bg-[#1a1a1a] rounded-lg p-8 text-center border border-gray-700">
                                 <div className="text-6xl mb-4">🎰</div>
                                 <p className="text-gray-400">No bets yet</p>
                             </div>
                         ) : (
-                            bets.map((bet) => (
+                            bets.data.map((bet) => (
                                 <div key={bet.id} className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-700">
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
@@ -271,35 +269,6 @@ export default function History({ bets, summary }: HistoryProps) {
 
                                     <div className="text-xs text-gray-500 mt-2">
                                         {new Date(bet.created_at).toLocaleString()}
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                )}
-
-                {/* Transactions Tab */}
-                {activeTab === 'transactions' && (
-                    <div className="space-y-3">
-                        {transactions.length === 0 ? (
-                            <div className="bg-[#1a1a1a] rounded-lg p-8 text-center border border-gray-700">
-                                <div className="text-6xl mb-4">💰</div>
-                                <p className="text-gray-400">No transactions yet</p>
-                            </div>
-                        ) : (
-                            transactions.map((transaction) => (
-                                <div key={transaction.id} className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-700">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <div className="text-lg font-bold text-white capitalize">{transaction.type.replace('_', ' ')}</div>
-                                            <div className="text-sm text-gray-400">{transaction.description}</div>
-                                            <div className="text-xs text-gray-500 mt-1">
-                                                {new Date(transaction.created_at).toLocaleString()}
-                                            </div>
-                                        </div>
-                                        <div className={`text-2xl font-bold ${transaction.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                            {transaction.amount >= 0 ? '+' : ''}₱{Math.abs(transaction.amount).toLocaleString()}
-                                        </div>
                                     </div>
                                 </div>
                             ))
