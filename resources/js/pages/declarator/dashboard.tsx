@@ -35,39 +35,37 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
             <Head title="Declarator Dashboard" />
 
             {/* Header */}
-            <div className="mb-8">
-                    <h1 className="text-3xl font-bold">Declarator Dashboard</h1>
-                    <p className="text-gray-400">Declare fight results and manage outcomes</p>
+            <div className="mb-6 lg:mb-8">
+                    <h1 className="text-2xl lg:text-3xl font-bold">Declarator Dashboard</h1>
+                    <p className="text-sm lg:text-base text-gray-400">Declare fight results and manage outcomes</p>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-6 mb-8">
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                        <div className="text-sm text-gray-400 mb-2">Pending Results</div>
-                        <div className="text-4xl font-bold text-yellow-400">{pendingFights.length}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+                    <div className="bg-gray-800 rounded-lg p-4 lg:p-6 border border-gray-700">
+                        <div className="text-xs lg:text-sm text-gray-400 mb-2">Pending Results</div>
+                        <div className="text-3xl lg:text-4xl font-bold text-yellow-400">{pendingFights.length}</div>
                         <p className="text-xs text-gray-500 mt-2">Fights awaiting declaration</p>
                     </div>
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                        <div className="text-sm text-gray-400 mb-2">Declared Today</div>
-                        <div className="text-4xl font-bold text-green-400">{declaredToday}</div>
+                    <div className="bg-gray-800 rounded-lg p-4 lg:p-6 border border-gray-700">
+                        <div className="text-xs lg:text-sm text-gray-400 mb-2">Declared Today</div>
+                        <div className="text-3xl lg:text-4xl font-bold text-green-400">{declaredToday}</div>
                         <p className="text-xs text-gray-500 mt-2">Results declared today</p>
                     </div>
-                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                        <div className="text-sm text-gray-400 mb-2">Total Fights</div>
-                        <div className="text-4xl font-bold">{fights.length}</div>
+                    <div className="bg-gray-800 rounded-lg p-4 lg:p-6 border border-gray-700">
+                        <div className="text-xs lg:text-sm text-gray-400 mb-2">Total Fights</div>
+                        <div className="text-3xl lg:text-4xl font-bold">{fights.length}</div>
                         <p className="text-xs text-gray-500 mt-2">All fight events</p>
                     </div>
                 </div>
 
                 {/* Pending Declarations */}
                 <div className="bg-gray-800 rounded-lg border border-gray-700">
-                    <div className="p-6 border-b border-gray-700">
-                        <h2 className="text-xl font-bold">Pending Declarations</h2>
-                        <p className="text-sm text-gray-400">Fights with closed betting awaiting result declaration</p>
+                    <div className="p-4 lg:p-6 border-b border-gray-700">
+                        <h2 className="text-lg lg:text-xl font-bold">Pending Declarations</h2>
+                        <p className="text-xs lg:text-sm text-gray-400">Fights with closed betting awaiting result declaration</p>
                     </div>
-                    <div className="p-6">
-                    </div>
-                    <div className="p-6">
+                    <div className="p-4 lg:p-6">
                         {pendingFights.length > 0 ? (
                             <div className="space-y-4">
                                 {pendingFights.map((fight) => (
