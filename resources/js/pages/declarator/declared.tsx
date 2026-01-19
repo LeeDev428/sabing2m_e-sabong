@@ -104,17 +104,17 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
         <DeclaratorLayout>
             <Head title="Declared Fights" />
 
-            <div className="p-8">
+            <div className="p-4 lg:p-8">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex justify-between items-center mb-6 lg:mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Declared Fights</h1>
-                        <p className="text-gray-400">View and manage declared fight results</p>
+                        <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Declared Fights</h1>
+                        <p className="text-sm lg:text-base text-gray-400">View and manage declared fight results</p>
                     </div>
                 </div>
 
                 {/* Fights Grid */}
-                <div className="grid gap-6">
+                <div className="grid gap-4 lg:gap-6">
                     {declared_fights.map((fight) => (
                         <div
                             key={fight.id}
