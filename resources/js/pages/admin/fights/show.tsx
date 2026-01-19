@@ -175,7 +175,7 @@ export default function ShowFight({ fight, stats }: Props) {
                 </div>
 
                 {/* Funds & Teller Cash */}
-                {(fight.revolving_funds || fight.tellerCashAssignments?.length) && (
+                {(fight.revolving_funds || fight.tellerCashAssignments?.length || (fight as any).teller_cash_assignments?.length) && (
                     <div className="bg-gray-800 rounded-lg p-6">
                         <h2 className="text-xl font-bold mb-4">💰 Funds & Teller Cash</h2>
                         {fight.revolving_funds && (
@@ -184,11 +184,11 @@ export default function ShowFight({ fight, stats }: Props) {
                                 <p className="text-2xl font-bold text-green-400">₱{Number(fight.revolving_funds).toLocaleString()}</p>
                             </div>
                         )}
-                        {fight.tellerCashAssignments && fight.tellerCashAssignments.length > 0 && (
+                        {((fight.tellerCashAssignments && fight.tellerCashAssignments.length > 0) || ((fight as any).teller_cash_assignments && (fight as any).teller_cash_assignments.length > 0)) && (
                             <div>
                                 <h3 className="text-lg font-semibold mb-3">Teller Cash Assignments</h3>
                                 <div className="space-y-2">
-                                    {fight.tellerCashAssignments.map((assignment, index) => (
+                                    {(fight.tellerCashAssignments || (fight as any).teller_cash_assignments).map((assignment: any, index: number) => (
                                         <div key={index} className="bg-gray-700 p-3 rounded-lg flex justify-between items-center">
                                             <div>
                                                 <p className="font-semibold">{assignment.teller.name}</p>
