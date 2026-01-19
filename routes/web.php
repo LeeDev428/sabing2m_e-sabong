@@ -25,6 +25,7 @@ Route::get('/', function () {
 // Big Screen - Public (No Auth Required)
 Route::get('/bigscreen', [BigScreenController::class, 'index'])->name('bigscreen');
 Route::get('/api/bigscreen', [BigScreenController::class, 'api']);
+Route::get('/api/bigscreen/history', [BigScreenController::class, 'history']);
 
 // Role-based dashboard routing
 Route::middleware(['auth', 'verified'])->group(function () {
