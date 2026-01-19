@@ -26,19 +26,27 @@ interface Transaction {
     created_at: string;
 }
 
+interface PaginatedBets {
+    data: Bet[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
 interface HistoryProps {
-    bets: Bet[];
-    transactions: Transaction[];
+    bets: PaginatedBets;
     summary: {
         total_bets: number;
         total_amount: number;
-        total_won: number;
-        total_lost: number;
-        pending_bets: number;
+        won_bets: number;
+        lost_bets: number;
+        claimed_bets: number;
+        voided_bets: number;
     };
 }
 
-export default function History({ bets, transactions, summary }: HistoryProps) {
+export default function History({ bets, summary }: HistoryProps) {
     const [activeTab, setActiveTab] = useState<'bets' | 'transactions' | 'summary'>('summary');
     const [showVoidScanner, setShowVoidScanner] = useState(false);
     const [scanning, setScanning] = useState(false);
