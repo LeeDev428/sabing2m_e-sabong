@@ -159,7 +159,9 @@ Admin Creates Fight → Teller Places Bets → Declarator Declares Result → Sy
 - **Styling**: Tailwind CSS 4.0
 - **Build Tool**: Vite 7.0
 - **UI Components**: Radix UI, Headless UI
-- **Icons**: Custom SVG icons
+- **Icons**: Custom SVG icons, emoji-based navigation
+- **QR Code**: qrcode.react (generation), html5-qrcode (scanning)
+- **State Management**: React Hooks (useState, useEffect)
 
 ### DevOps & Tools
 - **Version Control**: Git + GitHub
