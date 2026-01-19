@@ -59,22 +59,22 @@ export default function PendingResults({ pending_fights = [] }: Props) {
         <DeclaratorLayout>
             <Head title="Pending Results" />
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">Pending Results</h1>
-                <p className="text-gray-400">Declare results for closed fights</p>
+            <div className="mb-6 lg:mb-8">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Pending Results</h1>
+                <p className="text-sm lg:text-base text-gray-400">Declare results for closed fights</p>
             </div>
 
             {/* Pending Fights Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                 {pending_fights.length === 0 ? (
                     <div className="col-span-full bg-gray-800 rounded-lg p-12 text-center">
                         <p className="text-gray-400 text-lg">No pending fights to declare</p>
                     </div>
                 ) : (
                     pending_fights.map((fight) => (
-                        <div key={fight.id} className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition">
+                        <div key={fight.id} className="bg-gray-800 rounded-lg p-4 lg:p-6 hover:bg-gray-700 transition">
                             <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-xl font-bold text-white">{fight.fight_number}</h3>
+                                <h3 className="text-lg lg:text-xl font-bold text-white">{fight.fight_number}</h3>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${getStatusBadge(fight.status)}`}>
                                     {fight.status.toUpperCase()}
                                 </span>
