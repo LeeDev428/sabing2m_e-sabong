@@ -17,6 +17,11 @@ interface Fight {
     total_payouts: number;
     created_at: string;
     scheduled_at?: string;
+    meron_betting_open?: boolean;
+    wala_betting_open?: boolean;
+    commission_percentage?: number;
+    total_meron_bets?: number;
+    total_wala_bets?: number;
 }
 
 interface Props {
@@ -26,7 +31,9 @@ interface Props {
 export default function DeclaredFights({ declared_fights = [] }: Props) {
     const [showResultModal, setShowResultModal] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
+    const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
+    const [commission, setCommission] = useState('7.5');
     const { data, setData, post, processing, errors } = useForm({
         new_result: '',
     });
@@ -61,6 +68,38 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
             preserveScroll: true,
             onSuccess: () => {
                 setShowStatusModal(false);
+                setSelectedFight(null);
+            },
+        });
+    };
+
+    const toggleMeron = (fightId: number) => {
+        router.post(`/declarator/bet-controls/${fightId}/toggle-meron`, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const toggleWala = (fightId: number) => {
+        router.post(`/declarator/bet-controls/${fightId}/toggle-wala`, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const openCommissionModal = (fight: Fight) => {
+        setSelectedFight(fight);
+        setCommission(fight.commission_percentage?.toString() || '7.5');
+        setShowCommissionModal(true);
+    };
+
+    const updateCommission = () => {
+        if (!selectedFight) return;
+
+        router.post(`/declarator/bet-controls/${selectedFight.id}/commission`, {
+            commission_percentage: parseFloat(commission),
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowCommissionModal(false);
                 setSelectedFight(null);
             },
         });
@@ -115,11 +154,16 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
 
                 {/* Fights Grid */}
                 <div className="grid gap-4 lg:gap-6">
-                    {declared_fights.map((fight) => (
-                        <div
-                            key={fight.id}
-                            className="bg-gray-800 border border-gray-700 rounded-lg p-8 hover:bg-gray-750 transition-colors"
-                        >
+                    {declared_fights.map((fight) => {
+                        const totalMeronWala = (fight.total_meron_bets || 0) + (fight.total_wala_bets || 0);
+                        const meronPercentage = totalMeronWala > 0 ? ((fight.total_meron_bets || 0) / totalMeronWala) * 100 : 50;
+                        const walaPercentage = totalMeronWala > 0 ? ((fight.total_wala_bets || 0) / totalMeronWala) * 100 : 50;
+
+                        return (
+                            <div
+                                key={fight.id}
+                                className="bg-gray-800 border border-gray-700 rounded-lg p-8 hover:bg-gray-750 transition-colors"
+                            >
                             <div className="flex items-start justify-between gap-6">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-4 mb-4">
@@ -133,6 +177,14 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
                                             <span className={`px-4 py-1 rounded-full text-sm font-medium ${getResultColor(fight.result)}`}>
                                                 Result: {fight.result.toUpperCase()}
                                             </span>
+                                        )}
+                                        {fight.commission_percentage !== undefined && (
+                                            <button
+                                                onClick={() => openCommissionModal(fight)}
+                                                className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded-full text-xs font-semibold text-white"
+                                            >
+                                                Commission: {fight.commission_percentage}%
+                                            </button>
                                         )}
                                     </div>
 
