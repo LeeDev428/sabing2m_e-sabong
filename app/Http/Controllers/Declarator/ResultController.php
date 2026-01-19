@@ -35,6 +35,11 @@ class ResultController extends Controller
                 $fight->total_bets = $fight->bets()->count();
                 $fight->total_payouts = $fight->bets()->where('status', 'won')->sum('actual_payout');
                 $fight->declared_at = $fight->result_declared_at ?? $fight->updated_at;
+                
+                // Add bet control data
+                $fight->total_meron_bets = $fight->bets()->where('side', 'meron')->sum('amount');
+                $fight->total_wala_bets = $fight->bets()->where('side', 'wala')->sum('amount');
+                
                 return $fight;
             })
             ->values();
