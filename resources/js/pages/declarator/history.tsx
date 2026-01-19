@@ -32,18 +32,18 @@ export default function History({ history }: Props) {
         <DeclaratorLayout>
             <Head title="History" />
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white">Activity History</h1>
-                <p className="text-gray-400 mt-2">Your recent actions and declarations</p>
+            <div className="mb-6 lg:mb-8">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Activity History</h1>
+                <p className="text-sm lg:text-base text-gray-400 mt-2">Your recent actions and declarations</p>
             </div>
 
             {history.length === 0 ? (
-                <div className="bg-gray-800 rounded-lg p-12 text-center">
-                    <p className="text-gray-400 text-lg">No activity recorded yet</p>
+                <div className="bg-gray-800 rounded-lg p-8 lg:p-12 text-center">
+                    <p className="text-gray-400 text-base lg:text-lg">No activity recorded yet</p>
                 </div>
             ) : (
-                <div className="bg-gray-800 rounded-lg overflow-hidden">
-                    <table className="w-full">
+                <div className="bg-gray-800 rounded-lg overflow-hidden overflow-x-auto">
+                    <table className="w-full min-w-[640px]">}
                         <thead className="bg-gray-700">
                             <tr>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
