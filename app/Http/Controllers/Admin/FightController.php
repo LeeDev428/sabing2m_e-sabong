@@ -312,15 +312,24 @@ class FightController extends Controller
         $allowedTransitions = [
             'standby' => ['open', 'cancelled'],
             'open' => ['lastcall', 'closed', 'cancelled'],
-            'lastcall' => ['closed', 'cancelled'],
-            'closed' => ['result_declared'],
+            'lastcall' => ['closed', 'cancelled', 'open'], // Allow reopening from lastcall
+            'closed' => ['result_declared', 'open'], // Allow reopening closed fights (admin override)
             'result_declared' => [],
-            'cancelled' => [],
+            'cancelled' => ['standby'], // Allow resetting cancelled fights
         ];
 
         if (!in_array($newStatus, $allowedTransitions[$fight->status] ?? [])) {
             return redirect()->back()
                 ->with('error', "Invalid status transition from {$fight->status} to {$newStatus}.");
+        }
+
+        // Warn if reopening a closed fight
+        if ($fight->status === 'closed' && in_array($newStatus, ['open', 'lastcall'])) {
+            \Log::warning("Admin reopened closed fight #{$fight->fight_number}", [
+                'user' => auth()->id(),
+                'from' => $fight->status,
+                'to' => $newStatus,
+            ]);
         }
 
         // Update status with appropriate timestamps
