@@ -11,7 +11,7 @@ export default function DeclaratorLayout({ children, title }: DeclaratorLayoutPr
             {/* Sidebar */}
             <div className="fixed left-0 top-0 bottom-0 w-64 bg-gray-800 border-r border-gray-700 p-6">
                 <div className="mb-8">
-                    <h2 className="text-xl font-bold">eSabong</h2>
+                    <h2 className="text-xl font-bold">Sabing2m</h2>
                     <p className="text-xs text-gray-400">Declarator Panel</p>
                 </div>
                 
