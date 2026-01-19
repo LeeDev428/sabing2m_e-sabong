@@ -67,7 +67,7 @@ export default function Login({
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <div className="flex items-center justify-between">
+                                        {/* <div className="flex items-center justify-between">
                                             <Label htmlFor="password" className="text-gray-300">Password</Label>
                                             {canResetPassword && (
                                                 <TextLink
@@ -78,7 +78,7 @@ export default function Login({
                                                     Forgot password?
                                                 </TextLink>
                                             )}
-                                        </div>
+                                        </div> */}
                                         <Input
                                             id="password"
                                             type="password"
@@ -92,7 +92,7 @@ export default function Login({
                                         <InputError message={errors.password} />
                                     </div>
 
-                                    <div className="flex items-center space-x-3">
+                                    {/* <div className="flex items-center space-x-3">
                                         <Checkbox
                                             id="remember"
                                             name="remember"
@@ -100,7 +100,7 @@ export default function Login({
                                             className="border-gray-600"
                                         />
                                         <Label htmlFor="remember" className="text-gray-300">Remember me</Label>
-                                    </div>
+                                    </div> */}
 
                                     <Button
                                         type="submit"
