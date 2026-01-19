@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import TellerLayout from '@/layouts/teller-layout';
 
 export default function PrinterSettings() {
     const [isConnected, setIsConnected] = useState(false);
@@ -107,29 +108,24 @@ export default function PrinterSettings() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-4">
+        <TellerLayout>
             <Head title="Printer Settings" />
 
-            {/* Header */}
-            <div className="mb-6">
-                <button
-                    onClick={() => router.visit('/teller/dashboard')}
-                    className="mb-4 px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm sm:text-base"
-                >
-                    ← Back to Dashboard
-                </button>
-                <h1 className="text-2xl sm:text-3xl font-bold">Printer Settings</h1>
-                <p className="text-sm sm:text-base text-gray-400 mt-2">Connect to PT-210 Bluetooth Printer</p>
+            <div className="p-4 max-w-2xl mx-auto">
+                {/* Header */}
+                <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 border border-gray-700">
+                <h1 className="text-2xl font-bold text-orange-500">Printer Settings</h1>
+                <p className="text-sm text-gray-400">Connect to PT-210 Bluetooth Printer</p>
             </div>
 
             {/* Status Card */}
-            <div className={`rounded-lg p-6 mb-6 ${isConnected ? 'bg-gradient-to-br from-green-600 to-green-800' : 'bg-gradient-to-br from-gray-700 to-gray-800'}`}>
+            <div className={`rounded-lg p-6 mb-4 border ${isConnected ? 'bg-green-900/30 border-green-500/30' : 'bg-red-900/30 border-red-500/30'}`}>
                 <div className="flex items-center gap-4">
                     <div className="text-5xl">
                         {isConnected ? '🖨️✅' : '🖨️❌'}
                     </div>
                     <div>
-                        <div className="text-xl font-bold mb-1">
+                        <div className="text-xl font-bold mb-1 text-white">
                             {isConnected ? 'Printer Connected' : 'Printer Not Connected'}
                         </div>
                         <div className="text-sm text-gray-300">
@@ -140,8 +136,8 @@ export default function PrinterSettings() {
             </div>
 
             {/* Connection Controls */}
-            <div className="bg-gray-800 rounded-lg p-4 sm:p-6 mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold mb-4">Connection</h2>
+            <div className="bg-[#1a1a1a] rounded-lg p-6 mb-4 border border-gray-700">
+                <h2 className="text-xl font-bold text-white mb-4">Connection</h2>
                 
                 <div className="mb-4">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -192,8 +188,8 @@ export default function PrinterSettings() {
             </div>
 
             {/* Receipt Preview */}
-            <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
-                <h2 className="text-xl sm:text-2xl font-bold mb-4">Receipt Preview</h2>
+            <div className="bg-[#1a1a1a] rounded-lg p-6 mb-4 border border-gray-700">
+                <h2 className="text-xl font-bold text-orange-500 mb-4">Receipt Preview</h2>
                 <div className="bg-white text-black p-6 rounded font-mono text-sm max-w-md">
                     <div className="text-center mb-3">
                         <div className="font-bold text-lg">Sabing2m Arena</div>
@@ -240,7 +236,7 @@ export default function PrinterSettings() {
             </div>
 
             {/* Important Notes */}
-            <div className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-6 mt-6">
+            <div className="bg-yellow-900/20 border border-yellow-600/50 rounded-lg p-6">
                 <h3 className="text-xl font-bold text-yellow-400 mb-3">⚠️ Important Notes</h3>
                 <ul className="space-y-2 text-sm text-gray-300">
                     <li>• Make sure Bluetooth is enabled on your device</li>
@@ -250,6 +246,7 @@ export default function PrinterSettings() {
                     <li>• This feature requires a browser with Web Bluetooth API support (Chrome/Edge recommended)</li>
                 </ul>
             </div>
-        </div>
+            </div>
+        </TellerLayout>
     );
 }
