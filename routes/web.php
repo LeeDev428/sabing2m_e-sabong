@@ -151,10 +151,14 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
             'draw_bets' => $tellerBets->where('side', 'draw')->count(),
         ];
             
+        // Calculate teller's total cash balance from all fight assignments
+        $tellerBalance = \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
+            ->sum('current_balance');
+        
         return Inertia::render('teller/dashboard', [
             'fights' => $fights,
             'summary' => $summary,
-            'tellerBalance' => auth()->user()->teller_balance,
+            'tellerBalance' => (float) $tellerBalance,
         ]);
     })->name('dashboard');
     
