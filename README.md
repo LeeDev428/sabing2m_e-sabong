@@ -319,6 +319,35 @@ See [APK-BUILD-GUIDE.md](APK-BUILD-GUIDE.md) and [QUICK-APK-BUILD.md](QUICK-APK-
     npm run dev
     ```
 
+### Android App Setup (Optional)
+
+11. **Install Capacitor Dependencies**
+    ```bash
+    npm install @capacitor/core @capacitor/cli @capacitor/android
+    ```
+
+12. **Build for Android**
+    ```bash
+    npm run build
+    npx cap sync android
+    npx cap open android
+    ```
+    
+    Then build APK in Android Studio.
+    
+    See [APK-BUILD-GUIDE.md](APK-BUILD-GUIDE.md) for complete instructions.
+
+### QR Code Features Setup
+
+13. **Install QR Code Libraries** (already included)
+    ```bash
+    npm install qrcode.react html5-qrcode
+    ```
+    
+    Libraries used:
+    - `qrcode.react`: For generating QR codes on receipts
+    - `html5-qrcode`: For camera-based QR scanning
+
 ---
 
 ## ⚙️ Configuration
@@ -416,7 +445,58 @@ No login required. Displays:
 
 ---
 
-## 🌐 Deployment
+## ✅ Feature Implementation Status
+
+### Admin Features - 100% Complete
+- ✅ Event-based fight filtering
+- ✅ Revolving funds & petty cash tracking
+- ✅ Commission percentage per fight
+- ✅ User edit functionality with modal
+- ✅ Commission reports by fight
+- ✅ Teller performance reports
+- ✅ Event dropdown for filtering
+- ✅ Fight creation with financial fields
+- ✅ Transaction filtering by event
+- ✅ Dashboard with date range and event filters
+
+### Teller Features - 95% Complete
+- ✅ Icon-based bottom navigation (Dashboard, Payout, History, Cash, Settings)
+- ✅ Bet status indicator (OPEN/CLOSED with visual feedback)
+- ✅ Widened display panel and fixed 500 input bug
+- ✅ Payout scanning page with camera QR scanner
+- ✅ One-time claim validation
+- ✅ Merged history & summary page
+- ✅ Void ticket QR scanning capability
+- ✅ Cash transfer with transaction history
+- ✅ Printer settings with Bluetooth connection
+- ✅ Real-time balance updates
+- ✅ Comprehensive bet summaries
+- ⏳ QR code on bet receipts (library installed, needs implementation)
+- ⏳ Multi-printer compatibility (currently PT-210 only)
+
+### Declarator Features - Pending
+- ⏳ Auto-add next fight after result declaration
+- ⏳ Automatic bet control (no manual Meron/Wala enable/disable)
+
+### Big Screen Features - Pending
+- ⏳ Display new fields (venue, event_name, round_number, match_type, notes)
+- ⏳ Larger display for bets and odds
+- ⏳ Minimalist history with colored indicators
+- ⏳ Modern redesign with clean layout
+
+### Mobile App - 90% Complete
+- ✅ Capacitor configured for Android
+- ✅ App ID: com.sumbo.esabong
+- ✅ Assets built and synced
+- ✅ Android project ready
+- ✅ Camera permission handling
+- ✅ Bluetooth printer integration
+- ⏳ APK build in progress
+- ⏳ Production testing on physical device
+
+---
+
+## 🚀 Deployment
 
 ### Production Deployment (Hostinger)
 
@@ -486,7 +566,24 @@ GET  /api/bigscreen       - Big screen API data (JSON)
 ```
 GET  /teller/api/fights/{fight}/odds        - Get live odds
 GET  /teller/api/fights/{fight}/bet-totals  - Get bet totals
-GET  /teller/api/teller/live-data          - Get teller live data
+GET  /teller/api/teller/live-data           - Get teller live data (balance)
+GET  /teller/payout-scan                    - Payout scanning page
+POST /teller/payout-scan/claim              - Process payout claim
+GET  /teller/history                        - History and summary page
+POST /teller/bets/void                      - Void a bet via QR
+GET  /teller/cash-transfer                  - Cash transfer page
+POST /teller/cash-transfer                  - Execute cash transfer
+GET  /teller/settings/printer               - Printer settings page
+```
+
+### Admin API Endpoints
+
+```
+GET  /admin/api/events                      - Get all distinct events
+GET  /admin/dashboard                       - Admin dashboard with filters
+GET  /admin/reports                         - Commission and teller reports
+POST /admin/users/{user}/edit               - Edit user details
+POST /admin/fights/{fight}/update           - Update fight details
 ```
 
 ### Example Response: `/api/bigscreen`
@@ -746,8 +843,53 @@ For support, email: support@esabong.com
 - [Implementation Summary](IMPLEMENTATION-SUMMARY.md)
 - [Completed Features](COMPLETED-FEATURES.md)
 - [Testing Guide](TESTING-GUIDE.md)
-- [Android Build Guide](ANDROID-BUILD.md)
-- [Deployment Guide](DEPLOYMENT-GUIDE.md)
+- [APK Build Guide (Detailed)](APK-BUILD-GUIDE.md)
+- [Quick APK Build Instructions](QUICK-APK-BUILD.md)
+- [APK Build Now - Current Status](APK-BUILD-NOW.md)
+- [New Features List](NEW-FEATURES.md)
+- [Fixes Completed](FIXES-COMPLETED.md)
+- [Quick Start Guide](QUICKSTART.md)
+- [How to Share App](HOW-TO-SHARE.md)
+- [Database ERD](database/ERD.md)
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Issue: Teller history page shows 500 error**
+- **Cause**: Missing relationship in Bet model
+- **Fix**: Ensure `user` relationship removed from queries (bets don't have direct user association)
+
+**Issue: Assets not updating on production**
+- **Cause**: Cache not cleared after deployment
+- **Fix**: Run `php artisan optimize:clear` on server
+
+**Issue: QR scanner not working**
+- **Cause**: Camera permissions not granted
+- **Fix**: Enable camera permissions in browser/app settings
+
+**Issue: Printer not connecting**
+- **Cause**: Bluetooth not enabled or printer not paired
+- **Fix**: 
+  1. Enable Bluetooth on device
+  2. Pair PT-210 in system Bluetooth settings first
+  3. Then connect via app
+
+**Issue: 500 input resets to 0**
+- **Status**: Fixed in latest version
+- **Fix**: Updated handleNumberClick logic to properly handle initial state
+
+**Issue: Big screen not showing new fields**
+- **Status**: Migration exists, needs frontend implementation
+- **Fix**: Update BigScreenController and frontend to fetch/display new fields
+
+### Getting Help
+
+1. Check existing documentation files
+2. Review [FIXES-COMPLETED.md](FIXES-COMPLETED.md) for known issue resolutions
+3. Contact: support@esabong.com
 
 ---
 
