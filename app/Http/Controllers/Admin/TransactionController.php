@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Bet;
 use App\Models\User;
+use App\Models\Fight;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,6 +14,13 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         $query = Bet::with(['fight', 'teller']);
+
+        // Filter by event
+        if ($request->filled('event')) {
+            $query->whereHas('fight', function($q) use ($request) {
+                $q->where('event_name', $request->event);
+            });
+        }
 
         // Filter by type (side)
         if ($request->filled('type')) {
@@ -56,6 +64,13 @@ class TransactionController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Get events for filter dropdown
+        $events = Fight::select('event_name')
+            ->whereNotNull('event_name')
+            ->distinct()
+            ->orderBy('event_name')
+            ->pluck('event_name');
+
         // Statistics
         $stats = [
             'total_bets' => Bet::count(),
@@ -67,8 +82,9 @@ class TransactionController extends Controller
         return Inertia::render('admin/transactions/index', [
             'transactions' => $transactions,
             'tellers' => $tellers,
+            'events' => $events,
             'stats' => $stats,
-            'filters' => $request->only(['type', 'status', 'date_from', 'date_to', 'teller_id', 'search']),
+            'filters' => $request->only(['event', 'type', 'status', 'date_from', 'date_to', 'teller_id', 'search']),
         ]);
     }
 }
