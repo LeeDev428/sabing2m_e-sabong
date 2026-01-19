@@ -172,12 +172,12 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
     return (
         <div className="min-h-screen bg-[#2d2d2d] text-white">
-            <Head title="Teller - eSabong" />
+            <Head title="Teller - Sabing2m" />
 
             {/* Header */}
             <div className="bg-[#1a1a1a] px-4 py-3 flex justify-between items-center border-b border-gray-700">
                 <div>
-                    <h1 className="text-xl font-bold text-orange-500">eSabong</h1>
+                    <h1 className="text-xl font-bold text-orange-500">Sabing2m</h1>
                     <div className="text-xs text-gray-400">BET SUMMARY</div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
