@@ -80,7 +80,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     >
                         🎮 Fights
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => {
                             router.visit('/admin/bet-controls');
                             setSidebarOpen(false);
@@ -89,7 +89,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         style={{ fontSize: '14px' }}
                     >
                         🎛️ Bet Controls
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => {
                             router.visit('/admin/settings');
