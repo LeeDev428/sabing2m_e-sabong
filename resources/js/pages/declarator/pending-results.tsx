@@ -45,9 +45,9 @@ export default function PendingResults({ fights }: Props) {
         <DeclaratorLayout>
             <Head title="Pending Results" />
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white">Pending Results</h1>
-                <p className="text-gray-400 mt-2">Declare fight results for closed fights</p>
+            <div className="mb-6 lg:mb-8">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Pending Results</h1>
+                <p className="text-sm lg:text-base text-gray-400 mt-2">Declare fight results for closed fights</p>
             </div>
 
             {fights.length === 0 ? (
@@ -55,13 +55,13 @@ export default function PendingResults({ fights }: Props) {
                     <p className="text-gray-400 text-lg">No pending results</p>
                 </div>
             ) : (
-                <div className="grid gap-6">
+                <div className="grid gap-4 lg:gap-6">
                     {fights.map((fight) => (
-                        <div key={fight.id} className="bg-gray-800 rounded-lg p-6">
+                        <div key={fight.id} className="bg-gray-800 rounded-lg p-4 lg:p-6">
                             <div className="flex items-start justify-between mb-4">
                                 <div>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <span className="text-2xl font-bold text-yellow-400">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                                        <span className="text-xl lg:text-2xl font-bold text-yellow-400">
                                             FIGHT #{fight.fight_number}
                                         </span>
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -76,29 +76,29 @@ export default function PendingResults({ fights }: Props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 mb-6">
-                                <div className="bg-red-600 rounded-lg p-4 text-center">
-                                    <p className="text-white text-sm font-medium mb-1">MERON</p>
-                                    <p className="text-white text-xl font-bold">{fight.meron_fighter}</p>
-                                    <p className="text-white text-lg mt-2">×{fight.meron_odds}</p>
+                            <div className="grid grid-cols-3 gap-2 lg:gap-4 mb-4 lg:mb-6">
+                                <div className="bg-red-600 rounded-lg p-3 lg:p-4 text-center">
+                                    <p className="text-white text-xs lg:text-sm font-medium mb-1">MERON</p>
+                                    <p className="text-white text-base lg:text-xl font-bold truncate">{fight.meron_fighter}</p>
+                                    <p className="text-white text-sm lg:text-lg mt-2">×{fight.meron_odds}</p>
                                 </div>
 
-                                <div className="bg-green-600 rounded-lg p-4 text-center">
-                                    <p className="text-white text-sm font-medium mb-1">DRAW</p>
-                                    <p className="text-white text-xl font-bold">—</p>
-                                    <p className="text-white text-lg mt-2">×{fight.draw_odds}</p>
+                                <div className="bg-green-600 rounded-lg p-3 lg:p-4 text-center">
+                                    <p className="text-white text-xs lg:text-sm font-medium mb-1">DRAW</p>
+                                    <p className="text-white text-base lg:text-xl font-bold">—</p>
+                                    <p className="text-white text-sm lg:text-lg mt-2">×{fight.draw_odds}</p>
                                 </div>
 
-                                <div className="bg-blue-600 rounded-lg p-4 text-center">
-                                    <p className="text-white text-sm font-medium mb-1">WALA</p>
-                                    <p className="text-white text-xl font-bold">{fight.wala_fighter}</p>
-                                    <p className="text-white text-lg mt-2">×{fight.wala_odds}</p>
+                                <div className="bg-blue-600 rounded-lg p-3 lg:p-4 text-center">
+                                    <p className="text-white text-xs lg:text-sm font-medium mb-1">WALA</p>
+                                    <p className="text-white text-base lg:text-xl font-bold truncate">{fight.wala_fighter}</p>
+                                    <p className="text-white text-sm lg:text-lg mt-2">×{fight.wala_odds}</p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => handleDeclare(fight)}
-                                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 rounded-lg transition-colors"
+                                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black text-sm lg:text-base font-bold py-2.5 lg:py-3 rounded-lg transition-colors"
                             >
                                 DECLARE RESULT
                             </button>
