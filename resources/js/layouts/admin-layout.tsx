@@ -14,7 +14,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             <div className="lg:hidden fixed top-0 left-0 right-0 bg-gray-800 border-b border-gray-700 z-50">
                 <div className="flex items-center justify-between p-4">
                     <div>
-                        <h2 className="text-lg font-bold">eSabong</h2>
+                        <h2 className="text-lg font-bold">Sabing2m</h2>
                         <p className="text-xs text-gray-400">Admin Panel</p>
                     </div>
                     <button
@@ -50,12 +50,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
                 <div className="p-6 hidden lg:block">
-                    <h2 className="text-xl font-bold">eSabong</h2>
+                    <h2 className="text-xl font-bold">Sabing2m</h2>
                     <p className="text-xs text-gray-400">Admin Panel</p>
                 </div>
                 
                 <div className="p-6 lg:hidden">
-                    <h2 className="text-xl font-bold">eSabong</h2>
+                    <h2 className="text-xl font-bold">Sabing2m</h2>
                     <p className="text-xs text-gray-400">Admin Panel</p>
                 </div>
                 
