@@ -68,7 +68,7 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
     return (
         <AdminLayout>
             <Head title="Teller Balances" />
-
+<br />
             <div className="mb-6">
                 <h1 className="text-3xl font-bold text-white">Teller Cash Management</h1>
                 <p className="text-gray-400 mt-2">
