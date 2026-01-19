@@ -15,6 +15,13 @@ class TransactionController extends Controller
             'remarks' => 'nullable|string|max:500',
         ]);
 
+        $teller = auth()->user();
+        
+        // Update teller balance
+        $teller->teller_balance += $validated['amount'];
+        $teller->save();
+
+        // Create transaction record
         Transaction::create([
             'teller_id' => auth()->id(),
             'type' => 'cash_in',
@@ -33,6 +40,19 @@ class TransactionController extends Controller
             'remarks' => 'nullable|string|max:500',
         ]);
 
+        $teller = auth()->user();
+
+        // Check if teller has sufficient balance
+        if ($teller->teller_balance < $validated['amount']) {
+            return redirect()->back()
+                ->with('error', 'Insufficient balance.');
+        }
+        
+        // Update teller balance
+        $teller->teller_balance -= $validated['amount'];
+        $teller->save();
+
+        // Create transaction record
         Transaction::create([
             'teller_id' => auth()->id(),
             'type' => 'cash_out',
