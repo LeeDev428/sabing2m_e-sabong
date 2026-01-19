@@ -75,19 +75,19 @@ export default function DeclaredFights({ fights }: Props) {
         <DeclaratorLayout>
             <Head title="Declared Fights" />
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-white">Declared Fights</h1>
-                <p className="text-gray-400 mt-2">View all fights you've declared</p>
+            <div className="mb-6 lg:mb-8">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Declared Fights</h1>
+                <p className="text-sm lg:text-base text-gray-400 mt-2">View all fights you've declared</p>
             </div>
 
             {fights.length === 0 ? (
-                <div className="bg-gray-800 rounded-lg p-12 text-center">
-                    <p className="text-gray-400 text-lg">No declared fights yet</p>
+                <div className="bg-gray-800 rounded-lg p-8 lg:p-12 text-center">
+                    <p className="text-gray-400 text-base lg:text-lg">No declared fights yet</p>
                 </div>
             ) : (
-                <div className="grid gap-6">
+                <div className="grid gap-4 lg:gap-6">
                     {fights.map((fight) => (
-                        <div key={fight.id} className="bg-gray-800 rounded-lg p-6">
+                        <div key={fight.id} className="bg-gray-800 rounded-lg p-4 lg:p-6">
                             <div className="flex items-start justify-between mb-4">
                                 <div>
                                     <div className="flex items-center gap-3 mb-2">
@@ -105,46 +105,46 @@ export default function DeclaredFights({ fights }: Props) {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 mb-6">
-                                <div className={`rounded-lg p-4 text-center ${
-                                    fight.result === 'meron' ? 'bg-red-600 ring-4 ring-red-400' : 'bg-gray-700'
+                            <div className="grid grid-cols-3 gap-2 lg:gap-4 mb-4 lg:mb-6">
+                                <div className={`rounded-lg p-3 lg:p-4 text-center ${
+                                    fight.result === 'meron' ? 'bg-red-600 ring-2 lg:ring-4 ring-red-400' : 'bg-gray-700'
                                 }`}>
-                                    <p className="text-white text-sm font-medium mb-1">MERON</p>
-                                    <p className="text-white text-xl font-bold">{fight.meron_fighter}</p>
-                                    <p className="text-white text-lg mt-2">×{fight.meron_odds}</p>
+                                    <p className="text-white text-xs lg:text-sm font-medium mb-1">MERON</p>
+                                    <p className="text-white text-base lg:text-xl font-bold truncate">{fight.meron_fighter}</p>
+                                    <p className="text-white text-sm lg:text-lg mt-2">×{fight.meron_odds}</p>
                                 </div>
 
-                                <div className={`rounded-lg p-4 text-center ${
-                                    fight.result === 'draw' ? 'bg-green-600 ring-4 ring-green-400' : 'bg-gray-700'
+                                <div className={`rounded-lg p-3 lg:p-4 text-center ${
+                                    fight.result === 'draw' ? 'bg-green-600 ring-2 lg:ring-4 ring-green-400' : 'bg-gray-700'
                                 }`}>
-                                    <p className="text-white text-sm font-medium mb-1">DRAW</p>
-                                    <p className="text-white text-xl font-bold">—</p>
-                                    <p className="text-white text-lg mt-2">×{fight.draw_odds}</p>
+                                    <p className="text-white text-xs lg:text-sm font-medium mb-1">DRAW</p>
+                                    <p className="text-white text-base lg:text-xl font-bold">—</p>
+                                    <p className="text-white text-sm lg:text-lg mt-2">×{fight.draw_odds}</p>
                                 </div>
 
-                                <div className={`rounded-lg p-4 text-center ${
-                                    fight.result === 'wala' ? 'bg-blue-600 ring-4 ring-blue-400' : 'bg-gray-700'
+                                <div className={`rounded-lg p-3 lg:p-4 text-center ${
+                                    fight.result === 'wala' ? 'bg-blue-600 ring-2 lg:ring-4 ring-blue-400' : 'bg-gray-700'
                                 }`}>
-                                    <p className="text-white text-sm font-medium mb-1">WALA</p>
-                                    <p className="text-white text-xl font-bold">{fight.wala_fighter}</p>
-                                    <p className="text-white text-lg mt-2">×{fight.wala_odds}</p>
+                                    <p className="text-white text-xs lg:text-sm font-medium mb-1">WALA</p>
+                                    <p className="text-white text-base lg:text-xl font-bold truncate">{fight.wala_fighter}</p>
+                                    <p className="text-white text-sm lg:text-lg mt-2">×{fight.wala_odds}</p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 bg-gray-700 rounded-lg p-4 mb-4">
+                            <div className="grid grid-cols-2 gap-3 lg:gap-4 bg-gray-700 rounded-lg p-3 lg:p-4 mb-4">
                                 <div>
-                                    <p className="text-gray-400 text-sm">Total Bets</p>
-                                    <p className="text-white text-2xl font-bold">₱{fight.total_bets.toLocaleString()}</p>
+                                    <p className="text-gray-400 text-xs lg:text-sm">Total Bets</p>
+                                    <p className="text-white text-lg lg:text-2xl font-bold">₱{fight.total_bets.toLocaleString()}</p>
                                 </div>
                                 <div>
-                                    <p className="text-gray-400 text-sm">Total Payout</p>
-                                    <p className="text-green-400 text-2xl font-bold">₱{fight.total_payout.toLocaleString()}</p>
+                                    <p className="text-gray-400 text-xs lg:text-sm">Total Payout</p>
+                                    <p className="text-green-400 text-lg lg:text-2xl font-bold">₱{fight.total_payout.toLocaleString()}</p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => openChangeModal(fight)}
-                                className="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg font-medium"
+                                className="w-full px-4 py-2.5 lg:py-3 text-sm lg:text-base bg-yellow-600 hover:bg-yellow-500 rounded-lg font-medium"
                             >
                                 Change Result
                             </button>
