@@ -247,29 +247,29 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
             <Head title="Teller - Sabing2m" />
 
             {/* Header with Balance */}
-            <div className="bg-[#1a1a1a] px-4 py-4 border-b border-gray-700">
+            <div className="bg-[#1a1a1a] px-4 py-2 border-b border-gray-700">
                 <div className="flex justify-between items-center max-w-md mx-auto">
                     <div>
-                        <h1 className="text-xl font-bold text-orange-500">Dashboard</h1>
+                        <h1 className="text-lg font-bold text-orange-500">Dashboard</h1>
                         <div className="text-xs text-gray-400">BET TERMINAL</div>
                     </div>
                     <div className="text-right">
                         <div className="text-xs text-gray-400">Cash Balance</div>
-                        <div className="text-xl font-bold text-green-400 transition-all duration-300">₱{liveBalance.toLocaleString()}</div>
+                        <div className="text-lg font-bold text-green-400 transition-all duration-300">₱{liveBalance.toLocaleString()}</div>
                     </div>
                 </div>
             </div>
 
             {/* Bet Status Indicator */}
             {selectedFight && (
-                <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border-b border-purple-500/30 py-2">
+                <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border-b border-purple-500/30 py-1">
                     <div className="max-w-md mx-auto px-4 flex justify-between items-center">
-                        <div className="text-sm">
+                        <div className="text-xs">
                             <span className="text-gray-300">Fight #{selectedFight.fight_number}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className={`w-2 h-2 rounded-full ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></span>
-                            <span className={`text-sm font-bold ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'text-green-400' : 'text-red-400'}`}>
+                            <span className={`text-xs font-bold ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'text-green-400' : 'text-red-400'}`}>
                                 {(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'BETTING OPEN' : 'BETTING CLOSED'}
                             </span>
                         </div>
@@ -279,176 +279,154 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
             {/* Main Betting Interface - Always show UI */}
             {selectedFight && (
-                <div className="p-4 max-w-md mx-auto"
+                <div className="p-3 max-w-md mx-auto"
                     style={{ opacity: (selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 1 : 0.6 }}
                 >
-                    {/* Live Bet Totals */}
+                    {/* Live Bet Totals - Compact */}
                     {liveBetTotals && (
-                        <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl p-4 mb-4 border border-purple-500/30">
-                            <div className="text-center mb-3">
-                                <div className="text-sm text-purple-300 font-bold">LIVE BET TOTALS</div>
-                                <div className="text-xs text-gray-400">Updates every 2 seconds</div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-2 text-center">
-                                <div className="bg-red-900/50 rounded-lg p-2">
+                        <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-lg p-2 mb-2 border border-purple-500/30">
+                            <div className="grid grid-cols-4 gap-1 text-center">
+                                <div className="bg-red-900/50 rounded p-1">
                                     <div className="text-xs text-red-300">MERON</div>
-                                    <div className="text-lg font-bold text-white transition-all duration-300">₱{liveBetTotals.meron_total.toLocaleString()}</div>
+                                    <div className="text-sm font-bold text-white">₱{(liveBetTotals.meron_total / 1000).toFixed(1)}k</div>
                                 </div>
-                                <div className="bg-green-900/50 rounded-lg p-2">
+                                <div className="bg-green-900/50 rounded p-1">
                                     <div className="text-xs text-green-300">DRAW</div>
-                                    <div className="text-lg font-bold text-white transition-all duration-300">₱{liveBetTotals.draw_total.toLocaleString()}</div>
+                                    <div className="text-sm font-bold text-white">₱{(liveBetTotals.draw_total / 1000).toFixed(1)}k</div>
                                 </div>
-                                <div className="bg-blue-900/50 rounded-lg p-2">
+                                <div className="bg-blue-900/50 rounded p-1">
                                     <div className="text-xs text-blue-300">WALA</div>
-                                    <div className="text-lg font-bold text-white transition-all duration-300">₱{liveBetTotals.wala_total.toLocaleString()}</div>
+                                    <div className="text-sm font-bold text-white">₱{(liveBetTotals.wala_total / 1000).toFixed(1)}k</div>
                                 </div>
-                            </div>
-                            <div className="mt-3 text-center">
-                                <div className="text-xs text-gray-400">TOTAL POT</div>
-                                <div className="text-2xl font-bold text-yellow-400 transition-all duration-300">₱{liveBetTotals.total_pot.toLocaleString()}</div>
+                                <div className="bg-yellow-900/50 rounded p-1">
+                                    <div className="text-xs text-yellow-300">POT</div>
+                                    <div className="text-sm font-bold text-white">₱{(liveBetTotals.total_pot / 1000).toFixed(1)}k</div>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Fighter Selection Buttons */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
+                    {/* Fighter Selection Buttons - Compact */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
                         {/* MERON Button */}
                         <button
                             onClick={() => currentFightData?.meron_betting_open && setBetSide('meron')}
                             disabled={!currentFightData?.meron_betting_open}
-                            className={`relative rounded-xl overflow-hidden transition-all ${
-                                betSide === 'meron' ? 'ring-4 ring-red-400' : ''
+                            className={`relative rounded-lg overflow-hidden transition-all ${
+                                betSide === 'meron' ? 'ring-2 ring-red-400' : ''
                             } ${!currentFightData?.meron_betting_open ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <div className="bg-red-600 pt-4 pb-3 px-3">
-                                <div className="text-white text-sm font-bold mb-1">MERON</div>
-                                <div className="text-xs text-red-200 mb-1">ODDS</div>
-                                <div className="text-white text-3xl font-bold">{currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '1.57'}</div>
-                                <div className="text-white text-xs mt-1 truncate">{currentFightData?.meron_fighter || 'Meron'}</div>
+                            <div className="bg-red-600 pt-2 pb-1 px-2">
+                                <div className="text-white text-xs font-bold mb-0.5">MERON</div>
+                                <div className="text-white text-2xl font-bold">{currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '1.57'}</div>
+                                <div className="text-white text-xs truncate">{currentFightData?.meron_fighter || 'Meron'}</div>
                             </div>
-                            <div className="bg-red-700 py-1 text-xs text-white">
-                                {!currentFightData?.meron_betting_open ? '🔒 CLOSED' : '0/20,000'}
+                            <div className="bg-red-700 py-0.5 text-xs text-white">
+                                {!currentFightData?.meron_betting_open ? '🔒 CLOSED' : 'OPEN'}
                             </div>
                         </button>
 
                         {/* DRAW Button */}
                         <button
                             onClick={() => setBetSide('draw')}
-                            className={`relative rounded-xl overflow-hidden transition-all ${
-                                betSide === 'draw' ? 'ring-4 ring-green-400' : ''
+                            className={`relative rounded-lg overflow-hidden transition-all ${
+                                betSide === 'draw' ? 'ring-2 ring-green-400' : ''
                             }`}
                         >
-                            <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
-                                <div className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full" style={{ clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)' }}>
-                                    
-                                </div>
+                            <div className="bg-green-600 pt-2 pb-1 px-2">
+                                <div className="text-white text-xs font-bold mb-0.5">DRAW</div>
+                                <div className="text-white text-2xl font-bold">{currentFightData?.draw_odds ? Number(currentFightData.draw_odds).toFixed(2) : '9.00'}</div>
+                                <div className="text-white text-xs">Equal</div>
                             </div>
-                            <div className="bg-green-600 pt-6 pb-3 px-3">
-                                <div className="text-white text-sm font-bold mb-1">DRAW</div>
-                                <div className="text-xs text-green-200 mb-1">ODDS</div>
-                                <div className="text-white text-3xl font-bold">{currentFightData?.draw_odds ? Number(currentFightData.draw_odds).toFixed(2) : '9.00'}</div>
-                                <div className="text-white text-xs mt-1">Equal</div>
-                            </div>
-                            <div className="bg-green-700 py-1 text-xs text-white">0/2,000</div>
+                            <div className="bg-green-700 py-0.5 text-xs text-white">OPEN</div>
                         </button>
 
                         {/* WALA Button */}
                         <button
                             onClick={() => currentFightData?.wala_betting_open && setBetSide('wala')}
                             disabled={!currentFightData?.wala_betting_open}
-                            className={`relative rounded-xl overflow-hidden transition-all ${
-                                betSide === 'wala' ? 'ring-4 ring-blue-400' : ''
+                            className={`relative rounded-lg overflow-hidden transition-all ${
+                                betSide === 'wala' ? 'ring-2 ring-blue-400' : ''
                             } ${!currentFightData?.wala_betting_open ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <div className="bg-blue-600 pt-4 pb-3 px-3">
-                                <div className="text-white text-sm font-bold mb-1">WALA</div>
-                                <div className="text-xs text-blue-200 mb-1">ODDS</div>
-                                <div className="text-white text-3xl font-bold">{currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '2.00'}</div>
-                                <div className="text-white text-xs mt-1 truncate">{currentFightData?.wala_fighter || 'Wala'}</div>
+                            <div className="bg-blue-600 pt-2 pb-1 px-2">
+                                <div className="text-white text-xs font-bold mb-0.5">WALA</div>
+                                <div className="text-white text-2xl font-bold">{currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '2.00'}</div>
+                                <div className="text-white text-xs truncate">{currentFightData?.wala_fighter || 'Wala'}</div>
                             </div>
-                            <div className="bg-blue-700 py-1 text-xs text-white">
-                                {!currentFightData?.wala_betting_open ? '🔒 CLOSED' : '0/20,000'}
+                            <div className="bg-blue-700 py-0.5 text-xs text-white">
+                                {!currentFightData?.wala_betting_open ? '🔒 CLOSED' : 'OPEN'}
                             </div>
                         </button>
                     </div>
 
-                    {/* Min/Total Info */}
-                    <div className="flex justify-between items-center mb-3 text-xs text-gray-400">
-                        <div>Min: 20 &nbsp; Min: 5,000</div>
-                        <div className="bg-[#1a1a1a] px-3 py-1 rounded flex items-center gap-2">
-                            <span className="text-white">Total</span>
-                            <span className="text-white">0</span>
-                        </div>
-                    </div>
-
-                    {/* Amount Input with +/- buttons - WIDER DISPLAY */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
+                    {/* Amount Input with +/- buttons - Compact */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
                         <button
                             onClick={handleDecrement}
                             disabled={selectedFight.status !== 'open' && selectedFight.status !== 'lastcall'}
-                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-3xl rounded-lg py-5 flex items-center justify-center"
+                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-2xl rounded-lg py-3 flex items-center justify-center"
                         >
                             −
                         </button>
-                        <div className="bg-white text-black rounded-lg py-5 flex items-center justify-center">
-                            <div className="text-4xl font-bold tracking-wider">{amount}</div>
+                        <div className="bg-white text-black rounded-lg py-3 flex items-center justify-center">
+                            <div className="text-3xl font-bold tracking-wider">{amount}</div>
                         </div>
                         <button
                             onClick={handleIncrement}
                             disabled={selectedFight.status !== 'open' && selectedFight.status !== 'lastcall'}
-                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-3xl rounded-lg py-5 flex items-center justify-center"
+                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-2xl rounded-lg py-3 flex items-center justify-center"
                         >
                             +
                         </button>
                     </div>
 
-                    {/* Number Pad */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
+                    {/* Number Pad - Compact */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
                         {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
                             <button
                                 key={num}
                                 onClick={() => handleNumberClick(num.toString())}
-                                className="bg-white hover:bg-gray-200 text-black rounded-lg py-5 text-2xl font-bold"
+                                className="bg-white hover:bg-gray-200 text-black rounded-lg py-3 text-xl font-bold"
                             >
                                 {num}
                             </button>
                         ))}
-                        <button className="bg-white text-black rounded-lg py-5 text-2xl font-bold opacity-50 cursor-default">
+                        <button className="bg-white text-black rounded-lg py-3 text-xl font-bold opacity-50 cursor-default">
                             .
                         </button>
                         <button
                             onClick={() => handleNumberClick('0')}
-                            className="bg-white hover:bg-gray-200 text-black rounded-lg py-5 text-2xl font-bold"
+                            className="bg-white hover:bg-gray-200 text-black rounded-lg py-3 text-xl font-bold"
                         >
                             0
                         </button>
                         <button
                             onClick={handleClear}
-                            className="bg-white hover:bg-gray-200 text-black rounded-lg py-5 text-lg font-bold"
+                            className="bg-white hover:bg-gray-200 text-black rounded-lg py-3 text-sm font-bold"
                         >
-                            CLEAR
+                            CLR
                         </button>
                     </div>
 
-                    {/* Quick Amount Buttons */}
-                    <div className="grid grid-cols-5 gap-2 mb-3">
+                    {/* Quick Amount Buttons - Compact */}
+                    <div className="grid grid-cols-5 gap-1 mb-2">
                         {[50, 100, 200, 500, 1000].map((quickAmount) => (
                             <button
                                 key={quickAmount}
                                 onClick={() => handleQuickAmount(quickAmount)}
-                                className="bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white rounded-lg py-2.5 text-xs font-semibold border border-gray-600 flex items-center justify-center gap-1"
+                                className="bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white rounded py-2 text-xs font-semibold border border-gray-600"
                             >
-                                <span>💵</span>
-                                <span>{quickAmount}</span>
+                                {quickAmount}
                             </button>
                         ))}
                     </div>
 
-                    {/* Submit Button - Disabled when betting closed */}
+                    {/* Submit Button - Compact */}
                     <button
                         onClick={handleSubmit}
                         disabled={!betSide || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')}
-                        className={`w-full py-5 rounded-lg text-xl font-bold mb-4 transition-all ${
+                        className={`w-full py-3 rounded-lg text-lg font-bold mb-2 transition-all ${
                             betSide && (selectedFight.status === 'open' || selectedFight.status === 'lastcall')
                                 ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg'
                                 : 'bg-gray-600 cursor-not-allowed text-gray-400'
@@ -456,32 +434,31 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     >
                         {(selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')
                             ? 'BETTING CLOSED'
-                            : betSide ? 'SUBMIT BET' : 'SELECT SIDE TO BET'
+                            : betSide ? 'SUBMIT BET' : 'SELECT SIDE'
                         }
                     </button>
 
-                    {/* Action Buttons */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* Action Buttons - Compact */}
+                    <div className="grid grid-cols-3 gap-2">
                         <button
                             onClick={() => setShowCashIn(true)}
-                            className="bg-blue-600 hover:bg-blue-700 py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            className="bg-blue-600 hover:bg-blue-700 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-1"
                         >
                             <span>⬇</span> CASH IN
                         </button>
                         <button
                             onClick={() => setShowCashOut(true)}
-                            className="bg-red-600 hover:bg-red-700 py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            className="bg-red-600 hover:bg-red-700 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-1"
                         >
                             <span>⬆</span> CASH OUT
                         </button>
+                        <button
+                            onClick={() => setShowSummary(true)}
+                            className="bg-[#2a3544] hover:bg-[#3a4554] py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-1"
+                        >
+                            <span>📊</span> SUMMARY
+                        </button>
                     </div>
-
-                    <button
-                        onClick={() => setShowSummary(true)}
-                        className="w-full bg-[#2a3544] hover:bg-[#3a4554] py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
-                    >
-                        <span>📊</span> VIEW SUMMARY
-                    </button>
                 </div>
             )}
 
