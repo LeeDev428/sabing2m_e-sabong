@@ -98,6 +98,92 @@ class BigScreenController extends Controller
 
             return response()->json([
                 'fight' => null,
+            ]);
+        }
+
+        // Active fight - calculate totals
+        $meronTotal = Bet::where('fight_id', $fight->id)
+            ->where('side', 'meron')
+            ->where('status', 'active')
+            ->sum('amount');
+
+        $walaTotal = Bet::where('fight_id', $fight->id)
+            ->where('side', 'wala')
+            ->where('status', 'active')
+            ->sum('amount');
+
+        $drawTotal = Bet::where('fight_id', $fight->id)
+            ->where('side', 'draw')
+            ->where('status', 'active')
+            ->sum('amount');
+
+        $totalPot = $meronTotal + $walaTotal + $drawTotal;
+        $commission = $totalPot * ($fight->commission_percentage / 100);
+        $netPot = $totalPot - $commission;
+
+        $meronCount = Bet::where('fight_id', $fight->id)
+            ->where('side', 'meron')
+            ->where('status', 'active')
+            ->count();
+
+        $walaCount = Bet::where('fight_id', $fight->id)
+            ->where('side', 'wala')
+            ->where('status', 'active')
+            ->count();
+
+        $drawCount = Bet::where('fight_id', $fight->id)
+            ->where('side', 'draw')
+            ->where('status', 'active')
+            ->count();
+
+        return response()->json([
+            'fight' => [
+                'id' => $fight->id,
+                'fight_number' => $fight->fight_number,
+                'meron_fighter' => $fight->meron_fighter,
+                'wala_fighter' => $fight->wala_fighter,
+                'status' => $fight->status,
+                'result' => $fight->result,
+                'meron_odds' => $fight->meron_odds,
+                'wala_odds' => $fight->wala_odds,
+                'draw_odds' => $fight->draw_odds,
+                'meron_total' => (float) $meronTotal,
+                'wala_total' => (float) $walaTotal,
+                'draw_total' => (float) $drawTotal,
+                'total_pot' => (float) $totalPot,
+                'commission' => (float) $commission,
+                'net_pot' => (float) $netPot,
+                'meron_count' => $meronCount,
+                'wala_count' => $walaCount,
+                'draw_count' => $drawCount,
+                'meron_betting_open' => $fight->meron_betting_open,
+                'wala_betting_open' => $fight->wala_betting_open,
+                'notes' => $fight->notes,
+                'venue' => $fight->venue,
+                'event_name' => $fight->event_name,
+                'round_number' => $fight->round_number,
+                'match_type' => $fight->match_type,
+                'special_conditions' => $fight->special_conditions,
+                'commission_percentage' => $fight->commission_percentage,
+                'result_declared_at' => $fight->result_declared_at?->toISOString(),
+            ],
+        ]);
+    }
+
+    public function history()
+    {
+        // Get last 10 declared fights for history display
+        $history = Fight::where('status', 'result_declared')
+            ->whereNotNull('result')
+            ->orderBy('result_declared_at', 'desc')
+            ->limit(10)
+            ->get(['fight_number', 'result']);
+
+        return response()->json([
+            'history' => $history,
+        ]);
+    }
+}
                 'message' => 'No active fight',
             ]);
         }
