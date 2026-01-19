@@ -10,7 +10,7 @@ interface Props {
 interface Teller {
     id: number;
     name: string;
-    username: string;
+    email: string;
 }
 
 interface TellerAssignment {
@@ -255,7 +255,7 @@ export default function CreateFight({ nextFightNumber }: Props) {
                                                     <option value="">Select Teller</option>
                                                     {tellers.map(teller => (
                                                         <option key={teller.id} value={teller.id}>
-                                                            {teller.name} (@{teller.username})
+                                                            {teller.name} ({teller.email})
                                                         </option>
                                                     ))}
                                                 </select>

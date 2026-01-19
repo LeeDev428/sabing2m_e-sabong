@@ -11,7 +11,7 @@ class TellerController extends Controller
     public function getTellers()
     {
         $tellers = User::where('role', 'teller')
-            ->select('id', 'name', 'username')
+            ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
 
