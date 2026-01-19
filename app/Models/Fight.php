@@ -113,14 +113,47 @@ class Fight extends Model
             ->sum('amount');
     }
 
+    public function getTotalDrawBets(): float
+    {
+        return $this->bets()
+            ->where('side', 'draw')
+            ->where('status', '!=', 'cancelled')
+            ->sum('amount');
+    }
+
     public function calculateAutoOdds(): void
     {
         $meronTotal = $this->getTotalMeronBets();
         $walaTotal = $this->getTotalWalaBets();
+        $drawTotal = $this->getTotalDrawBets();
 
-        if ($meronTotal > 0 && $walaTotal > 0) {
-            $this->meron_odds = round($walaTotal / $meronTotal, 2);
-            $this->wala_odds = round($meronTotal / $walaTotal, 2);
+        // Calculate Total Pot
+        $totalPot = $meronTotal + $walaTotal + $drawTotal;
+        
+        // Only calculate if there are any bets
+        if ($totalPot > 0) {
+            // Calculate Commission (default 7.5%)
+            $commissionRate = $this->commission_percentage ?? 7.5;
+            $commission = $totalPot * ($commissionRate / 100);
+            
+            // Calculate Net Pot (after commission)
+            $netPot = $totalPot - $commission;
+            
+            // Calculate odds: Net Pot / Side Total
+            // If a side has no bets, set odds to default 1.85
+            // If bets are equal, both odds will be 1.85 (assuming 7.5% commission)
+            $this->meron_odds = $meronTotal > 0 ? round($netPot / $meronTotal, 2) : 1.85;
+            $this->wala_odds = $walaTotal > 0 ? round($netPot / $walaTotal, 2) : 1.85;
+            $this->draw_odds = $drawTotal > 0 ? round($netPot / $drawTotal, 2) : 9.00;
+            
+            // Save the changes
+            $this->save();
+        } else {
+            // No bets yet, set default odds
+            $this->meron_odds = 1.85;
+            $this->wala_odds = 1.85;
+            $this->draw_odds = 9.00;
+            $this->save();
         }
     }
 }
