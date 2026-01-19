@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import TellerLayout from '@/layouts/teller-layout';
 
 interface Teller {
     id: number;
@@ -51,32 +52,29 @@ export default function CashTransfer({ tellers, transfers, currentBalance }: Pro
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white p-4">
+        <TellerLayout>
             <Head title="Cash Transfer" />
 
-            {/* Header */}
-            <div className="mb-6">
-                <button
-                    onClick={() => router.visit('/teller/dashboard')}
-                    className="mb-4 px-3 sm:px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm sm:text-base"
-                >
-                    ← Back to Dashboard
-                </button>
-                <h1 className="text-2xl sm:text-3xl font-bold">Cash Transfer</h1>
-                <p className="text-sm sm:text-base text-gray-400 mt-2">Transfer cash to other tellers</p>
+            <div className="p-4 max-w-2xl mx-auto">
+                {/* Header */}
+                <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 border border-gray-700">
+                <h1 className="text-2xl font-bold text-orange-500">Cash Transfer</h1>
+                <p className="text-sm text-gray-400">Transfer cash to other tellers</p>
             </div>
 
             {/* Current Balance Card */}
-            <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-6 mb-6">
-                <div className="text-green-200 text-sm mb-2">Your Current Balance</div>
-                <div className="text-5xl font-bold text-white">
-                    ₱{currentBalance.toLocaleString()}
+            <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 rounded-lg p-6 mb-4 border border-green-500/30">
+                <div className="text-center">
+                    <div className="text-sm text-green-300 mb-2">Your Current Balance</div>
+                    <div className="text-5xl font-bold text-white">
+                        ₱{currentBalance.toLocaleString()}
+                    </div>
                 </div>
             </div>
 
             {/* Transfer Form */}
-            <div className="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 className="text-2xl font-bold mb-4">Transfer Cash</h2>
+            <div className="bg-[#1a1a1a] rounded-lg p-6 mb-4 border border-gray-700">
+                <h2 className="text-xl font-bold text-white mb-4">Transfer Cash</h2>
                 <form onSubmit={handleTransfer} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-2 text-gray-300">
@@ -142,14 +140,15 @@ export default function CashTransfer({ tellers, transfers, currentBalance }: Pro
             </div>
 
             {/* Transfer History */}
-            <div className="bg-gray-800 rounded-lg overflow-hidden">
-                <div className="p-4 bg-gray-700 border-b border-gray-600">
-                    <h2 className="text-xl font-bold">Your Transfer History</h2>
+            <div className="bg-[#1a1a1a] rounded-lg overflow-hidden border border-gray-700">
+                <div className="p-4 border-b border-gray-700">
+                    <h2 className="text-xl font-bold text-orange-500">Your Transfer History</h2>
                 </div>
                 <div className="divide-y divide-gray-700">
                     {transfers.length === 0 ? (
-                        <div className="p-8 text-center text-gray-400">
-                            No transfers yet
+                        <div className="p-8 text-center">
+                            <div className="text-6xl mb-4">💸</div>
+                            <p className="text-gray-400">No transfers yet</p>
                         </div>
                     ) : (
                         transfers.map((transfer) => {
@@ -157,7 +156,7 @@ export default function CashTransfer({ tellers, transfers, currentBalance }: Pro
                             const isSent = transfer.from_teller.id === currentTellerId;
                             
                             return (
-                                <div key={transfer.id} className="p-4 hover:bg-gray-700/50">
+                                <div key={transfer.id} className="p-4 hover:bg-gray-800/50 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <div className="flex items-center gap-2">
@@ -186,9 +185,10 @@ export default function CashTransfer({ tellers, transfers, currentBalance }: Pro
                                 </div>
                             );
                         })
-                    )}
+                    )}  
                 </div>
             </div>
         </div>
+        </TellerLayout>
     );
 }
