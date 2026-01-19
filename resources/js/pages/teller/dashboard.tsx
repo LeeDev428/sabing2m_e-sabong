@@ -1,8 +1,9 @@
 import { Head, router } from '@inertiajs/react';
 import { Fight } from '@/types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import TellerLayout from '@/layouts/teller-layout';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface TellerDashboardProps {
     fights?: Fight[];
@@ -34,6 +35,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
         draw_total: number;
         total_pot: number;
     } | null>(null);
+    const [showTicketModal, setShowTicketModal] = useState(false);
+    const [ticketData, setTicketData] = useState<any>(null);
+    const ticketRef = useRef<HTMLDivElement>(null);
 
     // Real-time balance and bet totals polling
     useEffect(() => {
@@ -136,15 +140,40 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     };
 
     const handleCashIn = () => {
-        console.log('Cash in:', cashAmount);
-        setCashAmount('0');
-        setShowCashIn(false);
+        if (!cashAmount || cashAmount === '0') {
+            alert('Please enter an amount');
+            return;
+        }
+
+        router.post('/teller/transactions/cash-in', {
+            amount: parseFloat(cashAmount),
+            remarks: 'Cash in from betting terminal',
+        }, {
+            onSuccess: () => {
+                setCashAmount('0');
+                setShowCashIn(false);
+            },
+        });
     };
 
     const handleCashOut = () => {
-        console.log('Cash out:', cashAmount);
-        setCashAmount('0');
-        setShowCashOut(false);
+        if (!cashAmount || cashAmount === '0') {
+            alert('Please enter an amount');
+            return;
+        }
+
+        router.post('/teller/transactions/cash-out', {
+            amount: parseFloat(cashAmount),
+            remarks: 'Cash out from betting terminal',
+        }, {
+            onSuccess: () => {
+                setCashAmount('0');
+                setShowCashOut(false);
+            },
+            onError: (errors) => {
+                alert(errors.message || 'Insufficient balance');
+            },
+        });
     };
 
     const handleSubmit = () => {
@@ -152,12 +181,53 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
         router.post('/teller/bets', {
             fight_id: selectedFight.id,
-            side: betSide,
-            amount: parseFloat(amount),
-        }, {
-            onSuccess: () => {
+            side: betSidpage) => {
+                // Get ticket data from session
+                const ticket = (page.props as any).ticket;
+                if (ticket) {
+                    setTicketData({
+                        ticket_id: ticket.ticket_id,
+                        fight_number: selectedFight.fight_number,
+                        side: betSide,
+                        amount: parseFloat(amount),
+                        odds: currentFightData?.meron_odds || currentFightData?.wala_odds || currentFightData?.draw_odds,
+                        potential_payout: ticket.potential_payout,
+                        created_at: new Date().toLocaleString(),
+                        meron_fighter: selectedFight.meron_fighter,
+                        wala_fighter: selectedFight.wala_fighter,
+                    });
+                    setShowTicketModal(true);
+                }
                 setAmount('50');
                 setBetSide(null);
+            },
+            preserveScroll: true,
+        });
+    };
+
+    const handlePrintTicket = () => {
+        if (ticketRef.current) {
+            const printWindow = window.open('', '', 'width=300,height=600');
+            if (printWindow) {
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Print Ticket</title>
+                        <style>
+                            body { font-family: monospace; padding: 10px; }
+                            .ticket { max-width: 250px; margin: 0 auto; }
+                            .qr-code { text-align: center; margin: 15px 0; }
+                        </style>
+                    </head>
+                    <body>${ticketRef.current.innerHTML}</body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }
+        }     setBetSide(null);
             },
             preserveScroll: true,
         });
@@ -635,6 +705,97 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 className="bg-red-600 hover:bg-red-700 py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
                             >
                                 <span>⬆</span> CASH OUT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Ticket Modal with QR Code */}
+            {showTicketModal && ticketData && (
+                <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white text-black rounded-lg w-full max-w-sm">
+                        {/* Ticket Content for Printing */}
+                        <div ref={ticketRef} className="ticket p-6">
+                            {/* Header */}
+                            <div className="text-center border-b-2 border-dashed border-gray-400 pb-3 mb-3">
+                                <h1 className="text-2xl font-bold">SABING2M</h1>
+                                <p className="text-sm">E-Sabong Betting System</p>
+                                <p className="text-xs text-gray-600">{ticketData.created_at}</p>
+                            </div>
+
+                            {/* QR Code */}
+                            <div className="qr-code bg-white p-4 rounded-lg flex justify-center">
+                                <QRCodeSVG 
+                                    value={ticketData.ticket_id}
+                                    size={180}
+                                    level="H"
+                                    includeMargin={true}
+                                />
+                            </div>
+
+                            {/* Ticket Details */}
+                            <div className="space-y-2 text-sm mt-4">
+                                <div className="flex justify-between border-b border-gray-300 pb-1">
+                                    <span className="font-semibold">Ticket ID:</span>
+                                    <span className="text-xs font-mono">{ticketData.ticket_id}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-gray-300 pb-1">
+                                    <span className="font-semibold">Fight #:</span>
+                                    <span>{ticketData.fight_number}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-gray-300 pb-1">
+                                    <span className="font-semibold">Fighters:</span>
+                                    <span className="text-xs text-right">
+                                        {ticketData.meron_fighter} vs {ticketData.wala_fighter}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between border-b border-gray-300 pb-1">
+                                    <span className="font-semibold">Bet On:</span>
+                                    <span className={`font-bold uppercase ${
+                                        ticketData.side === 'meron' ? 'text-red-600' : 
+                                        ticketData.side === 'wala' ? 'text-blue-600' : 
+                                        'text-green-600'
+                                    }`}>{ticketData.side}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-gray-300 pb-1">
+                                    <span className="font-semibold">Amount:</span>
+                                    <span className="font-bold">₱{ticketData.amount.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-gray-300 pb-1">
+                                    <span className="font-semibold">Odds:</span>
+                                    <span>{ticketData.odds}</span>
+                                </div>
+                                <div className="flex justify-between text-lg font-bold mt-3 pt-2 border-t-2 border-gray-400">
+                                    <span>Potential Win:</span>
+                                    <span className="text-green-600">₱{ticketData.potential_payout.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="text-center text-xs text-gray-600 mt-4 pt-3 border-t border-gray-300">
+                                <p>Keep this ticket safe</p>
+                                <p>Scan QR to claim winnings</p>
+                                <p className="mt-2">Good Luck!</p>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons (Not printed) */}
+                        <div className="p-4 bg-gray-100 flex gap-3 rounded-b-lg print:hidden">
+                            <button
+                                onClick={handlePrintTicket}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold"
+                            >
+                                🖨️ PRINT
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowTicketModal(false);
+                                    setTicketData(null);
+                                }}
+                                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-bold"
+                            >
+                                CLOSE
                             </button>
                         </div>
                     </div>
