@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { Fight } from '@/types';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import TellerLayout from '@/layouts/teller-layout';
 
 interface TellerDashboardProps {
     fights?: Fight[];
@@ -18,7 +19,6 @@ interface TellerDashboardProps {
 }
 
 export default function TellerDashboard({ fights = [], summary, tellerBalance = 0 }: TellerDashboardProps) {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [amount, setAmount] = useState('50');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | 'draw' | null>(null);
@@ -95,7 +95,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     const currentFightData = liveOdds || selectedFight;
 
     const handleNumberClick = (num: string) => {
-        if (amount === '50' || amount === '0') {
+        // Fix for 500 bug - don't reset to 0
+        if (amount === '0' || amount === '50') {
             setAmount(num);
         } else {
             setAmount(amount + num);
@@ -172,125 +173,45 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     };
 
     return (
-        <div className="min-h-screen bg-[#2d2d2d] text-white">
+        <TellerLayout currentPage="dashboard">
             <Head title="Teller - Sabing2m" />
 
-            {/* Mobile Header with Hamburger - Only visible on mobile */}
-            <div className="lg:hidden bg-[#1a1a1a] px-4 py-3 flex justify-between items-center border-b border-gray-700 fixed top-0 left-0 right-0 z-40">
-                <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="text-white text-2xl"
-                >
-                    ☰
-                </button>
-                <div className="text-center flex-1">
-                    <h1 className="text-lg font-bold text-orange-500">Sabing2m</h1>
-                    <div className="text-xs text-gray-400">BET SUMMARY</div>
+            {/* Header with Balance */}
+            <div className="bg-[#1a1a1a] px-4 py-4 border-b border-gray-700">
+                <div className="flex justify-between items-center max-w-md mx-auto">
+                    <div>
+                        <h1 className="text-xl font-bold text-orange-500">Dashboard</h1>
+                        <div className="text-xs text-gray-400">BET TERMINAL</div>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-xs text-gray-400">Cash Balance</div>
+                        <div className="text-xl font-bold text-green-400 transition-all duration-300">₱{liveBalance.toLocaleString()}</div>
+                    </div>
                 </div>
-                <div className="w-8"></div> {/* Spacer for centering */}
             </div>
 
-            {/* Overlay for mobile */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
+            {/* Bet Status Indicator */}
+            {selectedFight && (
+                <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border-b border-purple-500/30 py-2">
+                    <div className="max-w-md mx-auto px-4 flex justify-between items-center">
+                        <div className="text-sm">
+                            <span className="text-gray-300">Fight #{selectedFight.fight_number}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></span>
+                            <span className={`text-sm font-bold ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'text-green-400' : 'text-red-400'}`}>
+                                {(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'BETTING OPEN' : 'BETTING CLOSED'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             )}
 
-            {/* Sidebar - Hidden on mobile, visible on desktop */}
-            <div className={`fixed top-0 left-0 h-full w-64 bg-slate-900 border-r border-slate-700 transform transition-transform duration-300 z-50 ${
-                sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            } lg:translate-x-0`}>
-                <div className="p-4 border-b border-slate-700">
-                    <h1 className="text-xl font-bold text-orange-500">Sabing2m</h1>
-                    <p className="text-sm text-slate-400">Teller Panel</p>
-                </div>
-
-                <nav className="p-4 space-y-2">
-                    <button
-                        onClick={() => {
-                            router.visit('/teller/dashboard');
-                            setSidebarOpen(false);
-                        }}
-                        className="w-full px-4 py-3 text-left rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                    >
-                        📊 Dashboard
-                    </button>
-                    
-                    <button
-                        onClick={() => {
-                            router.visit('/teller/bets/history');
-                            setSidebarOpen(false);
-                        }}
-                        className="w-full px-4 py-3 text-left rounded-lg hover:bg-slate-800 transition-colors"
-                    >
-                        🎰 Bet History
-                    </button>
-                    
-                    <button
-                        onClick={() => {
-                            router.visit('/teller/cash-transfer');
-                            setSidebarOpen(false);
-                        }}
-                        className="w-full px-4 py-3 text-left rounded-lg hover:bg-slate-800 transition-colors"
-                    >
-                        💵 Cash Transfer
-                    </button>
-                    
-                    <div className="border-t border-slate-700 my-4"></div>
-
-                    <button
-                        onClick={() => {
-                            router.visit('/teller/settings/printer');
-                            setSidebarOpen(false);
-                        }}
-                        className="w-full px-4 py-3 text-left rounded-lg hover:bg-slate-800 transition-colors"
-                    >
-                        🖨️ Printer
-                    </button>
-                    
-                    <div className="absolute bottom-4 left-4 right-4">
-                        <button
-                            onClick={() => {
-                                router.post('/logout');
-                                setSidebarOpen(false);
-                            }}
-                            className="w-full px-4 py-3 text-left rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
-                        >
-                            🚪 Logout
-                        </button>
-                    </div>
-                </nav>
-            </div>
-
-            {/* Main Content - Adjusted for sidebar on desktop */}
-            <div className="lg:ml-64 pt-16 lg:pt-0">
-                {/* Desktop Header - Hidden on mobile */}
-                <div className="hidden lg:block bg-[#1a1a1a] px-4 py-3 border-b border-gray-700">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-xl font-bold text-orange-500">Dashboard</h1>
-                            <div className="text-xs text-gray-400">BET SUMMARY</div>
-                        </div>
-                        <div className="text-right">
-                            <div className="text-xs text-gray-400">Cash Balance</div>
-                            <div className="text-lg font-bold text-green-400 transition-all duration-300">₱{liveBalance.toLocaleString()}</div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Cash Balance Card - Visible on mobile */}
-                <div className="lg:hidden bg-[#1a1a1a] mx-4 mt-4 p-4 rounded-lg border border-gray-700">
-                    <div className="text-center">
-                        <div className="text-xs text-gray-400">Cash Balance</div>
-                        <div className="text-2xl font-bold text-green-400 transition-all duration-300">₱{liveBalance.toLocaleString()}</div>
-                    </div>
-                </div>
-
-            {/* Main Betting Interface */}
-            {!showCashIn && !showCashOut && !showSummary && currentFight && (currentFight.status === 'open' || currentFight.status === 'lastcall') && (
-                <div className="p-4 max-w-md mx-auto">
+            {/* Main Betting Interface - Always show UI */}
+            {selectedFight && (
+                <div className="p-4 max-w-md mx-auto"
+                    style={{ opacity: (selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 1 : 0.6 }}
+                >
                     {/* Live Bet Totals */}
                     {liveBetTotals && (
                         <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 rounded-xl p-4 mb-4 border border-purple-500/30">
@@ -390,20 +311,22 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         </div>
                     </div>
 
-                    {/* Amount Input with +/- buttons */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
+                    {/* Amount Input with +/- buttons - WIDER DISPLAY */}
+                    <div className="grid grid-cols-3 gap-3 mb-4">
                         <button
                             onClick={handleDecrement}
-                            className="bg-white hover:bg-gray-200 text-black font-bold text-3xl rounded-lg py-4 flex items-center justify-center"
+                            disabled={selectedFight.status !== 'open' && selectedFight.status !== 'lastcall'}
+                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-3xl rounded-lg py-5 flex items-center justify-center"
                         >
                             −
                         </button>
-                        <div className="bg-white text-yellow-700 rounded-lg py-4 flex items-center justify-center">
-                            <div className="text-3xl font-bold">{amount}</div>
+                        <div className="bg-white text-black rounded-lg py-5 flex items-center justify-center">
+                            <div className="text-4xl font-bold tracking-wider">{amount}</div>
                         </div>
                         <button
                             onClick={handleIncrement}
-                            className="bg-white hover:bg-gray-200 text-black font-bold text-3xl rounded-lg py-4 flex items-center justify-center"
+                            disabled={selectedFight.status !== 'open' && selectedFight.status !== 'lastcall'}
+                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-3xl rounded-lg py-5 flex items-center justify-center"
                         >
                             +
                         </button>
@@ -451,28 +374,33 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         ))}
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Submit Button - Disabled when betting closed */}
                     <button
                         onClick={handleSubmit}
-                        disabled={!betSide}
-                        className={`w-full py-4 rounded-lg text-xl font-bold mb-3 ${
-                            betSide ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white' : 'bg-gray-600 cursor-not-allowed text-gray-400'
+                        disabled={!betSide || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')}
+                        className={`w-full py-5 rounded-lg text-xl font-bold mb-4 transition-all ${
+                            betSide && (selectedFight.status === 'open' || selectedFight.status === 'lastcall')
+                                ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg'
+                                : 'bg-gray-600 cursor-not-allowed text-gray-400'
                         }`}
                     >
-                        SUBMIT
+                        {(selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')
+                            ? 'BETTING CLOSED'
+                            : betSide ? 'SUBMIT BET' : 'SELECT SIDE TO BET'
+                        }
                     </button>
 
                     {/* Action Buttons */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="grid grid-cols-2 gap-3 mb-4">
                         <button
                             onClick={() => setShowCashIn(true)}
-                            className="bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            className="bg-blue-600 hover:bg-blue-700 py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
                             <span>⬇</span> CASH IN
                         </button>
                         <button
                             onClick={() => setShowCashOut(true)}
-                            className="bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            className="bg-red-600 hover:bg-red-700 py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
                             <span>⬆</span> CASH OUT
                         </button>
@@ -480,35 +408,10 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
                     <button
                         onClick={() => setShowSummary(true)}
-                        className="w-full bg-[#2a3544] hover:bg-[#3a4554] py-3 rounded-lg font-semibold flex items-center justify-center gap-2 mb-3"
+                        className="w-full bg-[#2a3544] hover:bg-[#3a4554] py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
                     >
                         <span>📊</span> VIEW SUMMARY
                     </button>
-
-                    {/* History and Transfer Buttons */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                        <button
-                            onClick={() => router.visit('/teller/bets/history')}
-                            className="bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                        >
-                            <span>📜</span> History
-                        </button>
-                        <button
-                            onClick={() => router.visit('/teller/cash-transfer')}
-                            className="bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
-                        >
-                            <span>💸</span> Transfer
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                        <button className="bg-[#2a3544] hover:bg-[#3a4554] py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
-                            <span>🔄</span> PAYOUT SCAN
-                        </button>
-                        <button className="bg-[#2a3544] hover:bg-[#3a4554] py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
-                            <span>❌</span> CANCEL SCAN
-                        </button>
-                    </div>
                 </div>
             )}
 
@@ -713,15 +616,30 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 </div>
             )}
 
-            {/* No Open Fights */}
-            {(!currentFight || (currentFight.status !== 'open' && currentFight.status !== 'lastcall')) && !showCashIn && !showCashOut && !showSummary && (
+            {/* No Open Fights - Always show message when no fight */}
+            {!selectedFight && !showCashIn && !showCashOut && !showSummary && (
                 <div className="text-center text-gray-400 mt-20 px-4">
                     <div className="text-6xl mb-4">🐓</div>
-                    <h2 className="text-2xl font-bold mb-2">No Open Fights</h2>
+                    <h2 className="text-2xl font-bold mb-2 text-white">No Open Fights</h2>
                     <p className="text-gray-500">Waiting for next fight to open...</p>
+                    <div className="mt-8 max-w-sm mx-auto">
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => setShowCashIn(true)}
+                                className="bg-blue-600 hover:bg-blue-700 py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            >
+                                <span>⬇</span> CASH IN
+                            </button>
+                            <button
+                                onClick={() => setShowCashOut(true)}
+                                className="bg-red-600 hover:bg-red-700 py-4 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            >
+                                <span>⬆</span> CASH OUT
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
-            </div> {/* Close main content wrapper */}
-        </div>
+        </TellerLayout>
     );
 }
