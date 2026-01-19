@@ -33,7 +33,7 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
     return (
         <DeclaratorLayout>
             <Head title="Declarator Dashboard" />
-
+<br />
             {/* Header */}
             <div className="mb-6 lg:mb-8">
                     <h1 className="text-2xl lg:text-3xl font-bold">Declarator Dashboard</h1>
