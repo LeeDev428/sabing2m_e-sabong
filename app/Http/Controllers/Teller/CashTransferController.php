@@ -15,9 +15,9 @@ class CashTransferController extends Controller
     {
         $currentTeller = auth()->user();
         
-        $tellers = User::where('role', 'teller')
-            ->where('id', '!=', $currentTeller->id)
-            ->select('id', 'name', 'email')
+        // Only show admin and declarator users as transfer recipients
+        $tellers = User::whereIn('role', ['admin', 'declarator'])
+            ->select('id', 'name', 'email', 'role')
             ->orderBy('name')
             ->get();
 
@@ -49,8 +49,9 @@ class CashTransferController extends Controller
         $fromTeller = auth()->user();
         $toTeller = User::findOrFail($request->to_teller_id);
 
-        if ($toTeller->role !== 'teller') {
-            return back()->withErrors(['error' => 'Recipient must be a teller']);
+        // Only allow transfers to admin or declarator
+        if (!in_array($toTeller->role, ['admin', 'declarator'])) {
+            return back()->withErrors(['error' => 'Transfers can only be made to admin or declarator']);
         }
 
         if ($fromTeller->id === $toTeller->id) {
