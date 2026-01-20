@@ -73,10 +73,16 @@ class BetController extends Controller
             $fight->save();
         }
 
-        // Deduct bet amount from teller balance
-        $teller = auth()->user();
-        $teller->teller_balance -= $validated['amount'];
-        $teller->save();
+        // Add bet amount to teller balance (teller receives cash from customer)
+        // Update the teller's current_balance in teller_cash_assignments for this fight
+        $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+            ->where('fight_id', $validated['fight_id'])
+            ->first();
+        
+        if ($assignment) {
+            $assignment->current_balance += $validated['amount'];
+            $assignment->save();
+        }
 
         return redirect()->back()
             ->with('success', 'Bet placed successfully.')
@@ -205,6 +211,18 @@ class BetController extends Controller
     }
 
     /**
+     * Get currently open fights (API endpoint)
+     */
+    public function getOpenFights()
+    {
+        $fights = Fight::whereIn('status', ['open', 'lastcall'])
+            ->latest()
+            ->get();
+
+        return response()->json($fights);
+    }
+
+    /**
      * Display the payout scan page
      */
     public function payoutScan()
@@ -249,9 +267,15 @@ class BetController extends Controller
         $bet->claimed_by = auth()->id();
         $bet->save();
 
-        // Update teller's balance (deduct payout)
-        $teller = auth()->user();
-        $teller->decrement('balance', $payoutAmount);
+        // Deduct payout from teller's cash assignment (teller pays out winnings)
+        $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+            ->where('fight_id', $bet->fight_id)
+            ->first();
+        
+        if ($assignment) {
+            $assignment->current_balance -= $payoutAmount;
+            $assignment->save();
+        }
 
         return response()->json([
             'success' => true,
