@@ -57,9 +57,9 @@ class ResultController extends Controller
             ->latest()
             ->get()
             ->map(function($fight) {
-                $fight->meron_total = $fight->bets()->where('bet_on', 'meron')->sum('amount');
-                $fight->wala_total = $fight->bets()->where('bet_on', 'wala')->sum('amount');
-                $fight->draw_total = $fight->bets()->where('bet_on', 'draw')->sum('amount');
+                $fight->meron_total = $fight->bets()->where('side', 'meron')->sum('amount');
+                $fight->wala_total = $fight->bets()->where('side', 'wala')->sum('amount');
+                $fight->draw_total = $fight->bets()->where('side', 'draw')->sum('amount');
                 $fight->total_payouts = $fight->bets()->where('status', 'won')->sum('actual_payout');
                 $fight->declared_at = $fight->result_declared_at ?? $fight->updated_at;
                 return $fight;

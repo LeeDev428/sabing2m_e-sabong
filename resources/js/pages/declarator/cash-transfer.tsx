@@ -23,7 +23,7 @@ interface CashTransfer {
         email: string;
         role: string;
     };
-    approved_by_user?: {
+    approved_by?: {
         id: number;
         name: string;
     };
@@ -117,8 +117,8 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
             </div>
             <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-600">
                 <span>📅 {formatDate(transfer.created_at)}</span>
-                {transfer.approved_by_user && (
-                    <span>✓ Approved by: {transfer.approved_by_user.name}</span>
+                {transfer.approved_by && (
+                    <span>✓ Approved by: {transfer.approved_by.name}</span>
                 )}
             </div>
         </div>
