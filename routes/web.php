@@ -15,6 +15,8 @@ use App\Http\Controllers\Teller\TransactionController;
 use App\Http\Controllers\Teller\CashTransferController;
 use App\Http\Controllers\Declarator\ResultController;
 use App\Http\Controllers\Declarator\BetControlController as DeclaratorBetControlController;
+use App\Http\Controllers\Declarator\FightController as DeclaratorFightController;
+use App\Http\Controllers\Declarator\CashTransferController as DeclaratorCashTransferController;
 use App\Http\Controllers\BigScreenController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -105,11 +107,19 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
     Route::post('change-result/{fight}', [ResultController::class, 'changeResult'])->name('change-result');
     Route::post('fights/{fight}/status', [ResultController::class, 'updateStatus'])->name('fights.update-status');
     
+    // Fight Management
+    Route::post('fights/create-next', [DeclaratorFightController::class, 'createNext'])->name('fights.create-next');
+    
     // Bet Controls
     Route::get('bet-controls', [DeclaratorBetControlController::class, 'index'])->name('bet-controls.index');
     Route::post('bet-controls/{fight}/toggle-meron', [DeclaratorBetControlController::class, 'toggleMeron'])->name('bet-controls.toggle-meron');
     Route::post('bet-controls/{fight}/toggle-wala', [DeclaratorBetControlController::class, 'toggleWala'])->name('bet-controls.toggle-wala');
     Route::post('bet-controls/{fight}/commission', [DeclaratorBetControlController::class, 'updateCommission'])->name('bet-controls.commission');
+    
+    // Cash Transfer Monitoring
+    Route::get('cash-transfer', [DeclaratorCashTransferController::class, 'index'])->name('cash-transfer.index');
+    Route::post('cash-transfer/{transfer}/approve', [DeclaratorCashTransferController::class, 'approve'])->name('cash-transfer.approve');
+    Route::delete('cash-transfer/{transfer}/reject', [DeclaratorCashTransferController::class, 'reject'])->name('cash-transfer.reject');
 });
 
 // Teller Routes

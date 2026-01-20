@@ -174,12 +174,14 @@ class BigScreenController extends Controller
 
     public function history()
     {
-        // Get last 10 declared fights for history display
+        // Get last 10 declared fights for history display in natural order (oldest to newest, left to right)
         $history = Fight::where('status', 'result_declared')
             ->whereNotNull('result')
             ->orderBy('result_declared_at', 'desc')
             ->limit(10)
-            ->get(['fight_number', 'result']);
+            ->get(['fight_number', 'result'])
+            ->reverse()
+            ->values();
 
         return response()->json([
             'history' => $history,

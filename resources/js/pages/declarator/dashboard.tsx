@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import DeclaratorLayout from '@/layouts/declarator-layout';
 import { Fight } from '@/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface DeclaratorDashboardProps {
     fights?: Fight[];
@@ -9,8 +9,20 @@ interface DeclaratorDashboardProps {
 
 export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboardProps) {
     const [showResultModal, setShowResultModal] = useState(false);
+    const [showNextFightModal, setShowNextFightModal] = useState(false);
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [result, setResult] = useState<'meron' | 'wala' | 'draw' | 'cancelled' | null>(null);
+    const [meronFighter, setMeronFighter] = useState('');
+    const [walaFighter, setWalaFighter] = useState('');
+
+    // Real-time auto-refresh every 3 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            router.reload({ only: ['fights'] });
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     const pendingFights = fights.filter(f => f.status === 'betting_closed');
     const declaredToday = fights.filter(f => f.declared_by).length;
@@ -30,15 +42,38 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
         });
     };
 
+    const handleCreateNextFight = () => {
+        if (!meronFighter || !walaFighter) return;
+
+        router.post('/declarator/fights/create-next', {
+            meron_fighter: meronFighter,
+            wala_fighter: walaFighter,
+        }, {
+            onSuccess: () => {
+                setShowNextFightModal(false);
+                setMeronFighter('');
+                setWalaFighter('');
+            },
+        });
+    };
+
     return (
         <DeclaratorLayout>
             <Head title="Declarator Dashboard" />
 <br />
             {/* Header */}
-            <div className="mb-6 lg:mb-8">
+            <div className="mb-6 lg:mb-8 flex items-center justify-between">
+                <div>
                     <h1 className="text-2xl lg:text-3xl font-bold">Declarator Dashboard</h1>
                     <p className="text-sm lg:text-base text-gray-400">Declare fight results and manage outcomes</p>
                 </div>
+                <button
+                    onClick={() => setShowNextFightModal(true)}
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold flex items-center gap-2"
+                >
+                    ➕ Next Fight
+                </button>
+            </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
@@ -244,6 +279,79 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                                         setShowResultModal(false);
                                         setSelectedFight(null);
                                         setResult(null);
+                                    }}
+                                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Next Fight Modal */}
+            {showNextFightModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+                    <div className="bg-gray-800 rounded-lg max-w-2xl w-full">
+                        <div className="p-6 border-b border-gray-700">
+                            <h2 className="text-2xl font-bold">Create Next Fight</h2>
+                            <p className="text-sm text-gray-400 mt-1">
+                                Event settings will be auto-populated from the previous fight
+                            </p>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Meron Fighter</label>
+                                <input
+                                    type="text"
+                                    value={meronFighter}
+                                    onChange={(e) => setMeronFighter(e.target.value)}
+                                    placeholder="Enter Meron fighter name"
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-red-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Wala Fighter</label>
+                                <input
+                                    type="text"
+                                    value={walaFighter}
+                                    onChange={(e) => setWalaFighter(e.target.value)}
+                                    placeholder="Enter Wala fighter name"
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div className="bg-gray-700 rounded-lg p-4 text-sm text-gray-300">
+                                <p className="font-semibold mb-2">📋 Auto-populated settings:</p>
+                                <ul className="list-disc list-inside space-y-1">
+                                    <li>Fight number (auto-incremented)</li>
+                                    <li>Venue, Event name, Event date</li>
+                                    <li>Commission percentage, Match type</li>
+                                    <li>Revolving funds, Teller assignments</li>
+                                    <li>Special conditions (if any)</li>
+                                </ul>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={handleCreateNextFight}
+                                    disabled={!meronFighter || !walaFighter}
+                                    className={`flex-1 py-4 rounded-lg font-bold text-lg ${
+                                        meronFighter && walaFighter
+                                            ? 'bg-blue-600 hover:bg-blue-700'
+                                            : 'bg-gray-600 cursor-not-allowed'
+                                    }`}
+                                >
+                                    ➕ Create Fight
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowNextFightModal(false);
+                                        setMeronFighter('');
+                                        setWalaFighter('');
                                     }}
                                     className="px-6 py-4 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold"
                                 >
