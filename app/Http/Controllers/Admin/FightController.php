@@ -14,7 +14,7 @@ class FightController extends Controller
     public function index()
     {
         // Only show active fights (exclude result_declared and cancelled)
-        $fights = Fight::with(['creator', 'declarator'])
+        $fights = Fight::with(['creator', 'declarator', 'tellerCashAssignments.teller'])
             ->whereNotIn('status', ['result_declared', 'cancelled'])
             ->latest()
             ->paginate(20);
@@ -478,11 +478,6 @@ class FightController extends Controller
      */
     public function createNext(Request $request)
     {
-        $validated = $request->validate([
-            'meron_fighter' => 'required|string|max:255',
-            'wala_fighter' => 'required|string|max:255',
-        ]);
-
         DB::beginTransaction();
         try {
             // Get the latest fight to copy settings from
@@ -494,8 +489,8 @@ class FightController extends Controller
             // Create new fight with auto-populated event settings
             $fight = Fight::create([
                 'fight_number' => $nextFightNumber,
-                'meron_fighter' => $validated['meron_fighter'],
-                'wala_fighter' => $validated['wala_fighter'],
+                'meron_fighter' => 'Fighter ' . $nextFightNumber . 'A',  // Default name
+                'wala_fighter' => 'Fighter ' . $nextFightNumber . 'B',    // Default name
                 
                 // Auto-populate from latest fight
                 'venue' => $latestFight?->venue,
@@ -536,13 +531,12 @@ class FightController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.fights.index')
+            return redirect()->back()
                 ->with('success', "Fight #{$nextFightNumber} created successfully!");
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
-                ->withErrors(['error' => 'Failed to create next fight: ' . $e->getMessage()])
-                ->withInput();
+                ->withErrors(['error' => 'Failed to create next fight: ' . $e->getMessage()]);
         }
     }
 }
