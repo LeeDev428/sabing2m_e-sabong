@@ -65,6 +65,17 @@ export interface Fight {
     round_number?: number | null;
     match_type?: string;
     special_conditions?: string | null;
+    revolving_funds?: number;
+    teller_assignments?: {
+        id: number;
+        teller: {
+            id: number;
+            name: string;
+            email: string;
+        };
+        assigned_amount: number;
+        current_balance: number;
+    }[];
     scheduled_at: string | null;
     betting_opened_at: string | null;
     betting_closed_at: string | null;
