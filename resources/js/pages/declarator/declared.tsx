@@ -351,6 +351,14 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
                                         Change Status
                                     </button>
                                     
+                                    {/* Edit Fight button */}
+                                    <button
+                                        onClick={() => router.visit(`/declarator/fights/${fight.id}/edit`)}
+                                        className="px-4 py-2.5 bg-blue-700 hover:bg-blue-600 rounded-lg text-sm font-medium whitespace-nowrap"
+                                    >
+                                        ✏️ Edit Fight
+                                    </button>
+                                    
                                     {/* Show Declare Result button when closed and no result */}
                                     {fight.status === 'closed' && !fight.result && (
                                         <button
