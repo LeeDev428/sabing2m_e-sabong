@@ -112,6 +112,7 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
     Route::post('fights/create-next', [DeclaratorFightController::class, 'createNext'])->name('fights.create-next');
     Route::get('fights/{fight}/edit', [DeclaratorFightController::class, 'edit'])->name('fights.edit');
     Route::put('fights/{fight}', [DeclaratorFightController::class, 'update'])->name('fights.update');
+    Route::post('fights/{fight}/update-funds', [DeclaratorFightController::class, 'updateFunds'])->name('fights.update-funds');
     
     // Bet Controls
     Route::get('bet-controls', [DeclaratorBetControlController::class, 'index'])->name('bet-controls.index');
