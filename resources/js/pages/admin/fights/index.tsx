@@ -80,12 +80,17 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
     const startEditingFunds = (fight: Fight) => {
         setEditingFundsFor(fight.id);
         setRevolvingFunds({...revolvingFunds, [fight.id]: (fight.revolving_funds || 0).toString()});
+        
+        // Load existing teller assignments if any, otherwise empty array
+        const existingAssignments = fight.teller_assignments?.map(a => ({
+            teller_id: a.teller_id.toString(),
+            amount: a.assigned_amount.toString(),
+            teller_name: a.teller?.name || 'Unknown'
+        })) || [];
+        
         setTellerAssignments({
             ...tellerAssignments,
-            [fight.id]: fight.teller_assignments?.map(a => ({
-                teller_id: a.teller_id.toString(),
-                amount: a.assigned_amount.toString()
-            })) || []
+            [fight.id]: existingAssignments
         });
     };
 
@@ -110,7 +115,22 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
 
     const updateTellerAssignment = (fightId: number, index: number, field: string, value: string) => {
         const currentAssignments = [...(tellerAssignments[fightId] || [])];
-        currentAssignments[index] = { ...currentAssignments[index], [field]: value };
+        
+        // If changing teller_id, auto-populate their current assigned amount
+        if (field === 'teller_id' && value) {
+            const fight = fights.data.find(f => f.id === fightId);
+            const existingAssignment = fight?.teller_cash_assignments?.find(
+                (a: any) => a.teller_id === parseInt(value)
+            );
+            currentAssignments[index] = {
+                ...currentAssignments[index],
+                [field]: value,
+                amount: existingAssignment ? existingAssignment.assigned_amount.toString() : '0'
+            };
+        } else {
+            currentAssignments[index] = { ...currentAssignments[index], [field]: value };
+        }
+        
         setTellerAssignments({...tellerAssignments, [fightId]: currentAssignments});
     };
 
