@@ -28,7 +28,7 @@ class ResultController extends Controller
     {
         // Show all active fights (not just result_declared) - same as admin fights
         $declared_fights = Fight::whereNotIn('status', ['cancelled'])
-            ->with(['creator', 'declarator'])
+            ->with(['creator', 'declarator', 'tellerCashAssignments.teller'])
             ->latest()
             ->get()
             ->map(function($fight) {
