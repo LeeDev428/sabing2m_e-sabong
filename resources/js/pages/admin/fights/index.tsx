@@ -116,7 +116,7 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
     const updateTellerAssignment = (fightId: number, index: number, field: string, value: string) => {
         const currentAssignments = [...(tellerAssignments[fightId] || [])];
         
-        // If changing teller_id, auto-populate their current assigned amount
+        // If changing teller_id, auto-populate their current balance for this fight
         if (field === 'teller_id' && value) {
             const fight = fights.data.find(f => f.id === fightId);
             const existingAssignment = fight?.teller_cash_assignments?.find(
@@ -125,7 +125,7 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
             currentAssignments[index] = {
                 ...currentAssignments[index],
                 [field]: value,
-                amount: existingAssignment ? existingAssignment.assigned_amount.toString() : '0'
+                amount: existingAssignment ? existingAssignment.current_balance.toString() : '0'
             };
         } else {
             currentAssignments[index] = { ...currentAssignments[index], [field]: value };
