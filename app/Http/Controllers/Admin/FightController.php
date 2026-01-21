@@ -19,8 +19,12 @@ class FightController extends Controller
             ->latest()
             ->paginate(20);
 
+        // Get all tellers for the funds form
+        $tellers = \App\Models\User::where('role', 'teller')->get(['id', 'name', 'email']);
+
         return Inertia::render('admin/fights/index', [
             'fights' => $fights,
+            'tellers' => $tellers,
         ]);
     }
 
@@ -539,5 +543,47 @@ class FightController extends Controller
                 ->withErrors(['error' => 'Failed to create next fight: ' . $e->getMessage()]);
         }
     }
-}
 
+    /**
+     * Update fight funds and teller assignments
+     */
+    public function updateFunds(Request $request, Fight $fight)
+    {
+        $validated = $request->validate([
+            'revolving_funds' => 'required|numeric|min:0',
+            'teller_assignments' => 'nullable|array',
+            'teller_assignments.*.teller_id' => 'required|exists:users,id',
+            'teller_assignments.*.amount' => 'required|numeric|min:0',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Update revolving funds
+            $fight->update([
+                'revolving_funds' => $validated['revolving_funds'],
+            ]);
+
+            // Delete existing assignments for this fight
+            TellerCashAssignment::where('fight_id', $fight->id)->delete();
+
+            // Create new assignments
+            if (isset($validated['teller_assignments'])) {
+                foreach ($validated['teller_assignments'] as $assignment) {
+                    TellerCashAssignment::create([
+                        'fight_id' => $fight->id,
+                        'teller_id' => $assignment['teller_id'],
+                        'assigned_amount' => $assignment['amount'],
+                        'current_balance' => $assignment['amount'],
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Funds updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Failed to update funds: ' . $e->getMessage()]);
+        }
+    }
+}
