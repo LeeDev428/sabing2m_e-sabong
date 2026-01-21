@@ -27,9 +27,7 @@ interface FightsIndexProps {
 export default function FightsIndex({ fights }: FightsIndexProps) {
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
-    const [showNextFightModal, setShowNextFightModal] = useState(false);
-    const [nextFightMeron, setNextFightMeron] = useState('');
-    const [nextFightWala, setNextFightWala] = useState('');
+
 
     // Check if "Next Fight" button should be enabled
     const latestFight = fights.data[0]; // Assuming sorted by latest first
@@ -87,7 +85,11 @@ export default function FightsIndex({ fights }: FightsIndexProps) {
                     </div>
                     <div className="flex gap-3 w-full sm:w-auto">
                         <button
-                            onClick={() => canCreateNextFight && setShowNextFightModal(true)}
+                            onClick={() => {
+                                if (canCreateNextFight) {
+                                    router.post('/admin/fights/create-next', {});
+                                }
+                            }}
                             disabled={!canCreateNextFight}
                             className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap ${
                                 canCreateNextFight
@@ -164,16 +166,56 @@ export default function FightsIndex({ fights }: FightsIndexProps) {
                                         </div>
                                     </div>
 
-                                    {/* Funds & Teller Cash Distribution (Display Only) */}
+                                    {/* Funds & Teller Cash Distribution */}
                                     <div className="mt-6 border-t border-gray-700 pt-6">
                                         <h4 className="text-lg font-bold text-white mb-4">💰 Funds & Teller Cash Distribution</h4>
-                                        <div className="bg-gray-900 p-4 rounded-lg">
-                                            <div className="text-sm text-gray-400 mb-2">
-                                                This information can be edited by clicking the "Edit Details" button above.
+                                        
+                                        <div className="space-y-4">
+                                            {/* Revolving Funds */}
+                                            <div className="bg-gray-900 p-4 rounded-lg">
+                                                <div className="text-sm text-gray-400 mb-1">Revolving Funds</div>
+                                                <div className="text-2xl font-bold text-green-400">
+                                                    ₱{(fight.revolving_funds || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </div>
                                             </div>
-                                            <div className="text-xs text-gray-500">
-                                                View and manage revolving funds and teller assignments in the edit page.
-                                            </div>
+
+                                            {/* Teller Assignments */}
+                                            {fight.teller_assignments && fight.teller_assignments.length > 0 ? (
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-400 mb-2">Assigned Tellers</div>
+                                                    <div className="space-y-2">
+                                                        {fight.teller_assignments.map((assignment) => (
+                                                            <div key={assignment.id} className="bg-gray-800 p-3 rounded-lg flex justify-between items-center">
+                                                                <div>
+                                                                    <div className="font-medium text-white">{assignment.teller.name}</div>
+                                                                    <div className="text-xs text-gray-400">{assignment.teller.email}</div>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <div className="text-sm text-gray-400">Assigned</div>
+                                                                    <div className="font-bold text-yellow-400">
+                                                                        ₱{assignment.assigned_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-500">
+                                                                        Balance: ₱{assignment.current_balance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="mt-3 bg-gray-900 p-3 rounded-lg">
+                                                        <div className="flex justify-between text-sm">
+                                                            <span className="text-gray-400">Total Assigned:</span>
+                                                            <span className="font-bold text-white">
+                                                                ₱{fight.teller_assignments.reduce((sum, a) => sum + a.assigned_amount, 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="bg-gray-800 p-4 rounded-lg text-center text-gray-400 text-sm">
+                                                    No teller assignments yet
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -299,91 +341,6 @@ export default function FightsIndex({ fights }: FightsIndexProps) {
                 </div>
             )}
 
-            {/* Next Fight Modal */}
-            {showNextFightModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-                    <div className="bg-gray-800 rounded-lg max-w-2xl w-full">
-                        <div className="p-6 border-b border-gray-700">
-                            <h2 className="text-2xl font-bold">Create Next Fight</h2>
-                            <p className="text-sm text-gray-400 mt-1">
-                                Event settings will be auto-populated from the previous fight
-                            </p>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Meron Fighter</label>
-                                <input
-                                    type="text"
-                                    value={nextFightMeron}
-                                    onChange={(e) => setNextFightMeron(e.target.value)}
-                                    placeholder="Enter Meron fighter name"
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-red-500"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Wala Fighter</label>
-                                <input
-                                    type="text"
-                                    value={nextFightWala}
-                                    onChange={(e) => setNextFightWala(e.target.value)}
-                                    placeholder="Enter Wala fighter name"
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
-                                />
-                            </div>
-
-                            <div className="bg-gray-700/50 rounded-lg p-4 text-sm text-gray-300">
-                                <p className="font-semibold mb-2">📋 Auto-populated settings:</p>
-                                <ul className="list-disc list-inside space-y-1">
-                                    <li>Fight number (auto-incremented)</li>
-                                    <li>Venue, Event name, Event date</li>
-                                    <li>Commission percentage, Match type</li>
-                                    <li>Revolving funds, Teller assignments</li>
-                                    <li>Special conditions (if any)</li>
-                                </ul>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={() => {
-                                        if (nextFightMeron && nextFightWala) {
-                                            router.post('/admin/fights/create-next', {
-                                                meron_fighter: nextFightMeron,
-                                                wala_fighter: nextFightWala,
-                                            }, {
-                                                onSuccess: () => {
-                                                    setShowNextFightModal(false);
-                                                    setNextFightMeron('');
-                                                    setNextFightWala('');
-                                                },
-                                            });
-                                        }
-                                    }}
-                                    disabled={!nextFightMeron || !nextFightWala}
-                                    className={`flex-1 py-4 rounded-lg font-bold text-lg ${
-                                        nextFightMeron && nextFightWala
-                                            ? 'bg-blue-600 hover:bg-blue-700'
-                                            : 'bg-gray-600 cursor-not-allowed'
-                                    }`}
-                                >
-                                    ➕ Create Fight
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowNextFightModal(false);
-                                        setNextFightMeron('');
-                                        setNextFightWala('');
-                                    }}
-                                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </AdminLayout>
     );
 }
