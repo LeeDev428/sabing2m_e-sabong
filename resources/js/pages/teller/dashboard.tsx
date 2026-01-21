@@ -20,7 +20,7 @@ interface TellerDashboardProps {
 }
 
 export default function TellerDashboard({ fights = [], summary, tellerBalance = 0 }: TellerDashboardProps) {
-    const [amount, setAmount] = useState('50');
+    const [amount, setAmount] = useState('0');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | 'draw' | null>(null);
     const [showSummary, setShowSummary] = useState(false);
@@ -110,7 +110,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 // If no fight is selected and there's an open fight, select it
                 if (!selectedFight && openFights.length > 0) {
                     setSelectedFight(openFights[0]);
-                    setAmount('50'); // Reset amount
+                    setAmount('0'); // Reset amount
                     setBetSide(null); // Reset bet side
                 }
                 // If selected fight is closed and there's a new open fight, switch to it
@@ -118,7 +118,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     const newFight = openFights.find((f: Fight) => f.id !== selectedFight.id);
                     if (newFight) {
                         setSelectedFight(newFight);
-                        setAmount('50'); // Reset amount
+                        setAmount('0'); // Reset amount
                         setBetSide(null); // Reset bet side
                     }
                 }
@@ -133,8 +133,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     }, [selectedFight]);
 
     const handleNumberClick = (num: string) => {
-        // Fix for 500 bug - don't reset to 0
-        if (amount === '0' || amount === '50') {
+        // Start fresh if amount is 0, otherwise append
+        if (amount === '0') {
             setAmount(num);
         } else {
             setAmount(amount + num);
@@ -142,7 +142,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     };
 
     const handleClear = () => {
-        setAmount('50');
+        setAmount('0');
     };
 
     const handleQuickAmount = (quickAmount: number) => {
@@ -186,7 +186,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     });
                     setShowTicketModal(true);
                 }
-                setAmount('50');
+                setAmount('0');
                 setBetSide(null);
             },
             preserveScroll: true,
