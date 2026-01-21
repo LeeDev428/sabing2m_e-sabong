@@ -63,11 +63,12 @@ export default function BigScreen() {
             const response = await axios.get('/api/bigscreen');
             const newFight = response.data.fight;
             
-            // Show winner overlay when result is declared
-            if (newFight && newFight.status === 'declared') {
-                if (!fight || fight.status !== 'declared' || (fight.result !== newFight.result)) {
+            // Show winner overlay only once when result is first declared
+            if (newFight && newFight.status === 'declared' && newFight.result) {
+                // Only show if this is a NEW result (different fight OR different result)
+                if (!fight || fight.id !== newFight.id || fight.result !== newFight.result) {
                     setShowWinner(true);
-                    setTimeout(() => setShowWinner(false), 8000);
+                    setTimeout(() => setShowWinner(false), 2000); // Show for 2 seconds
                 }
             }
             
