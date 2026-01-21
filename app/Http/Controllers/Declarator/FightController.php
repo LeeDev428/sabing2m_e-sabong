@@ -180,4 +180,50 @@ class FightController extends Controller
                 ->withInput();
         }
     }
+
+    /**
+     * Update funds and teller assignments for a fight
+     */
+    public function updateFunds(Request $request, Fight $fight)
+    {
+        $validated = $request->validate([
+            'revolving_funds' => 'nullable|numeric|min:0',
+            'teller_assignments' => 'nullable|array',
+            'teller_assignments.*.teller_id' => 'required|exists:users,id',
+            'teller_assignments.*.amount' => 'required|numeric|min:0',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Update revolving funds
+            $fight->update([
+                'revolving_funds' => $validated['revolving_funds'] ?? 0,
+            ]);
+
+            // Update teller assignments if provided
+            if (isset($validated['teller_assignments'])) {
+                // Delete existing assignments
+                TellerCashAssignment::where('fight_id', $fight->id)->delete();
+                
+                // Create new assignments
+                foreach ($validated['teller_assignments'] as $assignment) {
+                    TellerCashAssignment::create([
+                        'fight_id' => $fight->id,
+                        'teller_id' => $assignment['teller_id'],
+                        'assigned_amount' => $assignment['amount'],
+                        'current_balance' => $assignment['amount'],
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Funds updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to update funds: ' . $e->getMessage()]);
+        }
+    }
 }
