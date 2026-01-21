@@ -258,6 +258,19 @@ export default function DeclaredFights({ declared_fights = [] }: Props) {
                                         </div>
                                     </div>
 
+                                    {/* Funds & Teller Cash Distribution (Display Only) */}
+                                    <div className="mt-6 border-t border-gray-700 pt-6">
+                                        <h4 className="text-lg font-bold text-white mb-4">💰 Funds & Teller Cash Distribution</h4>
+                                        <div className="bg-gray-900 p-4 rounded-lg">
+                                            <div className="text-sm text-gray-400 mb-2">
+                                                This information can be edited by clicking the "✏️ Edit Fight" button above.
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                View and manage revolving funds and teller assignments in the edit page.
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     {/* Bet Controls Section */}
                                     {(fight.status === 'open' || fight.status === 'lastcall' || fight.status === 'standby') && (
                                         <div className="mt-6 border-t border-gray-700 pt-6">
