@@ -44,8 +44,12 @@ class ResultController extends Controller
             })
             ->values();
 
+        // Get all tellers for assignment dropdown
+        $tellers = \App\Models\User::where('role', 'teller')->get(['id', 'name', 'email']);
+
         return Inertia::render('declarator/declared', [
             'declared_fights' => $declared_fights,
+            'tellers' => $tellers,
         ]);
     }
 
