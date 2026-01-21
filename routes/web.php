@@ -166,9 +166,16 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
             'draw_bets' => $tellerBets->where('side', 'draw')->count(),
         ];
             
-        // Calculate teller's total cash balance from all fight assignments
-        $tellerBalance = \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
-            ->sum('current_balance');
+        // Calculate teller's cash balance ONLY for the current active fight (open or lastcall)
+        $currentFight = \App\Models\Fight::whereIn('status', ['open', 'lastcall'])
+            ->latest()
+            ->first();
+            
+        $tellerBalance = $currentFight 
+            ? \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
+                ->where('fight_id', $currentFight->id)
+                ->value('current_balance') ?? 0
+            : 0;
         
         return Inertia::render('teller/dashboard', [
             'fights' => $fights,
