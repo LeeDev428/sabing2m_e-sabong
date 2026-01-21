@@ -50,6 +50,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     Route::resource('fights', FightController::class);
+    Route::post('fights/create-next', [FightController::class, 'createNext'])->name('fights.create-next');
     Route::post('fights/{fight}/status', [FightController::class, 'updateStatus'])->name('fights.update-status');
     Route::post('fights/{fight}/open-betting', [FightController::class, 'openBetting'])->name('fights.open-betting');
     Route::post('fights/{fight}/close-betting', [FightController::class, 'closeBetting'])->name('fights.close-betting');
