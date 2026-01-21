@@ -167,15 +167,18 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
         ];
             
         // Calculate teller's cash balance ONLY for the current active fight (open or lastcall)
-        $currentFight = \App\Models\Fight::whereIn('status', ['open', 'lastcall'])
-            ->latest()
-            ->first();
-            
-        $tellerBalance = $currentFight 
-            ? \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
-                ->where('fight_id', $currentFight->id)
-                ->value('current_balance') ?? 0
-            : 0;
+        // Get teller balance ONLY for the LATEST fight (if it's open or lastcall)
+        // This ensures old fight balances don't carry over
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        
+        $tellerBalance = 0; // Default to 0
+        
+        // Only show balance if the LATEST fight is currently open or lastcall
+        if ($latestFight && in_array($latestFight->status, ['open', 'lastcall'])) {
+            $tellerBalance = (float) \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
+                ->where('fight_id', $latestFight->id)
+                ->value('current_balance') ?? 0;
+        }
         
         return Inertia::render('teller/dashboard', [
             'fights' => $fights,
