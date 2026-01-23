@@ -1,116 +1,95 @@
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import TellerLayout from '@/layouts/teller-layout';
+import { thermalPrinter } from '@/utils/thermalPrinter';
+import { BleDevice } from '@capacitor-community/bluetooth-le';
 
 export default function PrinterSettings() {
     const [isConnected, setIsConnected] = useState(false);
-    const [printer, setPrinter] = useState<BluetoothDevice | null>(null);
+    const [printer, setPrinter] = useState<BleDevice | null>(null);
     const [status, setStatus] = useState('Not connected');
     const [autoSaveDevice, setAutoSaveDevice] = useState(true);
+    const [availableDevices, setAvailableDevices] = useState<BleDevice[]>([]);
+    const [isScanning, setIsScanning] = useState(false);
 
     useEffect(() => {
-        // Check if previously connected printer is saved
-        const savedPrinterId = localStorage.getItem('thermal_printer_id');
-        if (savedPrinterId) {
-            setStatus('Previously connected printer saved');
-        }
+        // Initialize Bluetooth
+        thermalPrinter.initialize().then(() => {
+            // Check if previously connected printer is saved
+            const savedPrinterId = localStorage.getItem('thermal_printer_id');
+            if (savedPrinterId) {
+                setStatus('Previously connected printer saved');
+            }
+        });
     }, []);
 
-    const connectPrinter = async () => {
+    const scanForPrinters = async () => {
         try {
-            setStatus('Requesting Bluetooth device...');
+            setIsScanning(true);
+            setStatus('Scanning for Bluetooth printers...');
+            setAvailableDevices([]);
 
-            // Request any thermal printer (not just PT-210)
-            const device = await navigator.bluetooth.requestDevice({
-                filters: [
-                    { name: 'PT-210' },
-                    { namePrefix: 'PT' },
-                    { namePrefix: 'Printer' },
-                    { namePrefix: 'BlueTooth Printer' },
-                    { namePrefix: 'Thermal' },
-                    { namePrefix: 'RPP' },  // Common thermal printer prefix
-                    { namePrefix: 'POS' },  // Point of Sale printers
-                ],
-                optionalServices: [
-                    '000018f0-0000-1000-8000-00805f9b34fb', // Generic printer service
-                    '0000ff00-0000-1000-8000-00805f9b34fb', // Common ESC/POS service
-                ],
-            });
-
-            setStatus(`Connecting to ${device.name}...`);
+            const devices = await thermalPrinter.scan();
+            setAvailableDevices(devices);
             
-            const server = await device.gatt?.connect();
-            
-            if (server) {
-                setPrinter(device);
-                setIsConnected(true);
-                setStatus(`Connected to ${device.name}`);
-
-                // Save device ID if auto-save is enabled
-                if (autoSaveDevice && device.id) {
-                    localStorage.setItem('thermal_printer_id', device.id);
-                    localStorage.setItem('thermal_printer_name', device.name || 'Thermal Printer');
-                }
-
-                // Handle disconnection
-                device.addEventListener('gattserverdisconnected', () => {
-                    setIsConnected(false);
-                    setStatus('Printer disconnected');
-                });
+            if (devices.length === 0) {
+                setStatus('No printers found. Make sure your printer is on and in pairing mode.');
+            } else {
+                setStatus(`Found ${devices.length} device(s). Tap to connect.`);
             }
         } catch (error: any) {
-            console.error('Bluetooth connection error:', error);
+            console.error('Scan error:', error);
+            setStatus(`Scan error: ${error.message}`);
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
+    const connectPrinter = async (device: BleDevice) => {
+        try {
+            setStatus(`Connecting to ${device.name || device.deviceId}...`);
+            
+            const success = await thermalPrinter.connect(device.deviceId);
+            
+            if (success) {
+                setPrinter(device);
+                setIsConnected(true);
+                setStatus(`Connected to ${device.name || 'Thermal Printer'}`);
+                setAvailableDevices([]);
+            } else {
+                setStatus('Failed to connect. Please try again.');
+            }
+        } catch (error: any) {
+            console.error('Connection error:', error);
             setStatus(`Error: ${error.message}`);
         }
     };
 
-    const disconnectPrinter = () => {
-        if (printer?.gatt?.connected) {
-            printer.gatt.disconnect();
+    const disconnectPrinter = async () => {
+        try {
+            await thermalPrinter.disconnect();
+            setPrinter(null);
+            setIsConnected(false);
+            setStatus('Disconnected');
+        } catch (error: any) {
+            console.error('Disconnect error:', error);
         }
-        setPrinter(null);
-        setIsConnected(false);
-        setStatus('Disconnected');
     };
 
     const testPrint = async () => {
-        if (!printer?.gatt?.connected) {
+        if (!thermalPrinter.isConnected()) {
             alert('Printer not connected!');
             return;
         }
 
         try {
             setStatus('Printing test receipt...');
-            
-            // This is a simplified example - actual ESC/POS commands depend on the printer
-            const testReceipt = [
-                '\x1B\x40', // Initialize printer
-                '\x1B\x61\x01', // Center align
-                '================================\n',
-                'Sabing2m Test Receipt\n',
-                '================================\n',
-                '\x1B\x61\x00', // Left align
-                `Printer: ${printer.name}\n`,
-                'Status: Connected\n',
-                `Time: ${new Date().toLocaleString()}\n`,
-                '================================\n',
-                'Compatible Printers:\n',
-                '- PT-210\n',
-                '- POS Thermal Printers\n',
-                '- ESC/POS Compatible\n',
-                '================================\n',
-                '\n\n\n',
-                '\x1D\x56\x41\x00', // Cut paper
-            ].join('');
-
-            // Note: Actual printing requires sending data to the printer's characteristic
-            // This is a placeholder - you'll need to find the correct service/characteristic
-            // for the PT-210 printer model
-            
-            setStatus('Test print sent (implementation varies by printer model)');
-            alert('Test print command sent! Check your printer.');
+            await thermalPrinter.printTest();
+            setStatus('Test print sent successfully!');
         } catch (error: any) {
+            console.error('Print error:', error);
             setStatus(`Print error: ${error.message}`);
+            alert(`Print failed: ${error.message}\n\nMake sure the printer is on and connected.`);
         }
     };
 
