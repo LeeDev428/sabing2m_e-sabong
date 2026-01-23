@@ -5,6 +5,7 @@ import axios from 'axios';
 import TellerLayout from '@/layouts/teller-layout';
 import { QRCodeSVG } from 'qrcode.react';
 import { showToast } from '@/components/toast';
+import { thermalPrinter } from '@/utils/thermalPrinter';
 
 interface TellerDashboardProps {
     fights?: Fight[];
