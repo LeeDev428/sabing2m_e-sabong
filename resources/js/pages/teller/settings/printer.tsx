@@ -147,13 +147,14 @@ export default function PrinterSettings() {
                     </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
                     {!isConnected ? (
                         <button
-                            onClick={connectPrinter}
-                            className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-base sm:text-lg"
+                            onClick={scanForPrinters}
+                            disabled={isScanning}
+                            className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed rounded-lg font-bold text-base sm:text-lg"
                         >
-                            🔗 Connect to Printer
+                            {isScanning ? '🔍 Scanning...' : '🔗 Scan for Printers'}
                         </button>
                     ) : (
                         <>
@@ -178,6 +179,29 @@ export default function PrinterSettings() {
                         Clear Saved Device
                     </button>
                 </div>
+
+                {/* Available Devices List */}
+                {availableDevices.length > 0 && (
+                    <div className="mt-4">
+                        <h3 className="text-sm font-semibold text-gray-300 mb-2">Available Printers:</h3>
+                        <div className="space-y-2">
+                            {availableDevices.map((device, index) => (
+                                <button
+                                    key={device.deviceId || index}
+                                    onClick={() => connectPrinter(device)}
+                                    className="w-full bg-[#2a3544] hover:bg-[#3a4554] text-left p-3 rounded-lg border border-gray-600 transition-colors"
+                                >
+                                    <div className="font-semibold text-white">
+                                        {device.name || 'Unknown Device'}
+                                    </div>
+                                    <div className="text-xs text-gray-400 truncate">
+                                        {device.deviceId}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Receipt Preview */}
