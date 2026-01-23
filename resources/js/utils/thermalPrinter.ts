@@ -248,8 +248,11 @@ export class ThermalPrinter {
         odds: number;
         potential_payout: number;
     }) {
+        console.log('[ThermalPrinter] printTicket() called with data:', ticketData);
+        
         const sideDisplay = ticketData.side.toUpperCase();
         
+        console.log('[ThermalPrinter] Building ESC/POS commands...');
         const commands = [
             `${ESC}@`, // Initialize
             `${ESC}a${String.fromCharCode(1)}`, // Center align
@@ -276,7 +279,16 @@ export class ThermalPrinter {
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
         ].join('');
 
-        await this.write(commands);
+        console.log('[ThermalPrinter] Commands built, length:', commands.length);
+        console.log('[ThermalPrinter] Calling write()...');
+        
+        try {
+            await this.write(commands);
+            console.log('[ThermalPrinter] ✅ write() completed successfully');
+        } catch (error) {
+            console.error('[ThermalPrinter] ❌ write() failed:', error);
+            throw error;
+        }
     }
 }
 
