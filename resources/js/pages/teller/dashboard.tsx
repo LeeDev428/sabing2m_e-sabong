@@ -37,6 +37,25 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     const [showTicketModal, setShowTicketModal] = useState(false);
     const [ticketData, setTicketData] = useState<any>(null);
     const ticketRef = useRef<HTMLDivElement>(null);
+    const [isPrinterConnected, setIsPrinterConnected] = useState(false);
+
+    // Check printer connection on mount
+    useEffect(() => {
+        thermalPrinter.initialize().then(() => {
+            setIsPrinterConnected(thermalPrinter.isConnected());
+        });
+
+        // Listen for connection changes
+        const handleConnectionChange = (connected: boolean) => {
+            setIsPrinterConnected(connected);
+        };
+
+        thermalPrinter.addConnectionListener(handleConnectionChange);
+
+        return () => {
+            thermalPrinter.removeConnectionListener(handleConnectionChange);
+        };
+    }, []);
 
     // Real-time balance and bet totals polling
     useEffect(() => {
@@ -279,6 +298,13 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     <div className="text-right">
                         <div className="text-xs text-gray-400">Cash Balance</div>
                         <div className="text-lg font-bold text-green-400 transition-all duration-300">₱{liveBalance.toLocaleString()}</div>
+                        {/* Printer Status Indicator */}
+                        <div className="flex items-center justify-end gap-1 mt-1">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isPrinterConnected ? 'bg-green-400' : 'bg-gray-500'}`}></div>
+                            <span className={`text-[10px] ${isPrinterConnected ? 'text-green-400' : 'text-gray-500'}`}>
+                                {isPrinterConnected ? 'Printer OK' : 'No Printer'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
