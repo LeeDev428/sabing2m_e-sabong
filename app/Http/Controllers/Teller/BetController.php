@@ -95,6 +95,7 @@ class BetController extends Controller
                 'amount' => $bet->amount,
                 'odds' => $bet->odds,
                 'side' => $bet->side,
+                'event_name' => $fight->event_name ?? 'EVENTTITLE',
             ],
         ]);
     }
