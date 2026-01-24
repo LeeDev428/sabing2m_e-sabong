@@ -132,9 +132,7 @@ export default function History({ bets, summary }: HistoryProps) {
                     setScanning(false);
                     setShowVoidScanner(false);
                     html5QrCodeRef.current = null;
-                })
-            case 'active': return 'bg-blue-600';
-            default: return 'bg-gray-600';
+                });
         }
     };
 
