@@ -40,9 +40,10 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $ticketFromSession = $request->session()->get('ticket');
-        Log::info('📦 HandleInertiaRequests - Session ticket data:', [
+        $newTicketFromSession = $request->session()->get('newTicket');
+        Log::info('📦 HandleInertiaRequests - Session data:', [
             'ticket' => $ticketFromSession,
-            'has_ticket' => $ticketFromSession !== null,
+            'newTicket' => $newTicketFromSession,
             'url' => $request->url(),
         ]);
 
@@ -58,6 +59,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
                 'ticket' => $request->session()->get('ticket'),
+                'newTicket' => $newTicketFromSession,
             ],
         ];
     }
