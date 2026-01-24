@@ -84,7 +84,7 @@ class BetController extends Controller
             $assignment->save();
         }
 
-        // Log what we're about to flash
+        // Prepare ticket data
         $ticketData = [
             'id' => $bet->id,
             'ticket_id' => $bet->ticket_id,
@@ -95,13 +95,13 @@ class BetController extends Controller
             'side' => $bet->side,
             'event_name' => $fight->event_name,
         ];
-        \Log::info('🎫 Flashing ticket data to session:', $ticketData);
+        
+        \Log::info('🎫 Returning ticket data directly:', $ticketData);
 
-        // Return with flash session data that will be shared via Inertia middleware
+        // Return with both flash message and ticket data in props
         return back()->with([
             'success' => 'Bet placed successfully.',
-            'ticket' => $ticketData,
-        ]);
+        ])->with('ticketData', $ticketData);
     }
 
     public function history(Request $request)
