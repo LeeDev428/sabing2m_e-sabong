@@ -263,10 +263,11 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 if (ticket) {
                     console.log('✅ TICKET EXISTS - Creating newTicketData...');
                     console.log('🔍 ticket.event_name:', ticket.event_name);
-                    console.log('🔍 selectedFight.event_name:', selectedFight.event_name);
+                    console.log('🔍 selectedFight.event_name:', selectedFight?.event_name);
                     console.log('🔍 selectedFight:', selectedFight);
                     
-                    const eventName = ticket.event_name || selectedFight.event_name;
+                    // Fallback chain: ticket.event_name -> selectedFight.event_name -> 'SABONG EVENT'
+                    const eventName = ticket.event_name || selectedFight?.event_name || 'SABONG EVENT';
                     console.log('🔍 Final event_name:', eventName);
                     
                     const newTicketData = {
