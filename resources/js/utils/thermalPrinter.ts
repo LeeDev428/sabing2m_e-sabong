@@ -252,7 +252,7 @@ export class ThermalPrinter {
         console.log('[ThermalPrinter] printTicket() called with data:', ticketData);
         
         const sideDisplay = ticketData.side.toUpperCase();
-        const eventName = ticketData.event_name;
+        const eventName = ticketData.event_name || 'SABONG EVENT';
         
         console.log('[ThermalPrinter] Building ESC/POS commands with QR code...');
         console.log('[ThermalPrinter] Event name to print:', eventName);
