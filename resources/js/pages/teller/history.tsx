@@ -138,7 +138,7 @@ export default function History({ bets, summary }: HistoryProps) {
 
     const handlePrintReceipt = async (bet: Bet) => {
         if (!isPrinterConnected) {
-            showToast('❌ Printer not connected', 'error', 3000);
+            showToast('❌ Printer not connected. Connect printer first.', 'error', 3000);
             return;
         }
 
@@ -150,12 +150,12 @@ export default function History({ bets, summary }: HistoryProps) {
                 amount: bet.amount,
                 odds: bet.odds || 1.95,
                 potential_payout: bet.potential_payout,
-                event_name: bet.fight.event_name || 'EVENTTITLE',
+                event_name: bet.fight.event_name,
             });
-            showToast('✅ Receipt reprinted!', 'success', 2000);
+            showToast('✅ Receipt reprinted successfully!', 'success', 2000);
         } catch (error: any) {
             console.error('Print error:', error);
-            showToast(`❌ Print failed: ${error.message}`, 'error', 3000)
+            showToast(`❌ Print failed: ${error.message}`, 'error', 3000);
         }
     };
 
@@ -293,12 +293,12 @@ export default function History({ bets, summary }: HistoryProps) {
                                     </div>
 
                                     {/* Print Button - Always show for active bets */}
-                                    {bet.status === 'active' && isPrinterConnected && (
+                                    {bet.status === 'active' && (
                                         <button
                                             onClick={() => handlePrintReceipt(bet)}
                                             className="w-full mt-3 bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
                                         >
-                                            <span>🖨️</span> PRINT RECEIPT
+                                            <span>🖨️</span> PRINT
                                         </button>
                                     )}
                                     
