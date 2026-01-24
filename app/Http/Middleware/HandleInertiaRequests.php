@@ -53,4 +53,14 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
     }
+
+    /**
+     * Sets the root template that's loaded on the first page visit.
+     *
+     * @see https://inertiajs.com/server-side-setup#root-template
+     */
+    public function rootView(Request $request): string
+    {
+        return 'app';
+    }
 }
