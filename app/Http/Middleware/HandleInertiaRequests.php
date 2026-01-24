@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Illuminate\Support\Facades\Log;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -39,7 +40,7 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $ticketFromSession = $request->session()->get('ticket');
-        \Log::info('📦 HandleInertiaRequests - Session ticket data:', [
+        Log::info('📦 HandleInertiaRequests - Session ticket data:', [
             'ticket' => $ticketFromSession,
             'has_ticket' => $ticketFromSession !== null,
             'url' => $request->url(),
