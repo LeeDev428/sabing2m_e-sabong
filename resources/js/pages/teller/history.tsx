@@ -86,6 +86,9 @@ export default function History({ bets, summary }: HistoryProps) {
     const startVoidScanning = async () => {
         try {
             console.log('Starting void scanner...');
+            // Request camera permission first
+            await navigator.mediaDevices.getUserMedia({ video: true });
+            
             const html5QrCode = new Html5Qrcode("void-qr-reader");
             html5QrCodeRef.current = html5QrCode;
 
