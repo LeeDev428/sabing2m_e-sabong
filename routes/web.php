@@ -142,6 +142,7 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
                     'fight_number' => $fight->fight_number,
                     'meron_fighter' => $fight->meron_fighter,
                     'wala_fighter' => $fight->wala_fighter,
+                    'event_name' => $fight->event_name,
                     'status' => $fight->status,
                     'meron_odds' => $fight->meron_odds,
                     'wala_odds' => $fight->wala_odds,
