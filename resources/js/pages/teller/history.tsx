@@ -85,6 +85,7 @@ export default function History({ bets, summary }: HistoryProps) {
 
     const startVoidScanning = async () => {
         try {
+            console.log('Starting void scanner...');
             const html5QrCode = new Html5Qrcode("void-qr-reader");
             html5QrCodeRef.current = html5QrCode;
 
@@ -122,9 +123,12 @@ export default function History({ bets, summary }: HistoryProps) {
             );
 
             setScanning(true);
+            console.log('✅ Scanner started successfully');
         } catch (error: any) {
-            console.error(error);
+            console.error('❌ Scanner failed to start:', error);
+            showToast(`Scanner error: ${error.message || 'Camera permission denied?'}`, 'error', 5000);
             setScanning(false);
+            setShowVoidScanner(false);
         }
     };
 
