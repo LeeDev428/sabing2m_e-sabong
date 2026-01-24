@@ -50,8 +50,16 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
-                'newTicket' => $request->session()->get('newTicket'), // Get from flash session
             ],
+            // Get ticket from persistent session and clear it
+            'lastTicket' => function () use ($request) {
+                $ticket = $request->session()->get('last_ticket_' . $request->user()?->id);
+                if ($ticket) {
+                    $request->session()->forget('last_ticket_' . $request->user()?->id);
+                    \Log::info('📤 Retrieved and cleared ticket:', ['ticket' => $ticket]);
+                }
+                return $ticket;
+            },
         ];
     }
 
