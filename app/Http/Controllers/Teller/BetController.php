@@ -84,19 +84,18 @@ class BetController extends Controller
             $assignment->save();
         }
 
-        // Return with ticket data in props (not flash session)
-        return back()->with([
-            'success' => 'Bet placed successfully.',
-            'ticket' => [
-                'id' => $bet->id,
-                'ticket_id' => $bet->ticket_id,
-                'fight_number' => $fight->fight_number,
-                'potential_payout' => $bet->potential_payout,
-                'amount' => $bet->amount,
-                'odds' => $bet->odds,
-                'side' => $bet->side,
-            ],
+        // Use Inertia::share to pass ticket data directly in props
+        \Inertia\Inertia::share('ticket', [
+            'id' => $bet->id,
+            'ticket_id' => $bet->ticket_id,
+            'fight_number' => $fight->fight_number,
+            'potential_payout' => $bet->potential_payout,
+            'amount' => $bet->amount,
+            'odds' => $bet->odds,
+            'side' => $bet->side,
         ]);
+
+        return back()->with('success', 'Bet placed successfully.');
     }
 
     public function history(Request $request)
