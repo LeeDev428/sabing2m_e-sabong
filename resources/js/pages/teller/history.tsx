@@ -95,17 +95,20 @@ export default function History({ bets, summary }: HistoryProps) {
                     qrbox: { width: 250, height: 250 }
                 },
                 (decodedText) => {
-                    // QR Code scanned successfully
+                    // QR Code scanned successfully - decodedText is the ticket_id
                     html5QrCode.stop();
                     setScanning(false);
                     
                     // Confirm void action
                     if (confirm(`Void ticket ${decodedText}? This action cannot be undone.`)) {
                         router.post('/teller/bets/void', {
-                            bet_id: decodedText
+                            ticket_id: decodedText
                         }, {
                             preserveScroll: true,
                             onSuccess: () => {
+                                setShowVoidScanner(false);
+                            },
+                            onError: () => {
                                 setShowVoidScanner(false);
                             }
                         });
