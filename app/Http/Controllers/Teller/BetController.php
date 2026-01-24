@@ -302,12 +302,31 @@ class BetController extends Controller
     {
         $teller = auth()->user();
 
-        // Get today's bets
-        $bets = Bet::with(['fight', 'teller'])
+        // Get today's bets with all needed fields
+        $bets = Bet::with(['fight:id,fight_number,meron_fighter,wala_fighter,event_name', 'teller:id,name'])
             ->where('teller_id', $teller->id)
             ->whereDate('created_at', today())
             ->latest()
-            ->paginate(50);
+            ->paginate(50)
+            ->through(function ($bet) {
+                return [
+                    'id' => $bet->id,
+                    'ticket_id' => $bet->ticket_id,
+                    'fight' => [
+                        'fight_number' => $bet->fight->fight_number,
+                        'meron_fighter' => $bet->fight->meron_fighter,
+                        'wala_fighter' => $bet->fight->wala_fighter,
+                        'event_name' => $bet->fight->event_name,
+                    ],
+                    'side' => $bet->side,
+                    'amount' => (float) $bet->amount,
+                    'odds' => (float) $bet->odds,
+                    'potential_payout' => (float) $bet->potential_payout,
+                    'actual_payout' => $bet->actual_payout ? (float) $bet->actual_payout : null,
+                    'status' => $bet->status,
+                    'created_at' => $bet->created_at,
+                ];
+            });
 
         // Calculate summary stats
         $totalBets = Bet::where('teller_id', $teller->id)
