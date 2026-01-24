@@ -250,11 +250,16 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
         }, {
             onSuccess: (page) => {
                 console.log('✅ BET SUCCESSFUL - onSuccess callback fired');
+                console.log('📦 Page props:', page.props);
                 
                 showToast(toastMessage, 'success', 5000);
                 
                 const ticket = (page.props as any).ticket;
+                console.log('🎫 Ticket data from server:', ticket);
+                console.log('🎫 Ticket exists?', !!ticket);
+                
                 if (ticket) {
+                    console.log('✅ TICKET EXISTS - Creating newTicketData...');
                     const newTicketData = {
                         ticket_id: ticket.ticket_id,
                         fight_number: selectedFight.fight_number,
@@ -267,6 +272,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         wala_fighter: selectedFight.wala_fighter,
                     };
                     
+                    console.log('📄 New ticket data created:', newTicketData);
+                    console.log('🖨️ CALLING autoPrintTicket()...');
+                    
                     // Call auto-print function IMMEDIATELY (fire and forget)
                     autoPrintTicket(newTicketData).catch(err => {
                         console.error('Auto-print promise rejected:', err);
@@ -275,6 +283,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     // Show modal
                     setTicketData(newTicketData);
                     setShowTicketModal(true);
+                } else {
+                    console.error('❌ NO TICKET DATA from server!');
                 }
                 setAmount('0');
                 setBetSide(null);
