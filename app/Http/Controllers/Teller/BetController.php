@@ -84,12 +84,14 @@ class BetController extends Controller
             $assignment->save();
         }
 
-        // Prepare ticket data
+        // Prepare ticket data with fallback for event_name
+        $eventName = $fight->event_name ?? 'SABONG EVENT';
+        
         \Log::info('🥊 Fight data:', [
             'fight_id' => $fight->id,
             'fight_number' => $fight->fight_number,
-            'event_name' => $fight->event_name,
-            'event_name_is_null' => is_null($fight->event_name),
+            'event_name_raw' => $fight->event_name,
+            'event_name_final' => $eventName,
         ]);
         
         $ticketData = [
@@ -100,7 +102,7 @@ class BetController extends Controller
             'amount' => $bet->amount,
             'odds' => $bet->odds,
             'side' => $bet->side,
-            'event_name' => $fight->event_name,
+            'event_name' => $eventName,
         ];
 
         // Store ticket in persistent session (not flash) so polling doesn't consume it
