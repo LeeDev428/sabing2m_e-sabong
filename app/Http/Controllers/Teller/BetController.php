@@ -401,15 +401,24 @@ class BetController extends Controller
         }
 
         // Void the bet and refund amount
-        $bet->status = 'void';
+        $bet->status = 'voided';
         $bet->voided_at = now();
         $bet->voided_by = auth()->id();
         $bet->save();
 
-        // Refund to teller's balance
-        $teller = auth()->user();
-        $teller->increment('balance', $bet->amount);
+        // Refund to teller's fight-specific cash assignment
+        $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+            ->where('fight_id', $bet->fight_id)
+            ->first();
+        
+        if ($assignment) {
+            // Subtract the bet amount from current balance (return cash to customer)
+            $assignment->current_balance -= $bet->amount;
+            $assignment->save();
+        }
 
-        return back()->with('success', "Bet {$bet->ticket_id} voided successfully! ₱{$bet->amount} refunded.");
+        \Log::info("✅ Bet voided: {$bet->ticket_id}, Amount refunded: ₱{$bet->amount}");
+
+        return back()->with('success', "Bet {$bet->ticket_id} voided successfully! ₱{$bet->amount} refunded to customer.");
     }
 }
