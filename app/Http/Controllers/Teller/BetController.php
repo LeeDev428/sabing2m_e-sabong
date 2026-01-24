@@ -84,16 +84,19 @@ class BetController extends Controller
             $assignment->save();
         }
 
-        return redirect()->back()
-            ->with('success', 'Bet placed successfully.')
-            ->with('ticket', [
+        // Return with ticket data in props (not flash session)
+        return back()->with([
+            'success' => 'Bet placed successfully.',
+            'ticket' => [
                 'id' => $bet->id,
                 'ticket_id' => $bet->ticket_id,
+                'fight_number' => $fight->fight_number,
                 'potential_payout' => $bet->potential_payout,
                 'amount' => $bet->amount,
                 'odds' => $bet->odds,
                 'side' => $bet->side,
-            ]);
+            ],
+        ]);
     }
 
     public function history(Request $request)
