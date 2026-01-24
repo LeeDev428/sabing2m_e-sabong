@@ -19,10 +19,9 @@ interface TellerDashboardProps {
         draw_bets: number;
     };
     tellerBalance?: number;
-    event_name?: string;
 }
 
-export default function TellerDashboard({ fights = [], summary, tellerBalance = 0, event_name = 'EVENTTITLE' }: TellerDashboardProps) {
+export default function TellerDashboard({ fights = [], summary, tellerBalance = 0 }: TellerDashboardProps) {
     const [amount, setAmount] = useState('0');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | 'draw' | null>(null);
@@ -273,7 +272,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         created_at: new Date().toLocaleString(),
                         meron_fighter: selectedFight.meron_fighter,
                         wala_fighter: selectedFight.wala_fighter,
-                        event_name: event_name,
+                        event_name: ticket.event_name || selectedFight.event_name || 'EVENTTITLE',
                     };
                     
                     console.log('📄 New ticket data created:', newTicketData);
