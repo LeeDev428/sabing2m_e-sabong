@@ -266,19 +266,13 @@ class BetController extends Controller
 
         // Check if bet has already been claimed
         if ($bet->status === 'claimed') {
-            return response()->json([
-                'success' => false,
-                'message' => 'This bet has already been claimed.',
-            ], 400);
+            return back()->with('error', 'This bet has already been claimed.');
         }
 
         // Check if bet is a winning bet
         if ($bet->status !== 'won') {
             $statusMessage = $bet->status === 'lost' ? 'lost' : 'not eligible for payout';
-            return response()->json([
-                'success' => false,
-                'message' => "Cannot claim payout. This bet {$statusMessage}.",
-            ], 400);
+            return back()->with('error', "Cannot claim payout. This bet {$statusMessage}.");
         }
 
         // Calculate payout amount
@@ -288,6 +282,7 @@ class BetController extends Controller
         $bet->status = 'claimed';
         $bet->claimed_at = now();
         $bet->claimed_by = auth()->id();
+        $bet->actual_payout = $payoutAmount;
         $bet->save();
 
         // Deduct payout from teller's cash assignment (teller pays out winnings)
@@ -300,13 +295,13 @@ class BetController extends Controller
             $assignment->save();
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Payout claimed successfully!',
-            'bet' => $bet,
-            'payout_amount' => (float) $payoutAmount,
-        ]);
+        \Log::info("✅ Payout claimed: {$bet->ticket_id}, Amount: ₱{$payoutAmount}");
+
+        return back()->with('success', "Payout claimed successfully! ₱{$payoutAmount} paid to customer.");
     }
+
+    /**
+     * Get teller's bet history and summary
 
     /**
      * Display merged history and summary page
@@ -406,6 +401,7 @@ class BetController extends Controller
         $bet->voided_by = auth()->id();
         $bet->save();
 
+        
         // Refund to teller's fight-specific cash assignment
         $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
             ->where('fight_id', $bet->fight_id)
