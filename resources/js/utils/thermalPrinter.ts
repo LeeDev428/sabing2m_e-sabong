@@ -255,12 +255,15 @@ export class ThermalPrinter {
         const eventName = ticketData.event_name || 'Event Name Not Set';
         
         console.log('[ThermalPrinter] Building ESC/POS commands with QR code...');
+        console.log('[ThermalPrinter] Event name to print:', eventName);
         const commands = [
             `${ESC}@`, // Initialize
             
-            // Event Title (centered, normal size)
+            // Event Title (centered, BOLD and BIGGER)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold (48 = 0x30)
             `${eventName}\n`,
+            `${ESC}!${String.fromCharCode(0)}`, // Normal font
             '================================\n',
             '\n',
             
