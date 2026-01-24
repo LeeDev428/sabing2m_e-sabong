@@ -292,6 +292,15 @@ export default function History({ bets, summary }: HistoryProps) {
                         ) : (
                             bets.data.map((bet) => (
                                 <div key={bet.id} className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-700">
+                                    {/* Event Name Header */}
+                                    {bet.fight.event_name && (
+                                        <div className="text-center mb-3 pb-2 border-b border-gray-700">
+                                            <div className="text-lg font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                                                {bet.fight.event_name}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
                                             <div className="text-sm text-gray-400">Fight #{bet.fight.fight_number}</div>
