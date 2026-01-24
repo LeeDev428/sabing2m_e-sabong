@@ -625,7 +625,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         <div ref={ticketRef} className="ticket p-6">
                             {/* Header */}
                             <div className="text-center border-b-2 border-dashed border-gray-800 pb-3 mb-4">
-                                <h1 className="text-3xl font-bold tracking-wide">EVENTITLE</h1>
+                                <h1 className="text-3xl font-bold tracking-wide">{ticketData.event_name || 'Event Name Not Set'}</h1>
                             </div>
 
                             {/* Main Content: QR Code on Left, Details on Right */}
