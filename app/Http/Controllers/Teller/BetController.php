@@ -259,10 +259,10 @@ class BetController extends Controller
     public function claimPayout(Request $request)
     {
         $validated = $request->validate([
-            'bet_id' => 'required|exists:bets,id',
+            'ticket_id' => 'required|string|exists:bets,ticket_id',
         ]);
 
-        $bet = Bet::with(['fight', 'teller'])->findOrFail($validated['bet_id']);
+        $bet = Bet::with(['fight', 'teller'])->where('ticket_id', $validated['ticket_id'])->firstOrFail();
 
         // Check if bet has already been claimed
         if ($bet->status === 'claimed') {
