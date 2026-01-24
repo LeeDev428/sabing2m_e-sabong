@@ -644,7 +644,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             {/* Main Content: QR Code on Left, Details on Right */}
                             <div className="flex gap-4 mb-4">
                                 {/* QR Code Section */}
-                                <div className="flex-shrink-0 border-2 border-gray-800 p-2 rounded order-2">
+                                <div className="flex-shrink-0 border-2 border-gray-800 p-2 rounded order">
                                     <QRCodeSVG 
                                         value={ticketData.ticket_id}
                                         size={150}
