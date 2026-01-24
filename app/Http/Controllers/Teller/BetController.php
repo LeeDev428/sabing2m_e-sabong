@@ -95,13 +95,12 @@ class BetController extends Controller
             'side' => $bet->side,
             'event_name' => $fight->event_name,
         ];
-        
-        // Store in cache for 10 seconds (will be consumed by frontend immediately)
-        $cacheKey = 'ticket_' . auth()->id();
-        \Cache::put($cacheKey, $ticketData, now()->addSeconds(10));
-        \Log::info('🎫 Stored ticket in cache:', ['key' => $cacheKey, 'data' => $ticketData]);
 
-        return back()->with('success', 'Bet placed successfully.');
+        // Return with ticket directly in the response (Inertia will pass it to onSuccess)
+        return back()->with([
+            'success' => 'Bet placed successfully.',
+            'newTicket' => $ticketData, // This will be available in page.props.flash.newTicket
+        ]);
     }
 
     public function history(Request $request)
