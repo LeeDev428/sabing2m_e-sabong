@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import TellerLayout from '@/layouts/teller-layout';
 import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { showToast } from '@/components/toast';
 
 interface PayoutScanProps {
     message?: string;
@@ -66,14 +67,16 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                     router.post('/teller/payout-scan/claim', {
                         ticket_id: decodedText
                     }, {
-                        preserveScroll: true,
-                        preserveState: true,
+                        preserveScroll: false,
                         onSuccess: (page) => {
                             console.log('✅ Payout claim successful:', page.props);
+                            // Page will reload and show success message
                         },
                         onError: (errors) => {
                             console.error('❌ Payout claim failed:', errors);
-                            setCameraError(typeof errors === 'object' ? JSON.stringify(errors) : String(errors));
+                            const errorMsg = typeof errors === 'object' ? JSON.stringify(errors) : String(errors);
+                            setCameraError(errorMsg);
+                            showToast(`❌ Failed to claim: ${errorMsg}`, 'error', 5000);
                         }
                     });
                 },
