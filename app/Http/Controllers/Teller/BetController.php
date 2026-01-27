@@ -395,26 +395,41 @@ class BetController extends Controller
             return back()->with('error', 'Cannot void bet. Fight result already declared.');
         }
 
-        // Void the bet and refund amount
-        $bet->status = 'voided';
-        $bet->voided_at = now();
-        $bet->voided_by = auth()->id();
-        $bet->save();
+        try {
+            // Void the bet and refund amount
+            $bet->status = 'voided';
+            
+            // Try to set voided_at and voided_by if columns exist
+            try {
+                $bet->voided_at = now();
+                $bet->voided_by = auth()->id();
+            } catch (\Exception $e) {
+                \Log::warning("Voided_at/voided_by columns not found, skipping: " . $e->getMessage());
+            }
+            
+            $bet->save();
 
-        
-        // Refund to teller's fight-specific cash assignment
-        $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
-            ->where('fight_id', $bet->fight_id)
-            ->first();
-        
-        if ($assignment) {
-            // Subtract the bet amount from current balance (return cash to customer)
-            $assignment->current_balance -= $bet->amount;
-            $assignment->save();
+            
+            // Refund to teller's fight-specific cash assignment
+            $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+                ->where('fight_id', $bet->fight_id)
+                ->first();
+            
+            if ($assignment) {
+                // Subtract the bet amount from current balance (return cash to customer)
+                $assignment->current_balance -= $bet->amount;
+                $assignment->save();
+            }
+
+            \Log::info("✅ Bet voided: {$bet->ticket_id}, Amount refunded: ₱{$bet->amount}");
+
+            return back()->with('success', "Bet {$bet->ticket_id} voided successfully! ₱{$bet->amount} refunded to customer.");
+        } catch (\Exception $e) {
+            \Log::error("❌ Void bet failed: " . $e->getMessage(), [
+                'ticket_id' => $validated['ticket_id'],
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', "Failed to void bet: " . $e->getMessage());
         }
-
-        \Log::info("✅ Bet voided: {$bet->ticket_id}, Amount refunded: ₱{$bet->amount}");
-
-        return back()->with('success', "Bet {$bet->ticket_id} voided successfully! ₱{$bet->amount} refunded to customer.");
     }
 }
