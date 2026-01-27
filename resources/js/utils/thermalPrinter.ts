@@ -68,15 +68,18 @@ export class ThermalPrinter {
         }
 
         const devices: BleDevice[] = [];
+        console.log('🔍 Starting BLE scan for thermal printers...');
         
         await BleClient.requestLEScan(
             {
-                // Scan for all devices (PT-210 and others)
+                // Scan for all devices (PT-210, PT0-CA95, and others)
                 // namePrefix: 'PT', // Removed filter to find all devices
             },
             (result) => {
                 // Filter for printer-like devices by name
                 const name = result.device.name?.toLowerCase() || '';
+                console.log(`📡 Found BLE device: ${result.device.name} (${result.device.deviceId})`);
+                
                 const isPrinter = name.includes('pt') || 
                                  name.includes('printer') || 
                                  name.includes('thermal') ||
@@ -84,6 +87,7 @@ export class ThermalPrinter {
                                  name.includes('rpp');
                 
                 if (isPrinter && !devices.find(d => d.deviceId === result.device.deviceId)) {
+                    console.log(`✅ Detected thermal printer: ${result.device.name}`);
                     devices.push(result.device);
                 }
             }
@@ -93,6 +97,7 @@ export class ThermalPrinter {
         await new Promise(resolve => setTimeout(resolve, 5000));
         await BleClient.stopLEScan();
 
+        console.log(`🔍 Scan complete. Found ${devices.length} printer(s):`, devices.map(d => d.name));
         return devices;
     }
 
