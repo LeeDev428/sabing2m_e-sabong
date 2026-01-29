@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import TellerLayout from '@/layouts/teller-layout';
 import { thermalPrinter } from '@/utils/thermalPrinter';
@@ -122,7 +122,7 @@ export default function PrinterSettings() {
     };
 
     return (
-        <TellerLayout>
+        <TellerLayout currentPage="settings">
             <Head title="Printer Settings" />
 
             <div className="p-4 max-w-2xl mx-auto">
@@ -280,7 +280,18 @@ export default function PrinterSettings() {
                 <button
                     onClick={() => {
                         if (confirm('Are you sure you want to logout?')) {
-                            router.post('/logout');
+                            // Clear any cached data
+                            sessionStorage.clear();
+                            router.post('/logout', {}, {
+                                onSuccess: () => {
+                                    // Force full page reload to clear all state
+                                    window.location.href = '/login';
+                                },
+                                onError: () => {
+                                    // If logout fails, still try to redirect
+                                    window.location.href = '/login';
+                                }
+                            });
                         }
                     }}
                     className="w-full px-6 py-4 bg-red-600 hover:bg-red-700 rounded-lg font-bold text-lg flex items-center justify-center gap-2"
