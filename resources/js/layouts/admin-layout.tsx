@@ -158,7 +158,15 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         <div className="text-xs text-gray-400">admin@esabong.com</div>
                     </div>
                     <button
-                        onClick={() => router.post('/logout')}
+                        onClick={() => {
+                            if (confirm('Are you sure you want to logout?')) {
+                                sessionStorage.clear();
+                                router.post('/logout', {}, {
+                                    onSuccess: () => window.location.href = '/login',
+                                    onError: () => window.location.href = '/login'
+                                });
+                            }
+                        }}
                         className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium"
                     >
                         🚪 Logout
