@@ -3,6 +3,7 @@ import TellerLayout from '@/layouts/teller-layout';
 import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { showToast } from '@/components/toast';
+import { PermissionManager } from '@/utils/permissionManager';
 
 interface PayoutScanProps {
     message?: string;
@@ -42,8 +43,14 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
             // Wait a bit for the div to be rendered
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // Request camera permission first
-            await navigator.mediaDevices.getUserMedia({ video: true });
+            // Request camera permission with proper error handling
+            const permissionResult = await PermissionManager.ensureCameraPermission();
+            if (!permissionResult.granted) {
+                setCameraError(permissionResult.error || 'Camera permission denied');
+                setScanning(false);
+                showToast('⚠️ ' + (permissionResult.error || 'Camera permission denied'), 'error', 5000);
+                return;
+            }
             
             const html5QrCode = new Html5Qrcode("qr-reader");
             html5QrCodeRef.current = html5QrCode;
@@ -90,9 +97,11 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
 
         } catch (error: any) {
             console.error('❌ Payout scanner failed to start:', error);
-            setCameraError(error.message || 'Failed to start camera');
+            const errorMsg = error.message || 'Failed to start camera';
+            setCameraError(errorMsg);
             setScanning(false);
             isScanningRef.current = false;
+            showToast(`⚠️ Camera error: ${errorMsg}`, 'error', 5000);
         }
     };
 
