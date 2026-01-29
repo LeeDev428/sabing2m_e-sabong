@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { thermalPrinter } from '@/utils/thermalPrinter';
 import { showToast } from '@/components/toast';
+import { PermissionManager } from '@/utils/permissionManager';
 
 interface Bet {
     id: number;
@@ -95,8 +96,13 @@ export default function History({ bets, summary }: HistoryProps) {
             // Wait a bit for the div to be rendered
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // Request camera permission first
-            await navigator.mediaDevices.getUserMedia({ video: true });
+            // Request camera permission with proper error handling
+            const permissionResult = await PermissionManager.ensureCameraPermission();
+            if (!permissionResult.granted) {
+                setScanning(false);
+                showToast('⚠️ ' + (permissionResult.error || 'Camera permission denied'), 'error', 5000);
+                return;
+            }
             
             const html5QrCode = new Html5Qrcode("void-qr-reader");
             html5QrCodeRef.current = html5QrCode;
