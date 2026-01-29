@@ -123,8 +123,14 @@ export default function DeclaratorLayout({ children, title }: DeclaratorLayoutPr
                     </div>
                     <button
                         onClick={() => {
-                            router.post('/logout');
-                            setSidebarOpen(false);
+                            if (confirm('Are you sure you want to logout?')) {
+                                sessionStorage.clear();
+                                setSidebarOpen(false);
+                                router.post('/logout', {}, {
+                                    onSuccess: () => window.location.href = '/login',
+                                    onError: () => window.location.href = '/login'
+                                });
+                            }
                         }}
                         className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium"
                     >
