@@ -649,72 +649,70 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
                     <div className="bg-white text-black rounded-lg w-full max-w-sm">
                         {/* Ticket Content for Printing */}
-                        <div ref={ticketRef} className="ticket p-6">
+                        <div ref={ticketRef} className="ticket p-4">
                             {/* Header */}
-                            <br />
-                            <br />
-                            <div className="text-center border-b-2 border-dashed border-gray-800 pb-3 mb-4">
-                                <h1 className="text-3xl font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                            <div className="text-center border-b-2 border-dashed border-gray-800 pb-2 mb-3">
+                                <h1 className="text-2xl font-bold tracking-wide">
                                     {ticketData.event_name}
                                 </h1>
                             </div>
 
                             {/* Main Content: QR Code on Left, Details on Right */}
-                            <div className="flex gap-4 mb-4">
-                                {/* QR Code Section */}
-                                <div className="flex-shrink-0 border-2 border-gray-800 p-2 rounded order">
+                            <div className="flex gap-3 mb-3">
+                                {/* QR Code Section - Left Side */}
+                                <div className="flex-shrink-0 border-2 border-gray-800 p-1 rounded">
                                     <QRCodeSVG 
                                         value={ticketData.ticket_id}
-                                        size={150}
+                                        size={120}
                                         level="H"
                                         includeMargin={false}
                                     />
                                 </div>
 
-                                {/* Details Section */}
-                                <div className="flex-1 space-y-1 text-sm">
+                                {/* Details Section - Right Side */}
+                                <div className="flex-1 space-y-0.5 text-sm">
                                     <div className="flex">
-                                        <span className="font-bold min-w-[60px]">Fight#:</span>
+                                        <span className="font-bold min-w-[55px]">Fight#:</span>
                                         <span>{ticketData.fight_number}</span>
                                     </div>
                                     <div className="flex">
-                                        <span className="font-bold min-w-[60px]">Teller:</span>
+                                        <span className="font-bold min-w-[55px]">Teller:</span>
                                         <span className="text-xs">Teller</span>
                                     </div>
                                     <div className="flex">
-                                        <span className="font-bold min-w-[60px]">Receipt:</span>
-                                        <span className="text-xs font-mono break-all">{ticketData.ticket_id.substring(0, 10)}</span>
+                                        <span className="font-bold min-w-[55px]">Receipt:</span>
+                                        <span className="text-xs font-mono">{ticketData.ticket_id.substring(0, 10)}</span>
                                     </div>
                                     <div className="flex">
-                                        <span className="font-bold min-w-[60px]">Date:</span>
+                                        <span className="font-bold min-w-[55px]">Date:</span>
                                         <span className="text-xs">{new Date().toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex">
-                                        <span className="font-bold min-w-[60px]">Time:</span>
+                                        <span className="font-bold min-w-[55px]">Time:</span>
                                         <span className="text-xs">{new Date().toLocaleTimeString()}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Bet Amount Section */}
-                            <div className="border-t-2 border-b-2 border-dashed border-gray-800 py-3 mb-3">
-                                <div className="text-left">
-                                    <div className={`text-xl font-bold ${
+                            {/* Bet Amount Section - Below Both */}
+                            <div className="border-t-2 border-dashed border-gray-800 pt-2 mb-2">
+                                <div className="text-center">
+                                    <div className={`text-3xl font-bold mb-1 ${
                                         ticketData.side === 'meron' ? 'text-red-600' : 
                                         ticketData.side === 'wala' ? 'text-blue-600' : 
                                         'text-green-600'
                                     }`}>
                                         {ticketData.side.toUpperCase()} - ₱{ticketData.amount.toLocaleString()}
                                     </div>
-                                    <div className="text-xs text-gray-600 mt-1">
-                                        Odds: ×{ticketData.odds} | Win: ₱{ticketData.potential_payout.toLocaleString()}
+                                    <div className="text-xs text-gray-600">
+                                        Odds: ×{ticketData.odds} | Potential Win: ₱{ticketData.potential_payout.toLocaleString()}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Footer */}
-                            <div className="text-center border-t-2 border-gray-800 pt-3">
-                                <p className="text-sm font-bold tracking-widest">OFFICIAL BETTING RECEIPT</p>
+                            <div className="text-center border-t-2 border-dashed border-gray-800 pt-2">
+                                <p className="text-xs font-bold tracking-widest">OFFICIAL BETTING RECEIPT</p>
                             </div>
                         </div>
 
