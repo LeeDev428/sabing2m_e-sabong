@@ -108,11 +108,16 @@ class FightController extends Controller
             // Create teller assignments
             if (isset($validated['teller_assignments'])) {
                 foreach ($validated['teller_assignments'] as $assignment) {
+                    // Check if teller has existing balance from latest fight
+                    $latestAssignment = TellerCashAssignment::where('teller_id', $assignment['teller_id'])
+                        ->orderBy('id', 'desc')
+                        ->first();
+                    
                     TellerCashAssignment::create([
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment['teller_id'],
                         'assigned_amount' => $assignment['amount'],
-                        'current_balance' => $assignment['amount'],
+                        'current_balance' => $latestAssignment ? $latestAssignment->current_balance : $assignment['amount'],
                     ]);
                 }
             }
@@ -227,15 +232,22 @@ class FightController extends Controller
                 'special_conditions' => $validated['special_conditions'] ?? null,
             ]);
 
-            // Update teller assignments - delete old and create new
-            $fight->tellerCashAssignments()->delete();
+            // Update teller assignments - preserve current balance
             if (isset($validated['teller_assignments'])) {
+                // Get current balances before deleting
+                $currentBalances = [];
+                foreach ($fight->tellerCashAssignments as $oldAssignment) {
+                    $currentBalances[$oldAssignment->teller_id] = $oldAssignment->current_balance;
+                }
+                
+                $fight->tellerCashAssignments()->delete();
+                
                 foreach ($validated['teller_assignments'] as $assignment) {
                     TellerCashAssignment::create([
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment['teller_id'],
                         'assigned_amount' => $assignment['amount'],
-                        'current_balance' => $assignment['amount'],
+                        'current_balance' => $currentBalances[$assignment['teller_id']] ?? $assignment['amount'],
                     ]);
                 }
             }
@@ -568,12 +580,21 @@ class FightController extends Controller
 
             // Create new assignments
             if (isset($validated['teller_assignments'])) {
+                // Get current balances before deleting
+                $currentBalances = [];
+                $existingAssignments = TellerCashAssignment::where('fight_id', $fight->id)->get();
+                foreach ($existingAssignments as $oldAssignment) {
+                    $currentBalances[$oldAssignment->teller_id] = $oldAssignment->current_balance;
+                }
+                
+                TellerCashAssignment::where('fight_id', $fight->id)->delete();
+                
                 foreach ($validated['teller_assignments'] as $assignment) {
                     TellerCashAssignment::create([
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment['teller_id'],
                         'assigned_amount' => $assignment['amount'],
-                        'current_balance' => $assignment['amount'],
+                        'current_balance' => $currentBalances[$assignment['teller_id']] ?? $assignment['amount'],
                     ]);
                 }
             }
