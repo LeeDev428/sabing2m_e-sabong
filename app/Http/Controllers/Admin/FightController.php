@@ -528,7 +528,7 @@ class FightController extends Controller
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment->teller_id,
                         'assigned_amount' => $assignment->assigned_amount,
-                        'current_balance' => $assignment->assigned_amount,
+                        'current_balance' => $assignment->current_balance, // CARRY OVER actual balance, not reset
                     ]);
                 }
             }
