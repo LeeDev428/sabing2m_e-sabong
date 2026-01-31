@@ -278,7 +278,16 @@ export class ThermalPrinter {
             '================================\n',
             '\n',
             
-            // Receipt details (compact, no QR code on thermal - saves space and time)
+            // Print QR Code (small size 3)
+            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            `${GS}(k${String.fromCharCode(4)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(65)}${String.fromCharCode(50)}${String.fromCharCode(0)}`, // QR Model 2
+            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(67)}${String.fromCharCode(3)}`, // QR Size: 3
+            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(69)}${String.fromCharCode(48)}`, // QR Error correction: L
+            `${GS}(k${String.fromCharCode(ticketData.ticket_id.length + 3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(80)}${String.fromCharCode(48)}${ticketData.ticket_id}`, // QR Data
+            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(81)}${String.fromCharCode(48)}`, // Print QR
+            '\n',
+            
+            // Receipt details (abbreviated, compact)
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `Fight#:  ${ticketData.fight_number}\n`,
             `Teller:  Teller\n`,
