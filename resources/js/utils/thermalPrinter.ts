@@ -298,10 +298,12 @@ export class ThermalPrinter {
             '\n',
             '================================\n',
             '\n',
-            `${ESC}!${String.fromCharCode(16)}`, // Double width
+            // Bet Info (BIGGER)
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
             `${sideDisplay} - P${ticketData.amount.toLocaleString()}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal
-            `Odds: x${ticketData.odds} | Win: P${ticketData.potential_payout.toLocaleString()}\n`,
+            `Win: P${ticketData.potential_payout.toLocaleString()}\n`,
             '\n',
             '================================\n',
             '\n',
