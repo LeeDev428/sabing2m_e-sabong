@@ -649,70 +649,68 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
                     <div className="bg-white text-black rounded-lg w-full max-w-sm">
                         {/* Ticket Content for Printing */}
-                        <div ref={ticketRef} className="ticket p-4">
+                        <div ref={ticketRef} className="ticket p-3">
                             {/* Header */}
-                            <div className="text-center border-b-2 border-dashed border-gray-800 pb-2 mb-3">
-                                <h1 className="text-2xl font-bold tracking-wide">
+                            <div className="text-center border-b-2 border-dashed border-gray-800 pb-1 mb-2">
+                                <h1 className="text-lg font-bold tracking-wide uppercase">
                                     {ticketData.event_name}
                                 </h1>
                             </div>
 
-                            {/* Main Content: QR Code on Left, Details on Right */}
-                            <div className="flex gap-3 mb-3">
-                                {/* QR Code Section - Left Side */}
-                                <div className="flex-shrink-0 border-2 border-gray-800 p-1 rounded">
+                            {/* Main Content: QR Code LEFT, Details RIGHT */}
+                            <div className="flex gap-2 mb-2">
+                                {/* QR Code - LEFT SIDE */}
+                                <div className="flex-shrink-0">
                                     <QRCodeSVG 
                                         value={ticketData.ticket_id}
-                                        size={120}
+                                        size={100}
                                         level="H"
                                         includeMargin={false}
                                     />
                                 </div>
 
-                                {/* Details Section - Right Side */}
-                                <div className="flex-1 space-y-0.5 text-sm">
-                                    <div className="flex">
-                                        <span className="font-bold min-w-[55px]">Fight#:</span>
+                                {/* Details - RIGHT SIDE (Abbreviated) */}
+                                <div className="flex-1 space-y-0 text-xs leading-tight">
+                                    <div className="flex gap-1">
+                                        <span className="font-bold">Fight#:</span>
                                         <span>{ticketData.fight_number}</span>
                                     </div>
-                                    <div className="flex">
-                                        <span className="font-bold min-w-[55px]">Teller:</span>
-                                        <span className="text-xs">Teller</span>
+                                    <div className="flex gap-1">
+                                        <span className="font-bold">Teller:</span>
+                                        <span>Teller</span>
                                     </div>
-                                    <div className="flex">
-                                        <span className="font-bold min-w-[55px]">Receipt:</span>
-                                        <span className="text-xs font-mono">{ticketData.ticket_id.substring(0, 10)}</span>
+                                    <div className="flex gap-1">
+                                        <span className="font-bold">Receipt:</span>
+                                        <span className="font-mono text-[10px]">{ticketData.ticket_id.substring(0, 13)}</span>
                                     </div>
-                                    <div className="flex">
-                                        <span className="font-bold min-w-[55px]">Date:</span>
-                                        <span className="text-xs">{new Date().toLocaleDateString()}</span>
+                                    <div className="flex gap-1">
+                                        <span className="font-bold">Date:</span>
+                                        <span>{new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
                                     </div>
-                                    <div className="flex">
-                                        <span className="font-bold min-w-[55px]">Time:</span>
-                                        <span className="text-xs">{new Date().toLocaleTimeString()}</span>
+                                    <div className="flex gap-1">
+                                        <span className="font-bold">Time:</span>
+                                        <span>{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Bet Amount Section - Below Both */}
-                            <div className="border-t-2 border-dashed border-gray-800 pt-2 mb-2">
-                                <div className="text-center">
-                                    <div className={`text-3xl font-bold mb-1 ${
-                                        ticketData.side === 'meron' ? 'text-red-600' : 
-                                        ticketData.side === 'wala' ? 'text-blue-600' : 
-                                        'text-green-600'
-                                    }`}>
-                                        {ticketData.side.toUpperCase()} - ₱{ticketData.amount.toLocaleString()}
-                                    </div>
-                                    <div className="text-xs text-gray-600">
-                                        Odds: ×{ticketData.odds} | Potential Win: ₱{ticketData.potential_payout.toLocaleString()}
-                                    </div>
+                            {/* Bet Info - BELOW, CENTERED */}
+                            <div className="border-t-2 border-dashed border-gray-800 pt-2 mb-2 text-center">
+                                <div className={`text-2xl font-bold mb-0.5 ${
+                                    ticketData.side === 'meron' ? 'text-red-600' : 
+                                    ticketData.side === 'wala' ? 'text-blue-600' : 
+                                    'text-green-600'
+                                }`}>
+                                    {ticketData.side.toUpperCase()} - ₱{ticketData.amount.toLocaleString()}
+                                </div>
+                                <div className="text-sm font-bold">
+                                    Win: ₱{ticketData.potential_payout.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                 </div>
                             </div>
 
                             {/* Footer */}
-                            <div className="text-center border-t-2 border-dashed border-gray-800 pt-2">
-                                <p className="text-xs font-bold tracking-widest">OFFICIAL BETTING RECEIPT</p>
+                            <div className="text-center border-t-2 border-dashed border-gray-800 pt-1">
+                                <p className="text-[10px] font-bold tracking-widest">OFFICIAL BETTING RECEIPT</p>
                             </div>
                         </div>
 
