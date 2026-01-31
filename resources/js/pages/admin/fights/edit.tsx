@@ -56,7 +56,7 @@ export default function EditFight({ fight }: Props) {
         if (assignments && assignments.length > 0) {
             const mappedAssignments = assignments.map((assignment: any) => ({
                 teller_id: assignment.teller_id.toString(),
-                amount: assignment.assigned_amount.toString()
+                amount: assignment.current_balance.toString()
             }));
             console.log('Mapped assignments:', mappedAssignments);
             setTellerAssignments(mappedAssignments);
