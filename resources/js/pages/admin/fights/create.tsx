@@ -16,6 +16,7 @@ interface Teller {
 interface TellerAssignment {
     teller_id: string;
     amount: string;
+    current_balance?: number;
 }
 
 export default function CreateFight({ nextFightNumber }: Props) {
