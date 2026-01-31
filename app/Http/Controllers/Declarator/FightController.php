@@ -155,6 +155,13 @@ class FightController extends Controller
 
             // Update teller assignments if provided
             if (isset($validated['teller_assignments'])) {
+                // Get current balances before deleting
+                $currentBalances = [];
+                $existingAssignments = TellerCashAssignment::where('fight_id', $fight->id)->get();
+                foreach ($existingAssignments as $oldAssignment) {
+                    $currentBalances[$oldAssignment->teller_id] = $oldAssignment->current_balance;
+                }
+                
                 // Delete existing assignments
                 TellerCashAssignment::where('fight_id', $fight->id)->delete();
                 
@@ -164,7 +171,7 @@ class FightController extends Controller
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment['teller_id'],
                         'assigned_amount' => $assignment['amount'],
-                        'current_balance' => $assignment['amount'],
+                        'current_balance' => $currentBalances[$assignment['teller_id']] ?? $assignment['amount'],
                     ]);
                 }
             }
