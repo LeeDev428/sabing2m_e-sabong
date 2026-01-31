@@ -150,7 +150,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 // If no fight is selected and there's an open fight, select it
                 if (!selectedFight && openFights.length > 0) {
                     setSelectedFight(openFights[0]);
-                    setAmount('0'); // Reset amount
+                    // DON'T reset amount - keep it continuous
                     setBetSide(null); // Reset bet side
                 }
                 // If selected fight is closed and there's a new open fight, switch to it
@@ -158,7 +158,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     const newFight = openFights.find((f: Fight) => f.id !== selectedFight.id);
                     if (newFight) {
                         setSelectedFight(newFight);
-                        setAmount('0'); // Reset amount
+                        // DON'T reset amount - keep it continuous
                         setBetSide(null); // Reset bet side
                     }
                 }
