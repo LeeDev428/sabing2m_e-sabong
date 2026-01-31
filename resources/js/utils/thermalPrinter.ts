@@ -277,19 +277,22 @@ export class ThermalPrinter {
             `${ESC}!${String.fromCharCode(0)}`, // Normal font
             '================================\n',
             
-            // Print QR Code (size 2 - smaller to save paper)
+            // Print QR Code (size 3)
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `${GS}(k${String.fromCharCode(4)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(65)}${String.fromCharCode(50)}${String.fromCharCode(0)}`, // QR Model 2
-            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(67)}${String.fromCharCode(2)}`, // QR Size: 2 (smaller)
+            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(67)}${String.fromCharCode(3)}`, // QR Size: 3
             `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(69)}${String.fromCharCode(48)}`, // QR Error correction: L
             `${GS}(k${String.fromCharCode(ticketData.ticket_id.length + 3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(80)}${String.fromCharCode(48)}${ticketData.ticket_id}`, // QR Data
             `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(81)}${String.fromCharCode(48)}`, // Print QR
             '\n',
             
-            // Receipt details (compact, abbreviated)
+            // Receipt details (ALL fields like screen version)
             `${ESC}a${String.fromCharCode(0)}`, // Left align
-            `F#${ticketData.fight_number} | ${ticketData.ticket_id.substring(0, 10)}\n`,
-            `${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })} ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}\n`,
+            `Fight#: ${ticketData.fight_number}\n`,
+            `Teller: Teller\n`,
+            `Receipt: ${ticketData.ticket_id}\n`,
+            `Date: ${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}\n`,
+            `Time: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}\n`,
             '================================\n',
             '\n',
             // Bet Info (BIGGER)
