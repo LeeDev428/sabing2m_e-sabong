@@ -31,10 +31,20 @@ class CashTransferController extends Controller
             ->limit(20)
             ->get();
 
+        // Get current balance from latest fight assignment
+        $latestFight = \App\Models\Fight::latest()->first();
+        $currentBalance = 0;
+        
+        if ($latestFight && in_array($latestFight->status, ['open', 'lastcall'])) {
+            $currentBalance = (float) \App\Models\TellerCashAssignment::where('teller_id', $currentTeller->id)
+                ->where('fight_id', $latestFight->id)
+                ->value('current_balance') ?? 0;
+        }
+
         return Inertia::render('teller/cash-transfer/index', [
             'tellers' => $tellers,
             'transfers' => $transfers,
-            'currentBalance' => $currentTeller->teller_balance,
+            'currentBalance' => $currentBalance,
         ]);
     }
 
