@@ -50,16 +50,28 @@ export default function CreateFight({ nextFightNumber }: Props) {
     }, []);
 
     const addTellerAssignment = () => {
-        setTellerAssignments([...tellerAssignments, { teller_id: '', amount: '0' }]);
+        setTellerAssignments([...tellerAssignments, { teller_id: '', amount: '0', current_balance: 0 }]);
     };
 
     const removeTellerAssignment = (index: number) => {
         setTellerAssignments(tellerAssignments.filter((_, i) => i !== index));
     };
 
-    const updateTellerAssignment = (index: number, field: 'teller_id' | 'amount', value: string) => {
+    const updateTellerAssignment = async (index: number, field: 'teller_id' | 'amount', value: string) => {
         const updated = [...tellerAssignments];
         updated[index][field] = value;
+        
+        // If teller changed, fetch their current balance
+        if (field === 'teller_id' && value) {
+            try {
+                const response = await axios.get(`/admin/api/tellers/${value}/current-balance`);
+                updated[index].current_balance = response.data.current_balance || 0;
+            } catch (error) {
+                console.error('Error fetching teller balance:', error);
+                updated[index].current_balance = 0;
+            }
+        }
+        
         setTellerAssignments(updated);
     };
 
