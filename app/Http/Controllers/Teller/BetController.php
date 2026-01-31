@@ -79,6 +79,8 @@ class BetController extends Controller
             ->where('fight_id', $validated['fight_id'])
             ->first();
         
+        $balanceBefore = $assignment ? $assignment->current_balance : 0;
+        
         if ($assignment) {
             $assignment->current_balance += $validated['amount'];
             $assignment->save();
@@ -89,7 +91,7 @@ class BetController extends Controller
             'user_id' => auth()->id(),
             'type' => 'bet_in',
             'amount' => $validated['amount'],
-            'balance_before' => $assignment ? $assignment->current_balance - $validated['amount'] : 0,
+            'balance_before' => $balanceBefore,
             'balance_after' => $assignment ? $assignment->current_balance : 0,
             'description' => "Bet placed on {$validated['side']} for Fight #{$fight->fight_number} (Ticket #{$bet->id})",
             'fight_id' => $validated['fight_id'],
