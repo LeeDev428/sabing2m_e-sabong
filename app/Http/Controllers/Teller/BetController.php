@@ -86,15 +86,12 @@ class BetController extends Controller
             $assignment->save();
         }
 
-        // Create transaction record for audit trail
+        // Create transaction record for audit trail (using existing fields only)
         \App\Models\Transaction::create([
-            'user_id' => auth()->id(),
-            'type' => 'bet_in',
+            'teller_id' => auth()->id(),
+            'type' => 'cash_in',
             'amount' => $validated['amount'],
-            'balance_before' => $balanceBefore,
-            'balance_after' => $assignment ? $assignment->current_balance : 0,
-            'description' => "Bet placed on {$validated['side']} for Fight #{$fight->fight_number} (Ticket #{$bet->id})",
-            'fight_id' => $validated['fight_id'],
+            'remarks' => "Bet placed on {$validated['side']} for Fight #{$fight->fight_number} (Ticket #{$bet->id})",
         ]);
 
         // Prepare ticket data with fallback for event_name
