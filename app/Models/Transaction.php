@@ -11,9 +11,14 @@ class Transaction extends Model
 
     protected $fillable = [
         'teller_id',
+        'user_id',
         'type',
         'amount',
+        'balance_before',
+        'balance_after',
+        'description',
         'remarks',
+        'fight_id',
     ];
 
     protected function casts(): array
