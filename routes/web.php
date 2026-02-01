@@ -68,6 +68,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('bet-controls', [BetControlController::class, 'index'])->name('bet-controls.index');
     Route::post('bet-controls/{fight}/toggle-meron', [BetControlController::class, 'toggleMeron'])->name('bet-controls.toggle-meron');
     Route::post('bet-controls/{fight}/toggle-wala', [BetControlController::class, 'toggleWala'])->name('bet-controls.toggle-wala');
+    Route::post('bet-controls/{fight}/toggle-draw', [BetControlController::class, 'toggleDraw'])->name('bet-controls.toggle-draw');
     Route::post('bet-controls/{fight}/commission', [BetControlController::class, 'updateCommission'])->name('bet-controls.commission');
     
     // Commission Reports
@@ -119,6 +120,7 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
     Route::get('bet-controls', [DeclaratorBetControlController::class, 'index'])->name('bet-controls.index');
     Route::post('bet-controls/{fight}/toggle-meron', [DeclaratorBetControlController::class, 'toggleMeron'])->name('bet-controls.toggle-meron');
     Route::post('bet-controls/{fight}/toggle-wala', [DeclaratorBetControlController::class, 'toggleWala'])->name('bet-controls.toggle-wala');
+    Route::post('bet-controls/{fight}/toggle-draw', [DeclaratorBetControlController::class, 'toggleDraw'])->name('bet-controls.toggle-draw');
     Route::post('bet-controls/{fight}/commission', [DeclaratorBetControlController::class, 'updateCommission'])->name('bet-controls.commission');
     
     // Cash Transfer Monitoring
