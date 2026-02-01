@@ -45,14 +45,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
 
             <div className="text-center">
                 {/* Side Label */}
-                <div className={`text-3xl font-black mb-4 ${color.light} tracking-wider`}>{side.toUpperCase()}</div>
-                
-                {/* Fighter Icon/Image Placeholder */}
-                <div className="mb-4">
-                    {side === 'meron' && <div className="text-8xl">🐓</div>}
-                    {side === 'wala' && <div className="text-8xl">🦅</div>}
-                    {side === 'draw' && <div className="text-8xl">⚖️</div>}
-                </div>
+                <div className={`text-3xl font-black mb-6 ${color.light} tracking-wider`}>{side.toUpperCase()}</div>
 
                 {/* Total Bets - LARGE */}
                 <div className={`${color.bg} rounded-xl p-4 mb-4 border-2 ${color.border}`}>
