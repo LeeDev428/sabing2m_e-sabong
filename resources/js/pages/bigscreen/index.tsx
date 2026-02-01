@@ -30,6 +30,7 @@ interface FightData {
     draw_count: number;
     meron_betting_open?: boolean;
     wala_betting_open?: boolean;
+    draw_betting_open?: boolean;
     notes?: string;
     venue?: string;
     event_name?: string;
