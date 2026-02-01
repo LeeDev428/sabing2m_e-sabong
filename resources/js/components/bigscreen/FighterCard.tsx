@@ -34,7 +34,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
     return (
         <div className={`bg-gradient-to-br ${color.gradient} rounded-3xl p-8 shadow-2xl transform transition-all hover:scale-105 relative border-4 ${color.border}`}>
             {/* Betting Closed Overlay */}
-            {bettingOpen === false && side !== 'draw' && (
+            {bettingOpen === false && (
                 <div className="absolute inset-0 bg-black/70 rounded-3xl flex items-center justify-center z-10">
                     <div className="text-center">
                         <div className="text-6xl mb-2">🔒</div>
