@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Declarator;
 
 use App\Http\Controllers\Controller;
 use App\Models\CashTransfer;
+use App\Models\User;
+use App\Models\TellerCashAssignment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CashTransferController extends Controller
 {
     /**
-     * Display cash transfer monitoring page
+     * Display cash transfer monitoring page with real-time teller balances
      */
     public function index()
     {
@@ -30,10 +32,26 @@ class CashTransferController extends Controller
             ->take(100)
             ->get();
 
+        // Get real-time teller balances for monitoring
+        $tellers = User::where('role', 'teller')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($teller) {
+                // Get real-time current balance from latest teller_cash_assignment
+                $latestAssignment = TellerCashAssignment::where('teller_id', $teller->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                $teller->current_balance = $latestAssignment ? $latestAssignment->current_balance : 0;
+                return $teller;
+            });
+
         return Inertia::render('declarator/cash-transfer', [
             'pending' => $pending,
             'approved' => $approved,
             'allTransfers' => $allTransfers,
+            'tellers' => $tellers, // Add real-time teller balances
         ]);
     }
 
