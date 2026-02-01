@@ -39,6 +39,7 @@ class ResultController extends Controller
                 // Add bet control data
                 $fight->total_meron_bets = $fight->bets()->where('side', 'meron')->sum('amount');
                 $fight->total_wala_bets = $fight->bets()->where('side', 'wala')->sum('amount');
+                $fight->total_draw_bets = $fight->bets()->where('side', 'draw')->sum('amount');
                 
                 return $fight;
             })
