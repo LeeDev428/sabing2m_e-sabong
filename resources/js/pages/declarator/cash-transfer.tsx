@@ -9,8 +9,6 @@ interface CashTransfer {
     amount: number;
     type: string;
     remarks: string | null;
-    approved_by: number | null;
-    created_at: string;
     from_teller: {
         id: number;
         name: string;
@@ -26,7 +24,8 @@ interface CashTransfer {
     approved_by?: {
         id: number;
         name: string;
-    };
+    } | null;
+    created_at: string;
 }
 
 interface Teller {
