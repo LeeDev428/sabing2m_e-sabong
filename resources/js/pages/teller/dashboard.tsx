@@ -451,17 +451,20 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
                         {/* DRAW Button */}
                         <button
-                            onClick={() => setBetSide('draw')}
+                            onClick={() => currentFightData?.draw_betting_open && setBetSide('draw')}
+                            disabled={!currentFightData?.draw_betting_open}
                             className={`relative rounded-lg overflow-hidden transition-all ${
                                 betSide === 'draw' ? 'ring-2 ring-green-400' : ''
-                            }`}
+                            } ${!currentFightData?.draw_betting_open ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             <div className="bg-green-600 pt-2 pb-1 px-2">
                                 <div className="text-white text-xs font-bold mb-0.5">DRAW</div>
                                 <div className="text-white text-2xl font-bold">{currentFightData?.draw_odds ? Number(currentFightData.draw_odds).toFixed(2) : '9.00'}</div>
                                 <div className="text-white text-xs">Equal</div>
                             </div>
-                            <div className="bg-green-700 py-0.5 text-xs text-white">OPEN</div>
+                            <div className="bg-green-700 py-0.5 text-xs text-white">
+                                {!currentFightData?.draw_betting_open ? '🔒 CLOSED' : 'OPEN'}
+                            </div>
                         </button>
 
                         {/* WALA Button */}
