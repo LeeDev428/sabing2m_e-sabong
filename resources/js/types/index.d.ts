@@ -56,6 +56,7 @@ export interface Fight {
     auto_odds: boolean;
     meron_betting_open?: boolean;
     wala_betting_open?: boolean;
+    draw_betting_open?: boolean;
     commission_percentage?: number;
     result: 'meron' | 'wala' | 'draw' | 'cancelled' | null;
     remarks: string | null;
