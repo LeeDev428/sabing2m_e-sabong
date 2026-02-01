@@ -1,5 +1,4 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
 import AdminLayout from '@/layouts/admin-layout';
 
 interface Teller {
@@ -26,41 +25,14 @@ interface Props {
 }
 
 export default function TellerBalances({ tellers, recentTransfers }: Props) {
-    const [selectedTeller, setSelectedTeller] = useState<Teller | null>(null);
-    const [amount, setAmount] = useState('');
-    const [remarks, setRemarks] = useState('');
-    const [showModal, setShowModal] = useState(false);
-
-    const handleSetBalance = () => {
-        if (!selectedTeller) return;
-
-        router.post(`/admin/teller-balances/${selectedTeller.id}/set`, {
-            amount: parseFloat(amount),
-            remarks,
-        }, {
-            onSuccess: () => {
-                setShowModal(false);
-                setAmount('');
-                setRemarks('');
-                setSelectedTeller(null);
-            },
-        });
-    };
-
     const handleAddBalance = (teller: Teller) => {
         const addAmount = prompt(`Add balance to ${teller.name}:`);
         if (!addAmount) return;
 
         router.post(`/admin/teller-balances/${teller.id}/add`, {
             amount: parseFloat(addAmount),
-            remarks: `Admin added ₱${addAmount}`,
+            remarks: `Admin added ₱${parseFloat(addAmount).toLocaleString()}`,
         });
-    };
-
-    const openModal = (teller: Teller) => {
-        setSelectedTeller(teller);
-        setAmount(teller.teller_balance.toString());
-        setShowModal(true);
     };
 
     const totalBalance = tellers.reduce((sum, t) => sum + parseFloat(t.teller_balance.toString()), 0);
@@ -122,16 +94,10 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
                                     <td className="px-6 py-4">
                                         <div className="flex justify-center gap-2">
                                             <button
-                                                onClick={() => openModal(teller)}
-                                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-semibold"
-                                            >
-                                                Set Balance
-                                            </button>
-                                            <button
                                                 onClick={() => handleAddBalance(teller)}
                                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-semibold"
                                             >
-                                                Add Balance
+                                                💰 Add Balance
                                             </button>
                                         </div>
                                     </td>
@@ -214,60 +180,6 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
                     </table>
                 </div>
             </div>
-
-            {/* Set Balance Modal */}
-            {showModal && selectedTeller && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
-                        <h3 className="text-2xl font-bold text-white mb-4">
-                            Set Balance for {selectedTeller.name}
-                        </h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-300">
-                                    New Balance (₱)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white text-xl"
-                                    step="0.01"
-                                    min="0"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-300">
-                                    Remarks (Optional)
-                                </label>
-                                <textarea
-                                    value={remarks}
-                                    onChange={(e) => setRemarks(e.target.value)}
-                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
-                                    rows={3}
-                                />
-                            </div>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handleSetBalance}
-                                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
-                                >
-                                    Set Balance
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowModal(false);
-                                        setSelectedTeller(null);
-                                    }}
-                                    className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </AdminLayout>
     );
 }
