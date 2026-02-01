@@ -156,6 +156,7 @@ export default function BigScreen() {
                         odds={fight.draw_odds}
                         totalBets={fight.draw_total}
                         betCount={fight.draw_count}
+                        bettingOpen={fight.draw_betting_open}
                     />
 
                     <FighterCard
