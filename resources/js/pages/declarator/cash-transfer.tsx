@@ -150,7 +150,7 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
                         <div key={teller.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                             <div className="text-sm text-blue-100">{teller.name}</div>
                             <div className="text-2xl font-bold text-white mt-1">
-                                ₱{teller.current_balance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                ₱{teller.current_balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                             <div className="text-xs text-blue-200 mt-1">{teller.email}</div>
                         </div>
@@ -159,7 +159,7 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
                 <div className="mt-4 pt-4 border-t border-blue-400">
                     <div className="text-blue-100 text-sm">Total Cash in System</div>
                     <div className="text-3xl font-bold text-white">
-                        ₱{tellers.reduce((sum, t) => sum + t.current_balance, 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                        ₱{tellers.reduce((sum, t) => sum + t.current_balance, 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                 </div>
             </div>
