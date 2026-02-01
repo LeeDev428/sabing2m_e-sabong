@@ -139,7 +139,7 @@ export default function BigScreen() {
                 />
 
                 {/* Fighter Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
