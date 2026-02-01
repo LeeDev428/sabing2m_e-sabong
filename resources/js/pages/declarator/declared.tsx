@@ -30,9 +30,11 @@ interface Fight {
     scheduled_at?: string;
     meron_betting_open?: boolean;
     wala_betting_open?: boolean;
+    draw_betting_open?: boolean;
     commission_percentage?: number;
     total_meron_bets?: number;
     total_wala_bets?: number;
+    total_draw_bets?: number;
     revolving_funds?: number;
     teller_assignments?: TellerAssignment[];
 }
@@ -130,6 +132,12 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
 
     const toggleWala = (fightId: number) => {
         router.post(`/declarator/bet-controls/${fightId}/toggle-wala`, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const toggleDraw = (fightId: number) => {
+        router.post(`/declarator/bet-controls/${fightId}/toggle-draw`, {}, {
             preserveScroll: true,
         });
     };
@@ -607,7 +615,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                             )}
 
                                             {/* Control Panels */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 {/* MERON Controls */}
                                                 <div className={`border-2 rounded-lg p-4 transition-all ${
                                                     fight.meron_betting_open 
@@ -678,6 +686,43 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                                     {!fight.wala_betting_open && (
                                                         <p className="text-yellow-400 text-xs mt-2 text-center">
                                                             ⚠️ Tellers cannot bet on Wala
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* DRAW Controls */}
+                                                <div className={`border-2 rounded-lg p-4 transition-all ${
+                                                    fight.draw_betting_open 
+                                                        ? 'border-green-600 bg-green-900/20' 
+                                                        : 'border-gray-600 bg-gray-700/50'
+                                                }`}>
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div>
+                                                            <h5 className="text-green-400 font-bold mb-1">DRAW</h5>
+                                                            <p className="text-white text-sm font-semibold">Even Match</p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-gray-400 text-xs">Bets</div>
+                                                            <div className="text-white font-bold">
+                                                                ₱{(fight.total_draw_bets || 0).toLocaleString()}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => toggleDraw(fight.id)}
+                                                        className={`w-full py-2 rounded-lg font-bold transition-all text-sm ${
+                                                            fight.draw_betting_open
+                                                                ? 'bg-green-600 hover:bg-green-700 text-white'
+                                                                : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
+                                                        }`}
+                                                    >
+                                                        {fight.draw_betting_open ? '✅ ACCEPTING' : '🔒 CLOSED'}
+                                                    </button>
+
+                                                    {!fight.draw_betting_open && (
+                                                        <p className="text-yellow-400 text-xs mt-2 text-center">
+                                                            ⚠️ Tellers cannot bet on Draw
                                                         </p>
                                                     )}
                                                 </div>
