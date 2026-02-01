@@ -48,6 +48,11 @@ class BetController extends Controller
                 ->with('error', 'Wala betting is temporarily closed by admin.');
         }
 
+        if ($validated['side'] === 'draw' && !$fight->canAcceptDrawBets()) {
+            return redirect()->back()
+                ->with('error', 'Draw betting is temporarily closed by admin.');
+        }
+
         // Get current odds based on side
         $odds = $validated['side'] === 'meron' ? $fight->meron_odds : 
                ($validated['side'] === 'wala' ? $fight->wala_odds : $fight->draw_odds);
