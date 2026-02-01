@@ -158,7 +158,7 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
                 <div className="mt-4 pt-4 border-t border-blue-400">
                     <div className="text-blue-100 text-sm">Total Cash in System</div>
                     <div className="text-3xl font-bold text-white">
-                        ₱{Number(tellers.reduce((sum, t) => sum + t.current_balance, 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ₱{tellers.reduce((sum, t) => sum + Number(t.current_balance || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                 </div>
             </div>
