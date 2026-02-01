@@ -85,6 +85,19 @@ class TellerBalanceController extends Controller
         }
 
         DB::transaction(function () use ($user, $request) {
+            // Get the latest teller cash assignment to update real-time balance
+            $latestAssignment = TellerCashAssignment::where('teller_id', $user->id)
+                ->orderBy('id', 'desc')
+                ->first();
+            
+            if ($latestAssignment) {
+                // Add to existing balance
+                $latestAssignment->update([
+                    'current_balance' => $latestAssignment->current_balance + $request->amount,
+                ]);
+            }
+            
+            // Also update the deprecated user.teller_balance for backwards compatibility
             $user->increment('teller_balance', $request->amount);
 
             CashTransfer::create([
