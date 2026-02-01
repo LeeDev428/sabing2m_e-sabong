@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\CashTransfer;
+use App\Models\TellerCashAssignment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use DB;
@@ -16,7 +17,17 @@ class TellerBalanceController extends Controller
         $tellers = User::where('role', 'teller')
             ->select('id', 'name', 'email', 'teller_balance')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(function ($teller) {
+                // Get real-time current balance from latest teller_cash_assignment
+                $latestAssignment = TellerCashAssignment::where('teller_id', $teller->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                // Override with actual current balance (real-time)
+                $teller->teller_balance = $latestAssignment ? $latestAssignment->current_balance : 0;
+                return $teller;
+            });
 
         $recentTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
             ->latest()
