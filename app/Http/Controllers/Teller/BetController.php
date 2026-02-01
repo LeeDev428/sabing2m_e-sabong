@@ -194,6 +194,7 @@ class BetController extends Controller
             'draw_odds' => $fight->draw_odds,
             'meron_betting_open' => $fight->meron_betting_open,
             'wala_betting_open' => $fight->wala_betting_open,
+            'draw_betting_open' => $fight->draw_betting_open,
             'status' => $fight->status,
         ]);
     }
