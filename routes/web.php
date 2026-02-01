@@ -151,6 +151,7 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
                     'draw_odds' => $fight->draw_odds,
                     'meron_betting_open' => $fight->meron_betting_open,
                     'wala_betting_open' => $fight->wala_betting_open,
+                    'draw_betting_open' => $fight->draw_betting_open,
                     'scheduled_at' => $fight->scheduled_at,
                     'created_at' => $fight->created_at,
                 ];
