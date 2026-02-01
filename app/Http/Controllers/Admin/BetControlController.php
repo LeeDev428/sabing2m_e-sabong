@@ -63,6 +63,19 @@ class BetControlController extends Controller
         );
     }
 
+    public function toggleDraw(Request $request, Fight $fight)
+    {
+        $fight->update([
+            'draw_betting_open' => !$fight->draw_betting_open,
+        ]);
+
+        return redirect()->back()->with('success', 
+            $fight->draw_betting_open 
+                ? 'Draw betting opened' 
+                : 'Draw betting closed'
+        );
+    }
+
     public function updateCommission(Request $request, Fight $fight)
     {
         $validated = $request->validate([
