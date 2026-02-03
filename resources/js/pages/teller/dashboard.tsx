@@ -706,9 +706,6 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 }`}>
                                     {ticketData.side.toUpperCase()} - ₱{ticketData.amount.toLocaleString()}
                                 </div>
-                                <div className="text-sm font-bold">
-                                    Win: ₱{ticketData.potential_payout.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                </div>
                             </div>
 
                             {/* Footer */}
