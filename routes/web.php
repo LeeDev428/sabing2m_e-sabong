@@ -134,6 +134,9 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
     Route::get('cash-transfer', [DeclaratorCashTransferController::class, 'index'])->name('cash-transfer.index');
     Route::post('cash-transfer/{transfer}/approve', [DeclaratorCashTransferController::class, 'approve'])->name('cash-transfer.approve');
     Route::delete('cash-transfer/{transfer}/reject', [DeclaratorCashTransferController::class, 'reject'])->name('cash-transfer.reject');
+    
+    // Teller Balance Monitoring (Read-only)
+    Route::get('teller-balances', [DeclaratorCashTransferController::class, 'tellerBalances'])->name('teller-balances.index');
 });
 
 // Teller Routes
