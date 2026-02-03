@@ -527,7 +527,6 @@ export default function FightsIndex({ fights, tellers, currentFight = null, even
             {/* Event Funds Modal */}
             {showEventFundsModal && (
                 <EventFundsModal
-                    eventOptions={eventOptions}
                     tellers={tellers}
                     onClose={() => setShowEventFundsModal(false)}
                 />
