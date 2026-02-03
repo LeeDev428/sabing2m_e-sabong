@@ -86,6 +86,19 @@ class FightController extends Controller
 
         DB::beginTransaction();
         try {
+            // Check if there's an existing Event for this event_name and event_date
+            $existingEvent = null;
+            if (!empty($validated['event_name']) && !empty($validated['event_date'])) {
+                $existingEvent = \App\Models\Event::where('name', $validated['event_name'])
+                    ->where('event_date', $validated['event_date'])
+                    ->first();
+                
+                // If event exists and has revolving funds, use it
+                if ($existingEvent && $existingEvent->revolving_funds > 0) {
+                    $validated['revolving_funds'] = $existingEvent->revolving_funds;
+                }
+            }
+
             // Validate total assignments don't exceed revolving funds
             $totalAssignments = 0;
             if (isset($validated['teller_assignments'])) {
@@ -123,19 +136,50 @@ class FightController extends Controller
                 'wala_betting_open' => true,
             ]);
 
+            // If event exists, get teller assignments from the latest fight in this event
+            // Otherwise use the provided teller_assignments
+            $assignmentsToCreate = [];
+            
+            if ($existingEvent) {
+                // Get teller assignments from the latest fight in this event
+                $latestFightInEvent = Fight::where('event_name', $existingEvent->name)
+                    ->where('event_date', $existingEvent->event_date)
+                    ->where('id', '!=', $fight->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                if ($latestFightInEvent) {
+                    // Copy assignments from latest fight
+                    $existingAssignments = \App\Models\TellerCashAssignment::where('fight_id', $latestFightInEvent->id)->get();
+                    foreach ($existingAssignments as $existing) {
+                        $assignmentsToCreate[] = [
+                            'teller_id' => $existing->teller_id,
+                            'amount' => $existing->assigned_amount,
+                        ];
+                    }
+                }
+            }
+            
+            // If no event assignments found, use provided teller_assignments
+            if (empty($assignmentsToCreate) && isset($validated['teller_assignments'])) {
+                $assignmentsToCreate = $validated['teller_assignments'];
+            }
+
             // Create teller assignments
-            if (isset($validated['teller_assignments'])) {
-                foreach ($validated['teller_assignments'] as $assignment) {
+            if (!empty($assignmentsToCreate)) {
+                foreach ($assignmentsToCreate as $assignment) {
                     // Check if teller has existing balance from latest fight
-                    $latestAssignment = TellerCashAssignment::where('teller_id', $assignment['teller_id'])
+                    $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $assignment['teller_id'])
                         ->orderBy('id', 'desc')
                         ->first();
                     
-                    TellerCashAssignment::create([
+                    \App\Models\TellerCashAssignment::create([
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment['teller_id'],
+                        'assigned_by' => auth()->id(),
                         'assigned_amount' => $assignment['amount'],
                         'current_balance' => $latestAssignment ? $latestAssignment->current_balance : $assignment['amount'],
+                        'status' => 'active',
                     ]);
                 }
             }
