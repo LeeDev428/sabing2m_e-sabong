@@ -23,24 +23,28 @@ class EventController extends Controller
 
         DB::beginTransaction();
         try {
-            // Get all fights for today
-            $fights = Fight::whereDate('created_at', $validated['event_date'])
+            // Get ALL fights (today's fights regardless of when they were created)
+            // We're assuming "today" means the fights that are currently active
+            $fights = Fight::whereNotIn('status', ['result_declared', 'cancelled'])
                 ->get();
 
             if ($fights->isEmpty()) {
                 DB::commit();
-                return redirect()->back()->with('success', 'Event funds saved! Teller assignments will be applied when fights are created today.');
+                return redirect()->back()->with('success', 'No active fights found. Event funds will be applied when fights are created.');
             }
 
-            // Update revolving funds for all fights today
+            // Update revolving funds and teller assignments for all active fights
             foreach ($fights as $fight) {
-                $fight->update(['revolving_funds' => $validated['revolving_funds']]);
+                $fight->update([
+                    'revolving_funds' => $validated['revolving_funds'],
+                    'event_date' => $validated['event_date'],
+                ]);
 
                 // Delete existing assignments for this fight
                 TellerCashAssignment::where('fight_id', $fight->id)->delete();
 
                 // Create new assignments for this fight
-                if (isset($validated['teller_assignments'])) {
+                if (isset($validated['teller_assignments']) && count($validated['teller_assignments']) > 0) {
                     foreach ($validated['teller_assignments'] as $assignment) {
                         TellerCashAssignment::create([
                             'fight_id' => $fight->id,
@@ -58,6 +62,7 @@ class EventController extends Controller
             return redirect()->back()->with('success', 'Event funds and teller assignments updated successfully for ' . $fights->count() . ' fight(s)!');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Failed to update event funds: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Failed to update event funds: ' . $e->getMessage()]);
         }
     }
@@ -65,10 +70,8 @@ class EventController extends Controller
     public function getTodayFunds()
     {
         try {
-            $today = now()->toDateString();
-            
-            // Get the latest fight created today
-            $latestFight = Fight::whereDate('created_at', $today)
+            // Get the latest active fight (not result_declared or cancelled)
+            $latestFight = Fight::whereNotIn('status', ['result_declared', 'cancelled'])
                 ->with(['tellerCashAssignments.teller'])
                 ->latest()
                 ->first();
@@ -80,25 +83,29 @@ class EventController extends Controller
                 ]);
             }
 
+            $assignments = $latestFight->tellerCashAssignments->map(function($assignment) {
+                return [
+                    'id' => $assignment->id,
+                    'teller' => [
+                        'id' => $assignment->teller->id,
+                        'name' => $assignment->teller->name,
+                        'email' => $assignment->teller->email,
+                    ],
+                    'assigned_amount' => (float) $assignment->assigned_amount,
+                    'current_balance' => (float) $assignment->current_balance,
+                ];
+            })->toArray();
+
             return response()->json([
-                'revolving_funds' => $latestFight->revolving_funds,
-                'assignments' => $latestFight->tellerCashAssignments->map(function($assignment) {
-                    return [
-                        'id' => $assignment->id,
-                        'teller' => [
-                            'id' => $assignment->teller->id,
-                            'name' => $assignment->teller->name,
-                            'email' => $assignment->teller->email,
-                        ],
-                        'assigned_amount' => $assignment->assigned_amount,
-                        'current_balance' => $assignment->current_balance,
-                    ];
-                }),
+                'revolving_funds' => (float) $latestFight->revolving_funds,
+                'assignments' => $assignments,
             ]);
         } catch (\Exception $e) {
+            \Log::error('Failed to get today funds: ' . $e->getMessage());
             return response()->json([
                 'revolving_funds' => 0,
                 'assignments' => [],
+                'error' => $e->getMessage(),
             ]);
         }
     }
