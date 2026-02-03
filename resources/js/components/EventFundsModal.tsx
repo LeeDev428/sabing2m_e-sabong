@@ -270,9 +270,6 @@ export default function EventFundsModal({ eventOptions, tellers, onClose }: Even
         </div>
     );
 }
-
-    const [selectedEvent, setSelectedEvent] = useState<number | null>(null);
-    const [eventName, setEventName] = useState('');
     const [eventDate, setEventDate] = useState(new Date().toISOString().split('T')[0]);
     const [revolvingFunds, setRevolvingFunds] = useState('');
     const [notes, setNotes] = useState('');
