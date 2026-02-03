@@ -24,16 +24,29 @@ class EventController extends Controller
 
         DB::beginTransaction();
         try {
+            // First, create or update the event record
+            $event = Event::updateOrCreate(
+                [
+                    'name' => $validated['event_name'],
+                    'event_date' => $validated['event_date'],
+                ],
+                [
+                    'revolving_funds' => $validated['revolving_funds'],
+                ]
+            );
+
             // Get all fights for this event
             $fights = Fight::where('event_name', $validated['event_name'])
                 ->where('event_date', $validated['event_date'])
                 ->get();
 
             if ($fights->isEmpty()) {
-                return redirect()->back()->withErrors(['event' => 'No fights found for this event.']);
+                // No fights yet, but save event data for future fights
+                DB::commit();
+                return redirect()->back()->with('success', 'Event funds saved! Teller assignments will be applied when fights are created.');
             }
 
-            // Update revolving funds for all fights in this event
+            // Update revolving funds for all existing fights in this event
             foreach ($fights as $fight) {
                 $fight->update(['revolving_funds' => $validated['revolving_funds']]);
 
@@ -56,7 +69,7 @@ class EventController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Event funds and teller assignments updated successfully for all fights!');
+            return redirect()->back()->with('success', 'Event funds and teller assignments updated successfully for ' . $fights->count() . ' fight(s)!');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Failed to update event funds: ' . $e->getMessage()]);
