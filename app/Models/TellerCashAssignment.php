@@ -10,8 +10,10 @@ class TellerCashAssignment extends Model
     protected $fillable = [
         'fight_id',
         'teller_id',
+        'assigned_by',
         'assigned_amount',
         'current_balance',
+        'status',
     ];
 
     protected $casts = [
