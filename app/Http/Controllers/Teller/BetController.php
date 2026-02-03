@@ -79,17 +79,25 @@ class BetController extends Controller
         }
 
         // Add bet amount to teller balance (teller receives cash from customer)
-        // Update the teller's current_balance in teller_cash_assignments for this fight
-        $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
-            ->where('fight_id', $validated['fight_id'])
-            ->first();
+        // Create or update the teller's cash assignment for this fight
+        $assignment = \App\Models\TellerCashAssignment::firstOrCreate(
+            [
+                'teller_id' => auth()->id(),
+                'fight_id' => $validated['fight_id'],
+            ],
+            [
+                'assigned_by' => auth()->id(), // Self-assigned when placing first bet
+                'assigned_amount' => 0,
+                'current_balance' => 0,
+                'status' => 'active',
+            ]
+        );
         
-        $balanceBefore = $assignment ? $assignment->current_balance : 0;
+        $balanceBefore = $assignment->current_balance;
         
-        if ($assignment) {
-            $assignment->current_balance += $validated['amount'];
-            $assignment->save();
-        }
+        // Always add bet amount to current balance
+        $assignment->current_balance += $validated['amount'];
+        $assignment->save();
 
         // Create transaction record for audit trail (using existing fields only)
         \App\Models\Transaction::create([
