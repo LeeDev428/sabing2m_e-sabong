@@ -22,9 +22,27 @@ class FightController extends Controller
         // Get all tellers for the funds form
         $tellers = \App\Models\User::where('role', 'teller')->get(['id', 'name', 'email']);
 
+        // Get current/present fight (first open or lastcall fight)
+        $currentFight = Fight::whereIn('status', ['open', 'lastcall'])
+            ->orderBy('id', 'desc')
+            ->first();
+
+        // Get all events with their revolving funds
+        $events = \App\Models\Event::orderBy('event_date', 'desc')->get();
+
+        // Get unique event names and dates from fights for the dropdown
+        $eventOptions = Fight::select('event_name', 'event_date')
+            ->whereNotNull('event_name')
+            ->distinct()
+            ->orderBy('event_date', 'desc')
+            ->get();
+
         return Inertia::render('admin/fights/index', [
             'fights' => $fights,
             'tellers' => $tellers,
+            'currentFight' => $currentFight,
+            'events' => $events,
+            'eventOptions' => $eventOptions,
         ]);
     }
 
