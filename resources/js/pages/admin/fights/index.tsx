@@ -3,6 +3,7 @@ import { Head, router } from '@inertiajs/react';
 import { Fight } from '@/types';
 import { useState } from 'react';
 import Pagination from '@/components/pagination';
+import EventFundsModal from '@/components/EventFundsModal';
 
 interface PaginationLinks {
     url: string | null;
@@ -20,12 +21,29 @@ interface PaginatedFights {
     links: PaginationLinks[];
 }
 
+interface Event {
+    id: number;
+    name: string;
+    event_date: string;
+    revolving_funds: number;
+    notes?: string;
+    status: string;
+}
+
+interface EventOption {
+    event_name: string;
+    event_date: string;
+}
+
 interface FightsIndexProps {
     fights: PaginatedFights;
     tellers: Array<{ id: number; name: string; email: string; }>;
+    currentFight?: Fight | null;
+    events: Event[];
+    eventOptions: EventOption[];
 }
 
-export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
+export default function FightsIndex({ fights, tellers, currentFight = null, events, eventOptions }: FightsIndexProps) {
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showDeclareModal, setShowDeclareModal] = useState(false);
@@ -33,6 +51,7 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
     const [editingFundsFor, setEditingFundsFor] = useState<number | null>(null);
     const [revolvingFunds, setRevolvingFunds] = useState<{[key: number]: string}>({});
     const [tellerAssignments, setTellerAssignments] = useState<{[key: number]: Array<{teller_id: string; amount: string}>}>({});
+    const [showEventFundsModal, setShowEventFundsModal] = useState(false);
 
 
     // Check if "Next Fight" button should be enabled
@@ -195,6 +214,33 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
             <Head title="Fights Management" />
 
             <div className="p-4 lg:p-8">
+                {/* Current Fight Indicator */}
+                {currentFight && (
+                    <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-lg p-4 mb-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">🏆</span>
+                                <div>
+                                    <div className="text-sm text-gray-300">CURRENT FIGHT</div>
+                                    <div className="text-xl font-bold text-white">
+                                        Fight #{currentFight.fight_number}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                    <div className="text-red-400 font-semibold">{currentFight.meron_fighter}</div>
+                                    <div className="text-sm text-gray-400">VS</div>
+                                    <div className="text-blue-400 font-semibold">{currentFight.wala_fighter}</div>
+                                </div>
+                                <span className={`px-4 py-2 rounded-full text-sm font-bold ${getStatusColor(currentFight.status)}`}>
+                                    {getStatusLabel(currentFight.status)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 lg:mb-8">
                     <div>
@@ -202,22 +248,12 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
                         <p className="text-sm lg:text-base text-gray-400">Manage and control all cockfighting events</p>
                     </div>
                     <div className="flex gap-3 w-full sm:w-auto">
-                        {/* <button
-                            onClick={() => {
-                                if (canCreateNextFight) {
-                                    router.post('/admin/fights/create-next', {});
-                                }
-                            }}
-                            disabled={!canCreateNextFight}
-                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap ${
-                                canCreateNextFight
-                                    ? 'bg-green-600 hover:bg-green-700 cursor-pointer'
-                                    : 'bg-gray-600 cursor-not-allowed opacity-50'
-                            }`}
-                            title={!canCreateNextFight ? 'Latest fight must be closed and declared' : 'Create next fight'}
+                        <button
+                            onClick={() => setShowEventFundsModal(true)}
+                            className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap flex items-center justify-center gap-2"
                         >
-                            ➕ Next Fight
-                        </button> */}
+                            <span>💰</span> Event Funds
+                        </button>
                         <button
                             onClick={() => router.visit('/admin/fights/create')}
                             className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap"
@@ -667,6 +703,15 @@ export default function FightsIndex({ fights, tellers }: FightsIndexProps) {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Event Funds Modal */}
+            {showEventFundsModal && (
+                <EventFundsModal
+                    events={events}
+                    eventOptions={eventOptions}
+                    onClose={() => setShowEventFundsModal(false)}
+                />
             )}
 
         </AdminLayout>
