@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\Admin\TellerBalanceController;
 use App\Http\Controllers\Admin\TellerController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Teller\BetController;
 use App\Http\Controllers\Teller\TransactionController;
 use App\Http\Controllers\Teller\CashTransferController;
@@ -85,6 +86,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('teller-balances', [TellerBalanceController::class, 'index'])->name('teller-balances.index');
     Route::post('teller-balances/{user}/set', [TellerBalanceController::class, 'setBalance'])->name('teller-balances.set');
     Route::post('teller-balances/{user}/add', [TellerBalanceController::class, 'addBalance'])->name('teller-balances.add');
+    
+    // Event Management (Revolving Funds per Event/Day)
+    Route::post('events', [EventController::class, 'store'])->name('events.store');
+    Route::put('events/{event}', [EventController::class, 'update'])->name('events.update');
     
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
