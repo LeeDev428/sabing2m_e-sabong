@@ -88,4 +88,35 @@ class CashTransferController extends Controller
         return redirect()->back()
             ->with('success', 'Cash transfer rejected and deleted.');
     }
+
+    /**
+     * Display teller balances monitoring page (read-only)
+     */
+    public function tellerBalances()
+    {
+        $tellers = User::where('role', 'teller')
+            ->select('id', 'name', 'email', 'teller_balance')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($teller) {
+                // Get real-time current balance from latest teller_cash_assignment
+                $latestAssignment = TellerCashAssignment::where('teller_id', $teller->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                // Override with actual current balance (real-time)
+                $teller->teller_balance = $latestAssignment ? $latestAssignment->current_balance : 0;
+                return $teller;
+            });
+
+        $recentTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return Inertia::render('declarator/teller-balances', [
+            'tellers' => $tellers,
+            'recentTransfers' => $recentTransfers,
+        ]);
+    }
 }
