@@ -14,7 +14,6 @@ class EventController extends Controller
     public function storeFunds(Request $request)
     {
         $validated = $request->validate([
-            'event_name' => 'required|string',
             'event_date' => 'required|date',
             'revolving_funds' => 'required|numeric|min:0',
             'teller_assignments' => 'nullable|array',
@@ -24,29 +23,16 @@ class EventController extends Controller
 
         DB::beginTransaction();
         try {
-            // First, create or update the event record
-            $event = Event::updateOrCreate(
-                [
-                    'name' => $validated['event_name'],
-                    'event_date' => $validated['event_date'],
-                ],
-                [
-                    'revolving_funds' => $validated['revolving_funds'],
-                ]
-            );
-
-            // Get all fights for this event
-            $fights = Fight::where('event_name', $validated['event_name'])
-                ->where('event_date', $validated['event_date'])
+            // Get all fights for today
+            $fights = Fight::whereDate('created_at', $validated['event_date'])
                 ->get();
 
             if ($fights->isEmpty()) {
-                // No fights yet, but save event data for future fights
                 DB::commit();
-                return redirect()->back()->with('success', 'Event funds saved! Teller assignments will be applied when fights are created.');
+                return redirect()->back()->with('success', 'Event funds saved! Teller assignments will be applied when fights are created today.');
             }
 
-            // Update revolving funds for all existing fights in this event
+            // Update revolving funds for all fights today
             foreach ($fights as $fight) {
                 $fight->update(['revolving_funds' => $validated['revolving_funds']]);
 
@@ -73,6 +59,47 @@ class EventController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Failed to update event funds: ' . $e->getMessage()]);
+        }
+    }
+
+    public function getTodayFunds()
+    {
+        try {
+            $today = now()->toDateString();
+            
+            // Get the latest fight created today
+            $latestFight = Fight::whereDate('created_at', $today)
+                ->with(['tellerCashAssignments.teller'])
+                ->latest()
+                ->first();
+
+            if (!$latestFight) {
+                return response()->json([
+                    'revolving_funds' => 0,
+                    'assignments' => [],
+                ]);
+            }
+
+            return response()->json([
+                'revolving_funds' => $latestFight->revolving_funds,
+                'assignments' => $latestFight->tellerCashAssignments->map(function($assignment) {
+                    return [
+                        'id' => $assignment->id,
+                        'teller' => [
+                            'id' => $assignment->teller->id,
+                            'name' => $assignment->teller->name,
+                            'email' => $assignment->teller->email,
+                        ],
+                        'assigned_amount' => $assignment->assigned_amount,
+                        'current_balance' => $assignment->current_balance,
+                    ];
+                }),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'revolving_funds' => 0,
+                'assignments' => [],
+            ]);
         }
     }
 
