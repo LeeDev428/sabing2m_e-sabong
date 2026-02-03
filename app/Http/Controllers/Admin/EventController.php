@@ -23,6 +23,16 @@ class EventController extends Controller
 
         DB::beginTransaction();
         try {
+            // Validate total assignments don't exceed revolving funds
+            if (isset($validated['teller_assignments'])) {
+                $totalAssigned = collect($validated['teller_assignments'])->sum('amount');
+                if ($totalAssigned > $validated['revolving_funds']) {
+                    return redirect()->back()
+                        ->withErrors(['teller_assignments' => 'Total assigned cash (₱' . number_format($totalAssigned, 2) . ') exceeds revolving funds (₱' . number_format($validated['revolving_funds'], 2) . ')'])
+                        ->withInput();
+                }
+            }
+
             // Get ALL fights (today's fights regardless of when they were created)
             // We're assuming "today" means the fights that are currently active
             $fights = Fight::whereNotIn('status', ['result_declared', 'cancelled'])
@@ -40,20 +50,32 @@ class EventController extends Controller
                     'event_date' => $validated['event_date'],
                 ]);
 
-                // Delete existing assignments for this fight
-                TellerCashAssignment::where('fight_id', $fight->id)->delete();
-
-                // Create new assignments for this fight
+                // Process teller assignments - ADD to existing balance instead of replacing
                 if (isset($validated['teller_assignments']) && count($validated['teller_assignments']) > 0) {
                     foreach ($validated['teller_assignments'] as $assignment) {
-                        TellerCashAssignment::create([
-                            'fight_id' => $fight->id,
-                            'teller_id' => $assignment['teller_id'],
-                            'assigned_by' => auth()->id(),
-                            'assigned_amount' => $assignment['amount'],
-                            'current_balance' => $assignment['amount'],
-                            'status' => 'active',
-                        ]);
+                        // Check if assignment already exists for this teller and fight
+                        $existingAssignment = TellerCashAssignment::where('fight_id', $fight->id)
+                            ->where('teller_id', $assignment['teller_id'])
+                            ->first();
+
+                        if ($existingAssignment) {
+                            // ADD to existing balance
+                            $existingAssignment->update([
+                                'assigned_amount' => $existingAssignment->assigned_amount + $assignment['amount'],
+                                'current_balance' => $existingAssignment->current_balance + $assignment['amount'],
+                                'assigned_by' => auth()->id(),
+                            ]);
+                        } else {
+                            // Create new assignment
+                            TellerCashAssignment::create([
+                                'fight_id' => $fight->id,
+                                'teller_id' => $assignment['teller_id'],
+                                'assigned_by' => auth()->id(),
+                                'assigned_amount' => $assignment['amount'],
+                                'current_balance' => $assignment['amount'],
+                                'status' => 'active',
+                            ]);
+                        }
                     }
                 }
             }
