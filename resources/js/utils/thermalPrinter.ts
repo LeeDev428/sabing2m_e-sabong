@@ -300,7 +300,6 @@ export class ThermalPrinter {
             `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
             `${sideDisplay} - P${ticketData.amount.toLocaleString()}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal
-            `Win: P${ticketData.potential_payout.toLocaleString()}\n`,
             '\n',
             '================================\n',
             '\n',
