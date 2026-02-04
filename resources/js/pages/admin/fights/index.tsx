@@ -214,36 +214,41 @@ export default function FightsIndex({ fights, tellers, currentFight = null, even
             <Head title="Fights Management" />
 
             <div className="p-4 lg:p-8">
-                {/* Current Fight Indicator - Always show if there's a current fight */}
-                {currentFight && (
-                    <div className={`rounded-lg p-4 mb-6 ${
-                        currentFight.status === 'closed' || currentFight.status === 'result_declared'
-                            ? 'bg-gradient-to-r from-red-900/50 to-rose-900/50 border border-red-500/30'
-                            : 'bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30'
-                    }`}>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl">🏆</span>
-                                <div>
-                                    <div className="text-sm text-gray-300">CURRENT FIGHT</div>
-                                    <div className="text-xl font-bold text-white">
-                                        Fight #{currentFight.fight_number}
+                {/* Current Fight Indicator - Always show latest fight status */}
+                {(() => {
+                    const displayFight = currentFight || fights.data[0];
+                    if (!displayFight) return null;
+                    
+                    return (
+                        <div className={`rounded-lg p-4 mb-6 ${
+                            displayFight.status === 'closed' || displayFight.status === 'result_declared'
+                                ? 'bg-gradient-to-r from-red-900/50 to-rose-900/50 border border-red-500/30'
+                                : 'bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30'
+                        }`}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl">🏆</span>
+                                    <div>
+                                        <div className="text-sm text-gray-300">CURRENT FIGHT</div>
+                                        <div className="text-xl font-bold text-white">
+                                            Fight #{displayFight.fight_number}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="text-right">
-                                    <div className="text-red-400 font-semibold">{currentFight.meron_fighter}</div>
-                                    <div className="text-sm text-gray-400">VS</div>
-                                    <div className="text-blue-400 font-semibold">{currentFight.wala_fighter}</div>
+                                <div className="flex items-center gap-3">
+                                    <div className="text-right">
+                                        <div className="text-red-400 font-semibold">{displayFight.meron_fighter}</div>
+                                        <div className="text-sm text-gray-400">VS</div>
+                                        <div className="text-blue-400 font-semibold">{displayFight.wala_fighter}</div>
+                                    </div>
+                                    <span className={`px-4 py-2 rounded-full text-sm font-bold ${getStatusColor(displayFight.status)}`}>
+                                        {getStatusLabel(displayFight.status)}
+                                    </span>
                                 </div>
-                                <span className={`px-4 py-2 rounded-full text-sm font-bold ${getStatusColor(currentFight.status)}`}>
-                                    {getStatusLabel(currentFight.status)}
-                                </span>
                             </div>
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 lg:mb-8">
