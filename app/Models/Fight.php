@@ -119,6 +119,7 @@ class Fight extends Model
         return $this->bets()
             ->where('side', 'meron')
             ->where('status', '!=', 'cancelled')
+            ->where('status', '!=', 'voided')
             ->sum('amount');
     }
 
@@ -127,6 +128,7 @@ class Fight extends Model
         return $this->bets()
             ->where('side', 'wala')
             ->where('status', '!=', 'cancelled')
+            ->where('status', '!=', 'voided')
             ->sum('amount');
     }
 
@@ -135,6 +137,7 @@ class Fight extends Model
         return $this->bets()
             ->where('side', 'draw')
             ->where('status', '!=', 'cancelled')
+            ->where('status', '!=', 'voided')
             ->sum('amount');
     }
 
