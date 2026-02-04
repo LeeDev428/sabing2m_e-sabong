@@ -453,8 +453,11 @@ class BetController extends Controller
             
             $bet->save();
 
-            // IMPORTANT: Do NOT recalculate odds when voiding
-            // Voided bets should not affect fight odds
+            // Recalculate odds if auto-odds is enabled
+            $fight = $bet->fight;
+            if ($fight->auto_odds) {
+                $fight->calculateAutoOdds();
+            }
             
             // Refund to teller's fight-specific cash assignment
             $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
