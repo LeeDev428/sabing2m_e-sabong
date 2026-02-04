@@ -214,9 +214,13 @@ export default function FightsIndex({ fights, tellers, currentFight = null, even
             <Head title="Fights Management" />
 
             <div className="p-4 lg:p-8">
-                {/* Current Fight Indicator */}
+                {/* Current Fight Indicator - Always show if there's a current fight */}
                 {currentFight && (
-                    <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-lg p-4 mb-6">
+                    <div className={`rounded-lg p-4 mb-6 ${
+                        currentFight.status === 'closed' || currentFight.status === 'result_declared'
+                            ? 'bg-gradient-to-r from-red-900/50 to-rose-900/50 border border-red-500/30'
+                            : 'bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30'
+                    }`}>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">🏆</span>
@@ -258,7 +262,7 @@ export default function FightsIndex({ fights, tellers, currentFight = null, even
                             onClick={() => router.visit('/admin/fights/create')}
                             className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap"
                         >
-                            + Create New Fight
+                            ➕ Create New Fight
                         </button>
                     </div>
                 </div>
