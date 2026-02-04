@@ -258,12 +258,12 @@ export default function FightsIndex({ fights, tellers, currentFight = null, even
                         >
                             <span>💰</span> Event Funds
                         </button>
-                        <button
+                        {/* <button
                             onClick={() => router.visit('/admin/fights/create')}
                             className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-sm sm:text-base whitespace-nowrap"
                         >
                             ➕ Create New Fight
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
