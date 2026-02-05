@@ -184,22 +184,63 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                             <p className="text-white text-xl">Claimed Successfully</p>
                         </div>
 
-                        <div className="space-y-4 bg-[#1a1a1a] rounded-lg p-4">
+                        <div className="space-y-3 bg-[#1a1a1a] rounded-lg p-4">
+                            {/* Fight Number */}
                             <div className="flex justify-between items-center">
-                                <span className="text-gray-400">Claimed Amount:</span>
-                                <span className="text-3xl font-bold text-yellow-400">₱{claimData.amount.toLocaleString()}</span>
+                                <span className="text-gray-400">Fight#:</span>
+                                <span className="text-white font-semibold">{(claimData as any).fight_number || 'N/A'}</span>
                             </div>
-                            <div className="flex justify-between items-center border-t border-gray-700 pt-4">
-                                <span className="text-gray-400">Bet By:</span>
+                            
+                            {/* Teller */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Teller:</span>
                                 <span className="text-white font-semibold">{claimData.bet_by}</span>
                             </div>
+                            
+                            {/* Receipt/Ticket ID */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Receipt:</span>
+                                <span className="text-white font-semibold text-xs">{(claimData as any).ticket_id || 'N/A'}</span>
+                            </div>
+                            
+                            {/* Date and Time */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Date:</span>
+                                <span className="text-white font-semibold">{new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Time:</span>
+                                <span className="text-white font-semibold">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
+                            </div>
+                            
+                            {/* Divider */}
+                            <div className="border-t-2 border-gray-700 my-2"></div>
+                            
+                            {/* Side and Amount - BIG */}
+                            <div className="text-center py-4">
+                                <div className="text-4xl font-bold text-yellow-400">
+                                    {((claimData as any).side || 'N/A').toUpperCase()} - ₱{claimData.amount.toLocaleString()}
+                                </div>
+                            </div>
+                            
+                            {/* Divider */}
+                            <div className="border-t-2 border-gray-700 my-2"></div>
+                            
+                            {/* Claimed By */}
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-400">Claimed By:</span>
                                 <span className="text-white font-semibold">{claimData.claimed_by}</span>
                             </div>
+                            
+                            {/* Status */}
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-400">Status:</span>
                                 <span className="text-green-400 font-bold">{claimData.status}</span>
+                            </div>
+                            
+                            {/* Official Receipt Badge */}
+                            <div className="text-center pt-2">
+                                <div className="text-sm font-bold text-gray-400">OFFICIAL BETTING RECEIPT</div>
                             </div>
                         </div>
 
