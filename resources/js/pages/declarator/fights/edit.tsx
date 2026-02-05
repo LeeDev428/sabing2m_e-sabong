@@ -88,16 +88,8 @@ export default function EditFight({ fight }: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        const remainingFunds = getRemainingFunds();
-        if (remainingFunds < 0) {
-            alert(`Total assignments (₱${getTotalAssigned().toLocaleString()}) exceed revolving funds (₱${parseFloat(formData.revolving_funds).toLocaleString()})`);
-            return;
-        }
-
-        router.put(`/declarator/fights/${fight.id}`, {
-            ...formData,
-            teller_assignments: tellerAssignments.filter(a => a.teller_id && parseFloat(a.amount) > 0)
-        }, {
+        // Declarators only edit fight details, not cash assignments
+        router.put(`/declarator/fights/${fight.id}`, formData, {
             onSuccess: () => {
                 router.visit('/declarator/declared');
             },
