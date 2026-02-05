@@ -120,19 +120,6 @@ class FightController extends Controller
 
         DB::beginTransaction();
         try {
-            // Validate total assignments don't exceed revolving funds
-            $totalAssignments = 0;
-            if (isset($validated['teller_assignments'])) {
-                $totalAssignments = collect($validated['teller_assignments'])->sum('amount');
-                $revolvingFunds = $validated['revolving_funds'] ?? 0;
-                
-                if ($totalAssignments > $revolvingFunds) {
-                    return redirect()->back()
-                        ->withErrors(['teller_assignments' => 'Total teller assignments (₱' . number_format($totalAssignments, 2) . ') exceed revolving funds (₱' . number_format($revolvingFunds, 2) . ')'])
-                        ->withInput();
-                }
-            }
-
             // Update fight details
             $fight->update([
                 'meron_fighter' => $validated['meron_fighter'],
