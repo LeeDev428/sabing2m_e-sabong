@@ -340,6 +340,9 @@ class BetController extends Controller
                 'claimed_by' => auth()->user()->name,
                 'status' => 'Claimed',
                 'already_claimed' => false,
+                'ticket_id' => $bet->ticket_id,
+                'fight_number' => $bet->fight->fight_number ?? 'N/A',
+                'side' => $bet->side,
             ]
         ]);
     }
