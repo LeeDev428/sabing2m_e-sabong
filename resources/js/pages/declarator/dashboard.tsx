@@ -67,12 +67,12 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                     <h1 className="text-2xl lg:text-3xl font-bold">Declarator Dashboard</h1>
                     <p className="text-sm lg:text-base text-gray-400">Declare fight results and manage outcomes</p>
                 </div>
-                <button
+                {/* <button
                     onClick={() => setShowNextFightModal(true)}
                     className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold flex items-center gap-2"
                 >
                     ➕ Next Fight
-                </button>
+                </button> */}
             </div>
 
                 {/* Stats Grid */}
