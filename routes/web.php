@@ -180,24 +180,13 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
             'draw_bets' => $tellerBets->where('side', 'draw')->count(),
         ];
             
-        // Calculate teller's cash balance from the latest active fight
-        // Get the latest fight assignment regardless of status (but exclude result_declared/cancelled)
-        $latestFight = \App\Models\Fight::whereNotIn('status', ['result_declared', 'cancelled'])
+        // Calculate teller's cash balance from the latest fight assignment
+        // ALWAYS show balance regardless of fight status (open, closed, standby, etc.)
+        $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
             ->orderBy('id', 'desc')
             ->first();
         
-        $tellerBalance = 0; // Default to 0
-        
-        // Show balance if there's an active fight with assignment
-        if ($latestFight) {
-            $assignment = \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
-                ->where('fight_id', $latestFight->id)
-                ->first();
-            
-            if ($assignment) {
-                $tellerBalance = (float) $assignment->current_balance;
-            }
-        }
+        $tellerBalance = $latestAssignment ? (float) $latestAssignment->current_balance : 0;
         
         return Inertia::render('teller/dashboard', [
             'fights' => $fights,
