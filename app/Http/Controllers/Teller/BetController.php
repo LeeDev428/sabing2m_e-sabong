@@ -338,8 +338,11 @@ class BetController extends Controller
                 'status' => 'Claimed',
                 'already_claimed' => false,
                 'ticket_id' => $bet->ticket_id,
-                'fight_number' => $bet->fight->fight_number ?? 'N/A',
+                'fight_number' => $bet->fight->fight_number ?? 0,
                 'side' => $bet->side,
+                'bet_amount' => (float) $bet->amount,
+                'odds' => (float) $bet->odds,
+                'event_name' => $bet->fight->event_name ?? null,
             ]
         ]);
     }
