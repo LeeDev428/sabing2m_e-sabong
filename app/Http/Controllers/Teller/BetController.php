@@ -307,14 +307,17 @@ class BetController extends Controller
             ]);
         }
 
-        // Calculate payout amount
-        $payoutAmount = $bet->potential_payout ?? $bet->amount;
+        // Use actual_payout (calculated with FINAL closing odds when result was declared)
+        // NOT potential_payout (calculated with odds at time of bet)
+        $payoutAmount = $bet->actual_payout ?? $bet->potential_payout ?? $bet->amount;
+        
+        // Calculate the FINAL odds that were used (actual_payout / amount)
+        $finalOdds = $bet->amount > 0 ? ($bet->actual_payout / $bet->amount) : 1.0;
 
         // Update bet status to claimed
         $bet->status = 'claimed';
         $bet->claimed_at = now();
         $bet->claimed_by = auth()->id();
-        $bet->actual_payout = $payoutAmount;
         $bet->save();
 
         // Deduct payout from teller's cash assignment (teller pays out winnings)
@@ -341,7 +344,7 @@ class BetController extends Controller
                 'fight_number' => $bet->fight->fight_number ?? 0,
                 'side' => $bet->side,
                 'bet_amount' => (float) $bet->amount,
-                'odds' => (float) $bet->odds,
+                'odds' => (float) $finalOdds,  // Use FINAL closing odds, not bet-time odds
                 'event_name' => $bet->fight->event_name ?? null,
             ]
         ]);
