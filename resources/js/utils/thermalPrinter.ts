@@ -320,6 +320,83 @@ export class ThermalPrinter {
             throw error;
         }
     }
+
+    async printPayoutReceipt(payoutData: {
+        ticket_id: string;
+        fight_number: number;
+        side: string;
+        bet_amount: number;
+        odds: number;
+        payout_amount: number;
+        bet_by: string;
+        claimed_by: string;
+        event_name?: string;
+    }) {
+        console.log('[ThermalPrinter] printPayoutReceipt() called with data:', payoutData);
+        
+        const sideDisplay = payoutData.side.toUpperCase();
+        const eventName = payoutData.event_name || 'SABONG EVENT';
+        
+        console.log('[ThermalPrinter] Building payout receipt ESC/POS commands...');
+        const commands = [
+            `${ESC}@`, // Initialize
+            
+            // Event Title (centered, BOLD)
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(16)}`, // Double width only
+            `${eventName}\n`,
+            `${ESC}!${String.fromCharCode(0)}`, // Normal font
+            '================================\n',
+            
+            // Receipt Type
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(8)}`, // Bold
+            'PAYOUT RECEIPT\n',
+            `${ESC}!${String.fromCharCode(0)}`, // Normal
+            '================================\n',
+            
+            // Receipt details
+            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            `Fight#: ${payoutData.fight_number}\n`,
+            `Bet By: ${payoutData.bet_by}\n`,
+            `Claimed By: ${payoutData.claimed_by}\n`,
+            `Receipt: ${payoutData.ticket_id}\n`,
+            `Date: ${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}\n`,
+            `Time: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}\n`,
+            '================================\n',
+            '\n',
+            // Bet Info
+            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            `Side: ${sideDisplay}\n`,
+            `Bet Amount: P${payoutData.bet_amount.toLocaleString()}\n`,
+            `Odds: ${payoutData.odds}x\n`,
+            '================================\n',
+            '\n',
+            // Payout Amount (BIGGER)
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
+            `PAYOUT: P${payoutData.payout_amount.toLocaleString()}\n`,
+            `${ESC}!${String.fromCharCode(0)}`, // Normal
+            '\n',
+            '================================\n',
+            '\n',
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            'WINNER - CLAIM RECEIPT\n',
+            '\n\n\n\n',
+            `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
+        ].join('');
+
+        console.log('[ThermalPrinter] Commands built, length:', commands.length);
+        console.log('[ThermalPrinter] Calling write()...');
+        
+        try {
+            await this.write(commands);
+            console.log('[ThermalPrinter] ✅ Payout receipt printed successfully');
+        } catch (error) {
+            console.error('[ThermalPrinter] ❌ Payout receipt print failed:', error);
+            throw error;
+        }
+    }
 }
 
 export const thermalPrinter = new ThermalPrinter();
