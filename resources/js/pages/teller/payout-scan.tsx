@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { showToast } from '@/components/toast';
 import { PermissionManager } from '@/utils/permissionManager';
+import { thermalPrinter } from '@/utils/thermalPrinter';
 
 interface PayoutScanProps {
     message?: string;
@@ -13,6 +14,12 @@ interface PayoutScanProps {
         claimed_by: string;
         status: string;
         already_claimed?: boolean;
+        ticket_id?: string;
+        fight_number?: number;
+        side?: string;
+        bet_amount?: number;
+        odds?: number;
+        event_name?: string;
     };
 }
 
@@ -20,8 +27,34 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
     const [scanning, setScanning] = useState(false);
     const [result, setResult] = useState<string | null>(null);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const [isPrinterConnected, setIsPrinterConnected] = useState(false);
     const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
     const isScanningRef = useRef(false);
+
+    // Check printer connection on mount
+    useEffect(() => {
+        thermalPrinter.initialize().then(() => {
+            setIsPrinterConnected(thermalPrinter.isConnected());
+        });
+
+        const handleConnectionChange = (connected: boolean) => {
+            setIsPrinterConnected(connected);
+        };
+
+        thermalPrinter.addConnectionListener(handleConnectionChange);
+
+        return () => {
+            thermalPrinter.removeConnectionListener(handleConnectionChange);
+        };
+    }, []);
+
+    // Auto-print payout receipt when claim is successful
+    useEffect(() => {
+        if (claimData && !claimData.already_claimed && isPrinterConnected) {
+            // Auto-print payout receipt
+            handlePrintPayout();
+        }
+    }, [claimData, isPrinterConnected]);
 
     useEffect(() => {
         return () => {
@@ -33,6 +66,36 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
             }
         };
     }, []);
+
+    const handlePrintPayout = async () => {
+        if (!isPrinterConnected) {
+            showToast('❌ Printer not connected', 'error', 3000);
+            return;
+        }
+
+        if (!claimData) {
+            showToast('❌ No claim data available', 'error', 3000);
+            return;
+        }
+
+        try {
+            await thermalPrinter.printPayoutReceipt({
+                ticket_id: claimData.ticket_id || 'N/A',
+                fight_number: claimData.fight_number || 0,
+                side: claimData.side || 'N/A',
+                bet_amount: claimData.bet_amount || 0,
+                odds: claimData.odds || 1.0,
+                payout_amount: claimData.amount,
+                bet_by: claimData.bet_by,
+                claimed_by: claimData.claimed_by,
+                event_name: claimData.event_name,
+            });
+            showToast('✅ Payout receipt printed!', 'success', 2000);
+        } catch (error: any) {
+            console.error('Print error:', error);
+            showToast(`❌ Print failed: ${error.message}`, 'error', 3000);
+        }
+    };
 
     const startScanning = async () => {
         try {
@@ -243,6 +306,18 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                                 <div className="text-sm font-bold text-gray-400">OFFICIAL BETTING RECEIPT</div>
                             </div>
                         </div>
+
+                        <button
+                            onClick={handlePrintPayout}
+                            disabled={!isPrinterConnected}
+                            className={`w-full mt-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${
+                                isPrinterConnected
+                                    ? 'bg-purple-600 hover:bg-purple-700'
+                                    : 'bg-gray-600 cursor-not-allowed opacity-50'
+                            }`}
+                        >
+                            <span>🖨️</span> Print Payout Receipt
+                        </button>
 
                         <button
                             onClick={() => router.visit('/teller/payout-scan')}
