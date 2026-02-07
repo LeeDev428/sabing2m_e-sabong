@@ -89,6 +89,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::post('teller-balances/{user}/deduct', [TellerBalanceController::class, 'deductBalance'])->name('teller-balances.deduct');
     
     // Event Management (Revolving Funds per Event/Day)
+    Route::get('events', [EventController::class, 'index'])->name('events.index');
     Route::get('events/today-funds', [EventController::class, 'getTodayFunds'])->name('events.today-funds');
     Route::post('events/funds', [EventController::class, 'storeFunds'])->name('events.store-funds');
     Route::post('events', [EventController::class, 'store'])->name('events.store');
