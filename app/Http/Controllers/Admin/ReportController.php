@@ -34,6 +34,8 @@ class ReportController extends Controller
                 ->whereDate('scheduled_at', today())
                 ->count(),
             'active_users' => User::count(),
+            'unclaimed_winnings_count' => (clone $baseBetQuery)->where('status', 'won')->whereNull('claimed_at')->count(),
+            'unclaimed_winnings_amount' => (clone $baseBetQuery)->where('status', 'won')->whereNull('claimed_at')->sum('actual_payout'),
         ];
 
         // Daily reports query
