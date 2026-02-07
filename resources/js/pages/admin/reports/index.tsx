@@ -28,6 +28,8 @@ interface Props {
         total_revenue: number;
         fights_today: number;
         active_users: number;
+        unclaimed_winnings_count: number;
+        unclaimed_winnings_amount: number;
     };
     daily_reports?: Array<{
         date: string;
@@ -186,6 +188,15 @@ export default function ReportsIndex({
                         <span className="text-indigo-400">👥</span>
                     </div>
                     <p className="text-3xl font-bold text-white">{stats.active_users}</p>
+                </div>
+
+                <div className="bg-gray-800 p-6 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-gray-400 text-sm">Unclaimed Winnings</h3>
+                        <span className="text-orange-400">🎫</span>
+                    </div>
+                    <p className="text-xl font-bold text-white">{stats.unclaimed_winnings_count} tickets</p>
+                    <p className="text-2xl font-bold text-orange-400 mt-1">₱{stats.unclaimed_winnings_amount.toLocaleString()}</p>
                 </div>
             </div>
 
