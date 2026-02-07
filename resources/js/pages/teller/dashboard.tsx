@@ -19,12 +19,17 @@ interface TellerDashboardProps {
         draw_bets: number;
     };
     tellerBalance?: number;
+    auth?: {
+        user: {
+            name: string;
+        };
+    };
 }
 
-export default function TellerDashboard({ fights = [], summary, tellerBalance = 0 }: TellerDashboardProps) {
+export default function TellerDashboard({ fights = [], summary, tellerBalance = 0, auth }: TellerDashboardProps) {
     const [amount, setAmount] = useState('0');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
-    const [betSide, setBetSide] = useState<'meron' | 'wala' | 'draw' | null>(null);
+    const [betSide, setBetSide] = useState<'meron' | 'wala' | null>(null);
     const [showSummary, setShowSummary] = useState(false);
     const [liveOdds, setLiveOdds] = useState<Fight | null>(null);
     const [liveBalance, setLiveBalance] = useState(tellerBalance);
@@ -429,8 +434,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 <div className="p-3 max-w-md mx-auto"
                     style={{ opacity: (selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 1 : 0.6 }}
                 >
-                    {/* Fighter Selection Buttons - Compact */}
-                    <div className="grid grid-cols-3 gap-2 mb-2">
+                    {/* Fighter Selection Buttons - Only Meron & Wala */}
+                    <div className="grid grid-cols-2 gap-2 mb-2">
                         {/* MERON Button */}
                         <button
                             onClick={() => currentFightData?.meron_betting_open && setBetSide('meron')}
@@ -449,8 +454,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             </div>
                         </button>
 
-                        {/* DRAW Button */}
-                        <button
+                        {/* DRAW Button - Removed as per requirements */}
+                        {/* <button
                             onClick={() => currentFightData?.draw_betting_open && setBetSide('draw')}
                             disabled={!currentFightData?.draw_betting_open}
                             className={`relative rounded-lg overflow-hidden transition-all ${
@@ -465,7 +470,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             <div className="bg-green-700 py-0.5 text-xs text-white">
                                 {!currentFightData?.draw_betting_open ? '🔒 CLOSED' : 'OPEN'}
                             </div>
-                        </button>
+                        </button> */}
 
                         {/* WALA Button */}
                         <button
@@ -486,30 +491,39 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         </button>
                     </div>
 
-                    {/* Amount Input with +/- buttons - Compact */}
-                    <div className="grid grid-cols-3 gap-2 mb-2">
-                        <button
-                            onClick={handleDecrement}
-                            disabled={selectedFight.status !== 'open' && selectedFight.status !== 'lastcall'}
-                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-2xl rounded-lg py-3 flex items-center justify-center"
-                        >
-                            −
-                        </button>
+                    {/* Amount Input - Expanded (removed +/- buttons) */}
+                    <div className="mb-2">
                         <div className="bg-white text-black rounded-lg py-3 flex items-center justify-center">
                             <div className="text-3xl font-bold tracking-wider">{amount}</div>
                         </div>
-                        <button
-                            onClick={handleIncrement}
-                            disabled={selectedFight.status !== 'open' && selectedFight.status !== 'lastcall'}
-                            className="bg-white hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-2xl rounded-lg py-3 flex items-center justify-center"
-                        >
-                            +
-                        </button>
                     </div>
 
-                    {/* Number Pad - Compact */}
+                    {/* Calculator Layout - Rearranged as per image */}
                     <div className="grid grid-cols-3 gap-2 mb-2">
-                        {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
+                        {/* Row 1: Meron, Draw (removed), Wala odds buttons */}
+                        <button
+                            onClick={() => currentFightData?.meron_betting_open && setBetSide('meron')}
+                            disabled={!currentFightData?.meron_betting_open}
+                            className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg py-3 text-xl font-bold"
+                        >
+                            {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '1.85'}
+                        </button>
+                        <button
+                            className="bg-green-600 text-white rounded-lg py-3 text-xl font-bold opacity-50 cursor-not-allowed"
+                            disabled
+                        >
+                            {currentFightData?.draw_odds ? Number(currentFightData.draw_odds).toFixed(2) : '9.00'}
+                        </button>
+                        <button
+                            onClick={() => currentFightData?.wala_betting_open && setBetSide('wala')}
+                            disabled={!currentFightData?.wala_betting_open}
+                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg py-3 text-xl font-bold"
+                        >
+                            {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '1.85'}
+                        </button>
+
+                        {/* Row 2: 7, 8, 9 */}
+                        {[7, 8, 9].map((num) => (
                             <button
                                 key={num}
                                 onClick={() => handleNumberClick(num.toString())}
@@ -518,7 +532,31 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 {num}
                             </button>
                         ))}
-                        <button className="bg-white text-black rounded-lg py-3 text-xl font-bold opacity-50 cursor-default">
+
+                        {/* Row 3: 4, 5, 6 */}
+                        {[4, 5, 6].map((num) => (
+                            <button
+                                key={num}
+                                onClick={() => handleNumberClick(num.toString())}
+                                className="bg-white hover:bg-gray-200 text-black rounded-lg py-3 text-xl font-bold"
+                            >
+                                {num}
+                            </button>
+                        ))}
+
+                        {/* Row 4: 1, 2, 3 */}
+                        {[1, 2, 3].map((num) => (
+                            <button
+                                key={num}
+                                onClick={() => handleNumberClick(num.toString())}
+                                className="bg-white hover:bg-gray-200 text-black rounded-lg py-3 text-xl font-bold"
+                            >
+                                {num}
+                            </button>
+                        ))}
+
+                        {/* Row 5: disabled dot, 0, CLR */}
+                        <button className="bg-white text-black rounded-lg py-3 text-xl font-bold opacity-50 cursor-default" disabled>
                             .
                         </button>
                         <button
@@ -535,9 +573,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         </button>
                     </div>
 
-                    {/* Quick Amount Buttons - Compact */}
-                    <div className="grid grid-cols-5 gap-1 mb-2">
-                        {[50, 100, 200, 500, 1000].map((quickAmount) => (
+                    {/* Quick Amount Buttons - Minimum is 100 */}
+                    <div className="grid grid-cols-4 gap-1 mb-2">
+                        {[100, 200, 500, 1000].map((quickAmount) => (
                             <button
                                 key={quickAmount}
                                 onClick={() => handleQuickAmount(quickAmount)}
