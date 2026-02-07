@@ -396,7 +396,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 <div className="flex justify-between items-center max-w-md mx-auto">
                     <div>
                         <h1 className="text-lg font-bold text-orange-500">Dashboard</h1>
-                        <div className="text-xs text-gray-400">BET TERMINAL</div>
+                        <div className="text-xs text-gray-400">{auth?.user?.name || 'TELLER'}</div>
                     </div>
                     <div className="text-right">
                         <div className="text-xs text-gray-400">Cash Balance</div>
