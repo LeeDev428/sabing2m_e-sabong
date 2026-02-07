@@ -139,8 +139,8 @@ export default function BigScreen() {
                     walaBettingOpen={fight.wala_betting_open}
                 />
 
-                {/* Fighter Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {/* Fighter Cards Grid - Only Meron and Wala */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
@@ -150,14 +150,15 @@ export default function BigScreen() {
                         bettingOpen={fight.meron_betting_open}
                     />
 
-                    <FighterCard
+                    {/* Draw is hidden for Big Screen - only show Meron and Wala */}
+                    {/* <FighterCard
                         side="draw"
                         fighter="Even Match"
                         odds={fight.draw_odds}
                         totalBets={fight.draw_total}
                         betCount={fight.draw_count}
                         bettingOpen={fight.draw_betting_open}
-                    />
+                    /> */}
 
                     <FighterCard
                         side="wala"
