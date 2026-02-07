@@ -82,6 +82,16 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     </button>
                     <button
                         onClick={() => {
+                            router.visit('/admin/events');
+                            setSidebarOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
+                    >
+                        📅 Event Management
+                    </button>
+                    <button
+                        onClick={() => {
                             router.visit('/admin/settings');
                             setSidebarOpen(false);
                         }}
