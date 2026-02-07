@@ -112,4 +112,51 @@ class TellerBalanceController extends Controller
 
         return back()->with('success', 'Balance added successfully');
     }
+
+    public function deductBalance(Request $request, User $user)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        if ($user->role !== 'teller') {
+            return back()->withErrors(['error' => 'User is not a teller']);
+        }
+
+        DB::transaction(function () use ($user, $request) {
+            // Get the latest teller cash assignment to update real-time balance
+            $latestAssignment = TellerCashAssignment::where('teller_id', $user->id)
+                ->orderBy('id', 'desc')
+                ->first();
+            
+            if ($latestAssignment) {
+                // Deduct from existing balance
+                $newBalance = $latestAssignment->current_balance - $request->amount;
+                if ($newBalance < 0) {
+                    throw new \Exception('Insufficient balance to deduct');
+                }
+                $latestAssignment->update([
+                    'current_balance' => $newBalance,
+                ]);
+            }
+            
+            // Also update the deprecated user.teller_balance for backwards compatibility
+            if ($user->teller_balance < $request->amount) {
+                throw new \Exception('Insufficient balance to deduct');
+            }
+            $user->decrement('teller_balance', $request->amount);
+
+            CashTransfer::create([
+                'from_teller_id' => $user->id,
+                'to_teller_id' => $user->id,
+                'amount' => $request->amount,
+                'type' => 'deduction',
+                'remarks' => $request->remarks ?? "Admin deducted balance",
+                'approved_by' => auth()->id(),
+            ]);
+        });
+
+        return back()->with('success', 'Balance deducted successfully');
+    }
 }
