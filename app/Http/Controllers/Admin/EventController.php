@@ -8,9 +8,22 @@ use App\Models\Fight;
 use App\Models\TellerCashAssignment;
 use Illuminate\Http\Request;
 use DB;
+use Inertia\Inertia;
 
 class EventController extends Controller
 {
+    public function index()
+    {
+        $events = Event::withCount('fights')
+            ->orderBy('event_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return Inertia::render('admin/events/index', [
+            'events' => $events,
+        ]);
+    }
+
     public function storeFunds(Request $request)
     {
         $validated = $request->validate([
