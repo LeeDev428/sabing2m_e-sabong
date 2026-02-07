@@ -35,6 +35,24 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
         });
     };
 
+    const handleDeductBalance = (teller: Teller) => {
+        const deductAmount = prompt(`Deduct balance from ${teller.name}:`);
+        if (!deductAmount) return;
+
+        const amount = parseFloat(deductAmount);
+        if (amount > parseFloat(teller.teller_balance.toString())) {
+            alert('Cannot deduct more than current balance!');
+            return;
+        }
+
+        if (!confirm(`Deduct ₱${amount.toLocaleString()} from ${teller.name}?`)) return;
+
+        router.post(`/admin/teller-balances/${teller.id}/deduct`, {
+            amount: amount,
+            remarks: `Admin deducted ₱${amount.toLocaleString()}`,
+        });
+    };
+
     const totalBalance = tellers.reduce((sum, t) => sum + parseFloat(t.teller_balance.toString()), 0);
 
     return (
@@ -98,6 +116,12 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
                                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-semibold"
                                             >
                                                 💰 Add Balance
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeductBalance(teller)}
+                                                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold"
+                                            >
+                                                ➖ Deduct
                                             </button>
                                         </div>
                                     </td>
