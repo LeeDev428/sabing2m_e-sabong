@@ -9,22 +9,8 @@ interface DeclaratorDashboardProps {
 
 export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboardProps) {
     const [showResultModal, setShowResultModal] = useState(false);
-    const [showNextFightModal, setShowNextFightModal] = useState(false);
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [result, setResult] = useState<'meron' | 'wala' | 'draw' | 'cancelled' | null>(null);
-    const [meronFighter, setMeronFighter] = useState('');
-    const [walaFighter, setWalaFighter] = useState('');
-    const [eventName, setEventName] = useState('');
-    const [lastEventName, setLastEventName] = useState('');
-
-    // Initialize event name from latest fight
-    useEffect(() => {
-        const latestFight = fights.length > 0 ? fights[fights.length - 1] : null;
-        if (latestFight && latestFight.event_name) {
-            setEventName(latestFight.event_name);
-            setLastEventName(latestFight.event_name);
-        }
-    }, [fights]);
 
     // Real-time auto-refresh every 3 seconds
     useEffect(() => {
@@ -49,39 +35,6 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                 setShowResultModal(false);
                 setSelectedFight(null);
                 setResult(null);
-            },
-        });
-    };
-
-    const handleCreateNextFight = () => {
-        if (!meronFighter || !walaFighter) return;
-
-        // Check if this is a new event
-        const isNewEvent = eventName && lastEventName && eventName !== lastEventName;
-        
-        // Show confirmation if new event
-        if (isNewEvent) {
-            const confirmed = confirm(
-                `⚠️ Creating a new event will close/end the previous event.\n\n` +
-                `New Event: "${eventName}"\n` +
-                `Previous Event: "${lastEventName}"\n` +
-                `Fight number will reset to #1\n` +
-                `All previous fights will be closed.\n\n` +
-                `Do you want to continue?`
-            );
-            
-            if (!confirmed) return;
-        }
-
-        router.post('/declarator/fights/create-next', {
-            meron_fighter: meronFighter,
-            wala_fighter: walaFighter,
-            event_name: eventName,
-        }, {
-            onSuccess: () => {
-                setShowNextFightModal(false);
-                setMeronFighter('');
-                setWalaFighter('');
             },
         });
     };
