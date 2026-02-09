@@ -28,6 +28,7 @@ interface Props {
 
 export default function EventsIndex({ events }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -52,19 +53,29 @@ export default function EventsIndex({ events }: Props) {
                 }
             });
         } else {
-            // Create new event
-            router.post('/admin/events', {
-                name: formData.name,
-                event_date: formData.event_date,
-                revolving_funds: parseFloat(formData.revolving_funds),
-                notes: formData.notes,
-            }, {
-                onSuccess: () => {
-                    setShowCreateModal(false);
-                    resetForm();
-                }
-            });
+            // Show confirmation dialog before creating new event
+            setShowConfirmDialog(true);
         }
+    };
+
+    const handleConfirmCreate = () => {
+        // Create new event after confirmation
+        router.post('/admin/events', {
+            name: formData.name,
+            event_date: formData.event_date,
+            revolving_funds: parseFloat(formData.revolving_funds),
+            notes: formData.notes,
+        }, {
+            onSuccess: () => {
+                setShowCreateModal(false);
+                setShowConfirmDialog(false);
+                resetForm();
+            }
+        });
+    };
+
+    const handleCancelCreate = () => {
+        setShowConfirmDialog(false);
     };
 
     const resetForm = () => {
@@ -291,6 +302,40 @@ export default function EventsIndex({ events }: Props) {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Confirmation Dialog */}
+            {showConfirmDialog && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 border-2 border-yellow-500">
+                        <div className="text-center mb-6">
+                            <div className="text-6xl mb-4">⚠️</div>
+                            <h2 className="text-2xl font-bold text-white mb-4">Confirm Event Creation</h2>
+                            <p className="text-gray-300 text-lg mb-2">
+                                Creating a new event will close/end the previous event.
+                            </p>
+                            <p className="text-yellow-400 text-sm">
+                                Are you sure you want to proceed?
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={handleCancelCreate}
+                                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold"
+                            >
+                                No, Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleConfirmCreate}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
+                            >
+                                Yes, Create
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
