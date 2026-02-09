@@ -199,11 +199,11 @@ export default function AdminDashboard({
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Bet Amount</div>
-                        <div className="text-3xl font-bold text-purple-400">₱{stats.total_bet_amount.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-purple-400">₱{Number(stats.total_bet_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Payouts</div>
-                        <div className="text-3xl font-bold text-yellow-400">₱{stats.total_payouts.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-yellow-400">₱{Number(stats.total_payouts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Users</div>
@@ -226,11 +226,11 @@ export default function AdminDashboard({
                     </div>
                     <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6">
                         <div className="text-purple-100 text-sm mb-2">Revenue Today</div>
-                        <div className="text-4xl font-bold text-white">₱{todayStats.revenue_today.toLocaleString()}</div>
+                        <div className="text-4xl font-bold text-white">₱{Number(todayStats.revenue_today).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div className="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-lg p-6">
                         <div className="text-yellow-100 text-sm mb-2">Payouts Today</div>
-                        <div className="text-4xl font-bold text-white">₱{todayStats.payouts_today.toLocaleString()}</div>
+                        <div className="text-4xl font-bold text-white">₱{Number(todayStats.payouts_today).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                 </div>
             </div>
@@ -245,7 +245,7 @@ export default function AdminDashboard({
                             <div className="flex justify-between mb-2">
                                 <span className="text-red-400 font-semibold">Meron</span>
                                 <span className="text-white">
-                                    {betDistribution?.meron_bets || 0} bets - ₱{(betDistribution?.meron_amount || 0).toLocaleString()}
+                                    {betDistribution?.meron_bets || 0} bets - ₱{Number(betDistribution?.meron_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
@@ -266,7 +266,7 @@ export default function AdminDashboard({
                             <div className="flex justify-between mb-2">
                                 <span className="text-blue-400 font-semibold">Wala</span>
                                 <span className="text-white">
-                                    {betDistribution?.wala_bets || 0} bets - ₱{(betDistribution?.wala_amount || 0).toLocaleString()}
+                                    {betDistribution?.wala_bets || 0} bets - ₱{Number(betDistribution?.wala_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
@@ -287,7 +287,7 @@ export default function AdminDashboard({
                             <div className="flex justify-between mb-2">
                                 <span className="text-green-400 font-semibold">Draw</span>
                                 <span className="text-white">
-                                    {betDistribution?.draw_bets || 0} bets - ₱{(betDistribution?.draw_amount || 0).toLocaleString()}
+                                    {betDistribution?.draw_bets || 0} bets - ₱{Number(betDistribution?.draw_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
