@@ -490,7 +490,18 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             </div>
                         </button>
                     </div>
-
+    {/* Quick Amount Buttons - Minimum is 100 */}
+                    <div className="grid grid-cols-4 gap-1 mb-2">
+                        {[100, 200, 500, 1000].map((quickAmount) => (
+                            <button
+                                key={quickAmount}
+                                onClick={() => handleQuickAmount(quickAmount)}
+                                className="bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white rounded py-2 text-xs font-semibold border border-gray-600"
+                            >
+                                {quickAmount}
+                            </button>
+                        ))}
+                    </div>
                     {/* Amount Input - Expanded (removed +/- buttons) */}
                     <div className="mb-2">
                         <div className="bg-white text-black rounded-lg py-3 flex items-center justify-center">
@@ -501,7 +512,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     {/* Calculator Layout - Rearranged as per image */}
                     <div className="grid grid-cols-3 gap-2 mb-2">
                         {/* Row 1: Meron, Draw (removed), Wala odds buttons */}
-                        <button
+                        {/* <button
                             onClick={() => currentFightData?.meron_betting_open && setBetSide('meron')}
                             disabled={!currentFightData?.meron_betting_open}
                             className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg py-3 text-xl font-bold"
@@ -520,7 +531,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg py-3 text-xl font-bold"
                         >
                             {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '1.85'}
-                        </button>
+                        </button> */}
 
                         {/* Row 2: 7, 8, 9 */}
                         {[7, 8, 9].map((num) => (
@@ -573,18 +584,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         </button>
                     </div>
 
-                    {/* Quick Amount Buttons - Minimum is 100 */}
-                    <div className="grid grid-cols-4 gap-1 mb-2">
-                        {[100, 200, 500, 1000].map((quickAmount) => (
-                            <button
-                                key={quickAmount}
-                                onClick={() => handleQuickAmount(quickAmount)}
-                                className="bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white rounded py-2 text-xs font-semibold border border-gray-600"
-                            >
-                                {quickAmount}
-                            </button>
-                        ))}
-                    </div>
+                
 
                     {/* Submit Button - Compact */}
                     <button
