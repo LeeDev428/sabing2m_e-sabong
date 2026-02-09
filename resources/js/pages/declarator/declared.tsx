@@ -510,7 +510,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                                 </div>
 
                                                 {/* DRAW Controls */}
-                                                <div className={`border-2 rounded-lg p-4 transition-all ${
+                                                {/* <div className={`border-2 rounded-lg p-4 transition-all ${
                                                     fight.draw_betting_open 
                                                         ? 'border-green-600 bg-green-900/20' 
                                                         : 'border-gray-600 bg-gray-700/50'
@@ -544,7 +544,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                                             ⚠️ Tellers cannot bet on Draw
                                                         </p>
                                                     )}
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </div>
                                     )}
