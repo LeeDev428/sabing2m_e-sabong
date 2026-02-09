@@ -55,14 +55,24 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [showDeclareModal, setShowDeclareModal] = useState(false);
+    const [showNextFightModal, setShowNextFightModal] = useState(false);
     const [declareResult, setDeclareResult] = useState<'meron' | 'wala' | 'draw' | 'cancel'>('meron');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [commission, setCommission] = useState('7.5');
     const [editingFunds, setEditingFunds] = useState<number | null>(null);
     const [fundsData, setFundsData] = useState<{[key: number]: {revolving_funds: string, assignments: any[]}}>({});
+    const [meronFighter, setMeronFighter] = useState('');
+    const [walaFighter, setWalaFighter] = useState('');
+    const [eventName, setEventName] = useState('');
+    const [lastEventName, setLastEventName] = useState('');
     const { data, setData, post, processing, errors } = useForm({
         new_result: '',
     });
+
+    // Initialize event name from latest fight
+    const latestEventName = declared_fights.length > 0 && declared_fights[0].event_name 
+        ? declared_fights[0].event_name 
+        : '';
 
     // Check if "Next Fight" button should be enabled
     const latestFight = declared_fights[0]; // Assuming sorted by latest first
@@ -139,6 +149,39 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
     const toggleDraw = (fightId: number) => {
         router.post(`/declarator/bet-controls/${fightId}/toggle-draw`, {}, {
             preserveScroll: true,
+        });
+    };
+
+    const handleCreateNextFight = () => {
+        if (!meronFighter || !walaFighter) return;
+
+        // Check if this is a new event
+        const isNewEvent = eventName && lastEventName && eventName !== lastEventName;
+        
+        // Show confirmation if new event
+        if (isNewEvent) {
+            const confirmed = confirm(
+                `⚠️ Creating a new event will close/end the previous event.\n\n` +
+                `New Event: "${eventName}"\n` +
+                `Previous Event: "${lastEventName}"\n` +
+                `Fight number will reset to #1\n` +
+                `All previous fights will be closed.\n\n` +
+                `Do you want to continue?`
+            );
+            
+            if (!confirmed) return;
+        }
+
+        router.post('/declarator/fights/create-next', {
+            meron_fighter: meronFighter,
+            wala_fighter: walaFighter,
+            event_name: eventName,
+        }, {
+            onSuccess: () => {
+                setShowNextFightModal(false);
+                setMeronFighter('');
+                setWalaFighter('');
+            },
         });
     };
 
@@ -309,7 +352,9 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                     <button
                         onClick={() => {
                             if (canCreateNextFight) {
-                                router.post('/declarator/fights/create-next', {});
+                                setEventName(latestEventName);
+                                setLastEventName(latestEventName);
+                                setShowNextFightModal(true);
                             }
                         }}
                         disabled={!canCreateNextFight}
