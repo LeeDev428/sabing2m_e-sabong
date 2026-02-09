@@ -88,7 +88,12 @@ export default function CreateFight({ nextFightNumber, lastEventName }: Props) {
         }
         
         setTellerAssignments(updated);
-    };// If this is a new event, show confirmation
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // If this is a new event, show confirmation
         if (isNewEvent) {
             const confirmed = confirm(
                 `⚠️ Creating a new event will close/end the previous event.\n\n` +
@@ -113,19 +118,6 @@ export default function CreateFight({ nextFightNumber, lastEventName }: Props) {
             ...formData,
             teller_assignments: tellerAssignments.filter(a => a.teller_id && parseFloat(a.amount) > 0),
             new_event: isNewEvent,
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        const remainingFunds = getRemainingFunds();
-        if (remainingFunds < 0) {
-            alert(`Total assignments (₱${getTotalAssigned().toLocaleString()}) exceed revolving funds (₱${parseFloat(formData.revolving_funds).toLocaleString()})`);
-            return;
-        }
-
-        router.post('/admin/fights', {
-            ...formData,
-            teller_assignments: tellerAssignments.filter(a => a.teller_id && parseFloat(a.amount) > 0)
         }, {
             onSuccess: () => {
                 router.visit('/admin/dashboard');
