@@ -187,27 +187,27 @@ export default function AdminDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Fights</div>
-                        <div className="text-3xl font-bold">{stats.total_fights.toLocaleString()}</div>
+                        <div className="text-3xl font-bold break-words">{stats.total_fights.toLocaleString()}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Active Fights</div>
-                        <div className="text-3xl font-bold text-green-400">{stats.active_fights.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-green-400 break-words">{stats.active_fights.toLocaleString()}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Bets</div>
-                        <div className="text-3xl font-bold text-blue-400">{stats.total_bets.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-blue-400 break-words">{stats.total_bets.toLocaleString()}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Bet Amount</div>
-                        <div className="text-3xl font-bold text-purple-400">₱{Number(stats.total_bet_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="text-2xl font-bold text-purple-400 break-words">₱{Number(stats.total_bet_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Payouts</div>
-                        <div className="text-3xl font-bold text-yellow-400">₱{Number(stats.total_payouts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="text-2xl font-bold text-yellow-400 break-words">₱{Number(stats.total_payouts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Users</div>
-                        <div className="text-3xl font-bold text-indigo-400">{stats.total_users.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-indigo-400 break-words">{stats.total_users.toLocaleString()}</div>
                     </div>
                 </div>
             </div>
@@ -218,19 +218,19 @@ export default function AdminDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-lg p-6">
                         <div className="text-green-100 text-sm mb-2">Fights Today</div>
-                        <div className="text-4xl font-bold text-white">{todayStats.fights_today.toLocaleString()}</div>
+                        <div className="text-4xl font-bold text-white break-words">{todayStats.fights_today.toLocaleString()}</div>
                     </div>
                     <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6">
                         <div className="text-blue-100 text-sm mb-2">Bets Today</div>
-                        <div className="text-4xl font-bold text-white">{todayStats.bets_today.toLocaleString()}</div>
+                        <div className="text-4xl font-bold text-white break-words">{todayStats.bets_today.toLocaleString()}</div>
                     </div>
                     <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6">
                         <div className="text-purple-100 text-sm mb-2">Revenue Today</div>
-                        <div className="text-4xl font-bold text-white">₱{Number(todayStats.revenue_today).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="text-3xl font-bold text-white break-words">₱{Number(todayStats.revenue_today).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div className="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-lg p-6">
                         <div className="text-yellow-100 text-sm mb-2">Payouts Today</div>
-                        <div className="text-4xl font-bold text-white">₱{Number(todayStats.payouts_today).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        <div className="text-3xl font-bold text-white break-words">₱{Number(todayStats.payouts_today).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                 </div>
             </div>
