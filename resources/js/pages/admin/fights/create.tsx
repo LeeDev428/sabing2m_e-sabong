@@ -5,6 +5,7 @@ import axios from 'axios';
 
 interface Props {
     nextFightNumber: number;
+    lastEventName?: string | null;
 }
 
 interface Teller {
@@ -19,9 +20,10 @@ interface TellerAssignment {
     current_balance?: number;
 }
 
-export default function CreateFight({ nextFightNumber }: Props) {
+export default function CreateFight({ nextFightNumber, lastEventName }: Props) {
     const [tellers, setTellers] = useState<Teller[]>([]);
     const [tellerAssignments, setTellerAssignments] = useState<TellerAssignment[]>([]);
+    const [isNewEvent, setIsNewEvent] = useState(false);
     const [formData, setFormData] = useState({
         fight_number: nextFightNumber,
         meron_fighter: '',
@@ -49,6 +51,19 @@ export default function CreateFight({ nextFightNumber }: Props) {
             .catch(error => console.error('Error fetching tellers:', error));
     }, []);
 
+    // Detect new event when event_name changes
+    useEffect(() => {
+        if (formData.event_name && lastEventName && formData.event_name !== lastEventName) {
+            setIsNewEvent(true);
+            // Update fight number display to show it will be #1
+            setFormData(prev => ({ ...prev, fight_number: 1 }));
+        } else {
+            setIsNewEvent(false);
+            // Reset to next fight number
+            setFormData(prev => ({ ...prev, fight_number: nextFightNumber }));
+        }
+    }, [formData.event_name, lastEventName, nextFightNumber]);
+
     const addTellerAssignment = () => {
         setTellerAssignments([...tellerAssignments, { teller_id: '', amount: '0', current_balance: 0 }]);
     };
@@ -73,15 +88,31 @@ export default function CreateFight({ nextFightNumber }: Props) {
         }
         
         setTellerAssignments(updated);
-    };
+    };// If this is a new event, show confirmation
+        if (isNewEvent) {
+            const confirmed = confirm(
+                `⚠️ Creating a new event will close/end the previous event.\n\n` +
+                `New Event: "${formData.event_name}"\n` +
+                `Fight number will reset to #1\n` +
+                `All previous fights will be closed.\n\n` +
+                `Do you want to continue?`
+            );
+            
+            if (!confirmed) {
+                return;
+            }
+        }
+        
+        const remainingFunds = getRemainingFunds();
+        if (remainingFunds < 0) {
+            alert(`Total assignments (₱${getTotalAssigned().toLocaleString()}) exceed revolving funds (₱${parseFloat(formData.revolving_funds).toLocaleString()})`);
+            return;
+        }
 
-    const getTotalAssigned = () => {
-        return tellerAssignments.reduce((sum, assignment) => sum + parseFloat(assignment.amount || '0'), 0);
-    };
-
-    const getRemainingFunds = () => {
-        return parseFloat(formData.revolving_funds || '0') - getTotalAssigned();
-    };
+        router.post('/admin/fights', {
+            ...formData,
+            teller_assignments: tellerAssignments.filter(a => a.teller_id && parseFloat(a.amount) > 0),
+            new_event: isNewEvent,
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
