@@ -187,11 +187,11 @@ export default function AdminDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Fights</div>
-                        <div className="text-3xl font-bold">{stats.total_fights}</div>
+                        <div className="text-3xl font-bold">{stats.total_fights.toLocaleString()}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Active Fights</div>
-                        <div className="text-3xl font-bold text-green-400">{stats.active_fights}</div>
+                        <div className="text-3xl font-bold text-green-400">{stats.active_fights.toLocaleString()}</div>
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Bets</div>
@@ -207,7 +207,7 @@ export default function AdminDashboard({
                     </div>
                     <div className="bg-gray-800 rounded-lg p-6">
                         <div className="text-gray-400 text-sm mb-2">Total Users</div>
-                        <div className="text-3xl font-bold text-indigo-400">{stats.total_users}</div>
+                        <div className="text-3xl font-bold text-indigo-400">{stats.total_users.toLocaleString()}</div>
                     </div>
                 </div>
             </div>
@@ -218,7 +218,7 @@ export default function AdminDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-lg p-6">
                         <div className="text-green-100 text-sm mb-2">Fights Today</div>
-                        <div className="text-4xl font-bold text-white">{todayStats.fights_today}</div>
+                        <div className="text-4xl font-bold text-white">{todayStats.fights_today.toLocaleString()}</div>
                     </div>
                     <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6">
                         <div className="text-blue-100 text-sm mb-2">Bets Today</div>
