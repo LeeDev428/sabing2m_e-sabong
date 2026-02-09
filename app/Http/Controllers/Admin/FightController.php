@@ -50,16 +50,18 @@ class FightController extends Controller
     {
         $lastFight = Fight::latest('fight_number')->first();
         $nextFightNumber = $lastFight ? $lastFight->fight_number + 1 : 1;
+        $lastEventName = $lastFight ? $lastFight->event_name : null;
 
         return Inertia::render('admin/fights/create', [
             'nextFightNumber' => $nextFightNumber,
+            'lastEventName' => $lastEventName,
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'fight_number' => 'required|integer|unique:fights,fight_number',
+            'fight_number' => 'required|integer',
             'meron_fighter' => 'required|string|max:255',
             'wala_fighter' => 'required|string|max:255',
             'meron_odds' => 'nullable|numeric|min:1',
@@ -82,10 +84,22 @@ class FightController extends Controller
             'teller_assignments' => 'nullable|array',
             'teller_assignments.*.teller_id' => 'required|exists:users,id',
             'teller_assignments.*.amount' => 'required|numeric|min:0',
+            // New event flag
+            'new_event' => 'nullable|boolean',
         ]);
 
         DB::beginTransaction();
         try {
+            // If this is a new event, close all previous fights and reset fight number
+            if (!empty($validated['new_event']) && $validated['new_event'] === true) {
+                // Close all previous fights (set status to closed)
+                Fight::whereNotIn('status', ['result_declared', 'cancelled'])
+                    ->update(['status' => 'closed']);
+                
+                // Reset fight number to 1
+                $validated['fight_number'] = 1;
+            }
+
             // Check if there's an existing Event for this event_name and event_date
             $existingEvent = null;
             if (!empty($validated['event_name']) && !empty($validated['event_date'])) {
