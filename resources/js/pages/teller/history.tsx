@@ -5,6 +5,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { thermalPrinter } from '@/utils/thermalPrinter';
 import { showToast } from '@/components/toast';
 import { PermissionManager } from '@/utils/permissionManager';
+import Pagination from '@/components/pagination';
 
 interface Bet {
     id: number;
@@ -38,6 +39,9 @@ interface PaginatedBets {
     last_page: number;
     per_page: number;
     total: number;
+    from?: number;
+    to?: number;
+    links: { url: string | null; label: string; active: boolean }[];
 }
 
 interface HistoryProps {
@@ -322,62 +326,78 @@ export default function History({ bets, summary }: HistoryProps) {
                                 <p className="text-gray-400">No bets yet</p>
                             </div>
                         ) : (
-                            bets.data.map((bet) => (
-                                <div key={bet.id} className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-700">
-                                    {/* Event Name Header */}
-                                    {bet.fight.event_name && (
-                                        <div className="text-center mb-3 pb-2 border-b border-gray-700">
-                                            <div className="text-lg font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
-                                                {bet.fight.event_name}
+                            <>
+                                {bets.data.map((bet) => (
+                                    <div key={bet.id} className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-700">
+                                        {/* Event Name Header */}
+                                        {bet.fight.event_name && (
+                                            <div className="text-center mb-3 pb-2 border-b border-gray-700">
+                                                <div className="text-lg font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                                                    {bet.fight.event_name}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <div className="text-sm text-gray-400">Fight #{bet.fight.fight_number}</div>
+                                                <div className="text-lg font-bold">{bet.fight.meron_fighter} vs {bet.fight.wala_fighter}</div>
+                                            </div>
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(bet.status)}`}>
+                                                {bet.status.toUpperCase()}
+                                            </span>
+                                        </div>
+
+                                        {/* Print Button - Always show for active bets */}
+                                        {bet.status === 'active' && (
+                                            <button
+                                                onClick={() => handlePrintReceipt(bet)}
+                                                className="w-full mt-3 bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
+                                            >
+                                                <span>🖨️</span> PRINT
+                                            </button>
+                                        )}
+                                        
+                                        <div className="grid grid-cols-2 gap-4 mb-3">
+                                            <div>
+                                                <div className="text-xs text-gray-400">Bet Side</div>
+                                                <div className={`text-lg font-bold ${getSideColor(bet.side)}`}>
+                                                    {bet.side.toUpperCase()}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-gray-400">Amount</div>
+                                                <div className="text-lg font-bold text-white">₱{bet.amount.toLocaleString()}</div>
                                             </div>
                                         </div>
-                                    )}
 
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div>
-                                            <div className="text-sm text-gray-400">Fight #{bet.fight.fight_number}</div>
-                                            <div className="text-lg font-bold">{bet.fight.meron_fighter} vs {bet.fight.wala_fighter}</div>
-                                        </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(bet.status)}`}>
-                                            {bet.status.toUpperCase()}
-                                        </span>
-                                    </div>
-
-                                    {/* Print Button - Always show for active bets */}
-                                    {bet.status === 'active' && (
-                                        <button
-                                            onClick={() => handlePrintReceipt(bet)}
-                                            className="w-full mt-3 bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
-                                        >
-                                            <span>🖨️</span> PRINT
-                                        </button>
-                                    )}
-                                    
-                                    <div className="grid grid-cols-2 gap-4 mb-3">
-                                        <div>
-                                            <div className="text-xs text-gray-400">Bet Side</div>
-                                            <div className={`text-lg font-bold ${getSideColor(bet.side)}`}>
-                                                {bet.side.toUpperCase()}
+                                        {bet.status === 'won' && (
+                                            <div className="bg-green-900/30 rounded-lg p-3 border border-green-500/30">
+                                                <div className="text-xs text-green-300 mb-1">Payout</div>
+                                                <div className="text-2xl font-bold text-green-400">₱{bet.actual_payout?.toLocaleString()}</div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-xs text-gray-400">Amount</div>
-                                            <div className="text-lg font-bold text-white">₱{bet.amount.toLocaleString()}</div>
+                                        )}
+
+                                        <div className="text-xs text-gray-500 mt-2">
+                                            {new Date(bet.created_at).toLocaleString()}
                                         </div>
                                     </div>
+                                ))}
 
-                                    {bet.status === 'won' && (
-                                        <div className="bg-green-900/30 rounded-lg p-3 border border-green-500/30">
-                                            <div className="text-xs text-green-300 mb-1">Payout</div>
-                                            <div className="text-2xl font-bold text-green-400">₱{bet.actual_payout?.toLocaleString()}</div>
-                                        </div>
-                                    )}
-
-                                    <div className="text-xs text-gray-500 mt-2">
-                                        {new Date(bet.created_at).toLocaleString()}
+                                {/* Pagination */}
+                                {bets.last_page > 1 && (
+                                    <div className="mt-6">
+                                        <Pagination
+                                            currentPage={bets.current_page}
+                                            lastPage={bets.last_page}
+                                            from={bets.from || 0}
+                                            to={bets.to || 0}
+                                            total={bets.total}
+                                            links={bets.links}
+                                        />
                                     </div>
-                                </div>
-                            ))
+                                )}
+                            </>
                         )}
                     </div>
                 )}
