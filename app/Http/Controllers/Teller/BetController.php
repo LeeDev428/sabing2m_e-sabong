@@ -360,12 +360,11 @@ class BetController extends Controller
     {
         $teller = auth()->user();
 
-        // Get today's bets with all needed fields
+        // Get ALL bets (not just today) with pagination (30 per page)
         $bets = Bet::with(['fight:id,fight_number,meron_fighter,wala_fighter,event_name', 'teller:id,name'])
             ->where('teller_id', $teller->id)
-            ->whereDate('created_at', today())
             ->latest()
-            ->paginate(50)
+            ->paginate(30)
             ->through(function ($bet) {
                 return [
                     'id' => $bet->id,
@@ -386,7 +385,7 @@ class BetController extends Controller
                 ];
             });
 
-        // Calculate summary stats
+        // Calculate summary stats (today's stats only)
         $totalBets = Bet::where('teller_id', $teller->id)
             ->whereDate('created_at', today())
             ->count();
