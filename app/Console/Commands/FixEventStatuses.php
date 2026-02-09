@@ -33,12 +33,14 @@ class FixEventStatuses extends Command
             Event::query()->update(['status' => 'completed']);
             $this->info('All events set to completed status.');
 
-            // Find the most recent event (by created_at)
-            $latestEvent = Event::orderBy('created_at', 'desc')->first();
+            // Find the most recent event (by event_date DESC, then created_at DESC)
+            $latestEvent = Event::orderBy('event_date', 'desc')
+                                ->orderBy('created_at', 'desc')
+                                ->first();
 
             if ($latestEvent) {
                 $latestEvent->update(['status' => 'active']);
-                $this->info("Most recent event '{$latestEvent->name}' (ID: {$latestEvent->id}) set to active status.");
+                $this->info("Most recent event '{$latestEvent->name}' (Date: {$latestEvent->event_date}, ID: {$latestEvent->id}) set to active status.");
             } else {
                 $this->warn('No events found in database.');
             }
