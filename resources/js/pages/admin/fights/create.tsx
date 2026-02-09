@@ -258,6 +258,17 @@ export default function CreateFight({ nextFightNumber, lastEventName }: Props) {
                                     className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg"
                                     placeholder="e.g., Championship 2026"
                                 />
+                                {isNewEvent && (
+                                    <div className="mt-2 p-3 bg-yellow-900/30 border border-yellow-600 rounded-lg">
+                                        <p className="text-yellow-400 text-sm font-semibold flex items-center gap-2">
+                                            <span>⚠️</span>
+                                            <span>New Event Detected - Fight will start at #1</span>
+                                        </p>
+                                        <p className="text-yellow-400/80 text-xs mt-1">
+                                            All previous fights will be closed
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <div>
