@@ -19,27 +19,43 @@ class FightController extends Controller
     {
         DB::beginTransaction();
         try {
+            // Get the active event
+            $activeEvent = \App\Models\Event::where('status', 'active')->first();
+            
             // Get the latest fight to copy settings from
             $latestFight = Fight::latest('id')->first();
             
-            // Auto-increment fight number
-            $nextFightNumber = $latestFight ? $latestFight->fight_number + 1 : 1;
+            // Check if this is a new event (event name changed)
+            $isNewEvent = false;
+            if ($activeEvent && $latestFight) {
+                $isNewEvent = $activeEvent->name !== $latestFight->event_name;
+            } elseif ($activeEvent && !$latestFight) {
+                // First fight for this event
+                $isNewEvent = true;
+            }
+            
+            // Reset fight number to 1 if new event, otherwise increment
+            if ($isNewEvent) {
+                $nextFightNumber = 1;
+            } else {
+                $nextFightNumber = $latestFight ? $latestFight->fight_number + 1 : 1;
+            }
 
-            // Create new fight with auto-populated event settings
+            // Create new fight
             $fight = Fight::create([
                 'fight_number' => $nextFightNumber,
-                'meron_fighter' => 'Fighter ' . $nextFightNumber . 'A',  // Default name
-                'wala_fighter' => 'Fighter ' . $nextFightNumber . 'B',    // Default name
+                'meron_fighter' => 'Fighter ' . $nextFightNumber . 'A',
+                'wala_fighter' => 'Fighter ' . $nextFightNumber . 'B',
                 
-                // Auto-populate from latest fight
-                'venue' => $latestFight?->venue,
-                'event_name' => $latestFight?->event_name,
-                'event_date' => $latestFight?->event_date,
+                // Use active event if available, otherwise copy from latest fight
+                'venue' => $activeEvent ? null : $latestFight?->venue,
+                'event_name' => $activeEvent ? $activeEvent->name : $latestFight?->event_name,
+                'event_date' => $activeEvent ? $activeEvent->event_date : $latestFight?->event_date,
+                'revolving_funds' => $activeEvent ? $activeEvent->revolving_funds : ($latestFight?->revolving_funds ?? 0),
                 'commission_percentage' => $latestFight?->commission_percentage ?? 7.5,
-                'round_number' => $latestFight ? ($latestFight->round_number ?? 0) + 1 : 1,
+                'round_number' => $isNewEvent ? 1 : ($latestFight ? ($latestFight->round_number ?? 0) + 1 : 1),
                 'match_type' => $latestFight?->match_type ?? 'regular',
                 'special_conditions' => $latestFight?->special_conditions,
-                'revolving_funds' => $latestFight?->revolving_funds ?? 0,
                 
                 // Default odds settings
                 'meron_odds' => 1.0,
@@ -54,8 +70,8 @@ class FightController extends Controller
                 'created_by' => auth()->id(),
             ]);
 
-            // Copy teller assignments from latest fight if they exist
-            if ($latestFight) {
+            // Copy teller assignments from latest fight if they exist (only if not new event)
+            if ($latestFight && !$isNewEvent) {
                 $latestAssignments = TellerCashAssignment::where('fight_id', $latestFight->id)->get();
                 
                 foreach ($latestAssignments as $assignment) {
@@ -63,15 +79,18 @@ class FightController extends Controller
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment->teller_id,
                         'assigned_amount' => $assignment->assigned_amount,
-                        'current_balance' => $assignment->current_balance, // CARRY OVER actual balance, not reset
+                        'current_balance' => $assignment->current_balance,
                     ]);
                 }
             }
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', "Fight #{$nextFightNumber} created successfully!");
+            $message = $isNewEvent 
+                ? "Fight #{$nextFightNumber} created for new event: {$fight->event_name}!"
+                : "Fight #{$nextFightNumber} created successfully!";
+                
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
