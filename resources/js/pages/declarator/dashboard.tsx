@@ -14,6 +14,17 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
     const [result, setResult] = useState<'meron' | 'wala' | 'draw' | 'cancelled' | null>(null);
     const [meronFighter, setMeronFighter] = useState('');
     const [walaFighter, setWalaFighter] = useState('');
+    const [eventName, setEventName] = useState('');
+    const [lastEventName, setLastEventName] = useState('');
+
+    // Initialize event name from latest fight
+    useEffect(() => {
+        const latestFight = fights.length > 0 ? fights[fights.length - 1] : null;
+        if (latestFight && latestFight.event_name) {
+            setEventName(latestFight.event_name);
+            setLastEventName(latestFight.event_name);
+        }
+    }, [fights]);
 
     // Real-time auto-refresh every 3 seconds
     useEffect(() => {
@@ -45,9 +56,27 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
     const handleCreateNextFight = () => {
         if (!meronFighter || !walaFighter) return;
 
+        // Check if this is a new event
+        const isNewEvent = eventName && lastEventName && eventName !== lastEventName;
+        
+        // Show confirmation if new event
+        if (isNewEvent) {
+            const confirmed = confirm(
+                `⚠️ Creating a new event will close/end the previous event.\n\n` +
+                `New Event: "${eventName}"\n` +
+                `Previous Event: "${lastEventName}"\n` +
+                `Fight number will reset to #1\n` +
+                `All previous fights will be closed.\n\n` +
+                `Do you want to continue?`
+            );
+            
+            if (!confirmed) return;
+        }
+
         router.post('/declarator/fights/create-next', {
             meron_fighter: meronFighter,
             wala_fighter: walaFighter,
+            event_name: eventName,
         }, {
             onSuccess: () => {
                 setShowNextFightModal(false);
@@ -302,6 +331,28 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                         </div>
 
                         <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Event Name</label>
+                                <input
+                                    type="text"
+                                    value={eventName}
+                                    onChange={(e) => setEventName(e.target.value)}
+                                    placeholder="Enter event name"
+                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-yellow-500"
+                                />
+                                {eventName && lastEventName && eventName !== lastEventName && (
+                                    <div className="mt-2 p-3 bg-yellow-900/30 border border-yellow-600 rounded-lg">
+                                        <p className="text-yellow-400 text-sm font-semibold flex items-center gap-2">
+                                            <span>⚠️</span>
+                                            <span>New Event Detected - Fight will start at #1</span>
+                                        </p>
+                                        <p className="text-yellow-400/80 text-xs mt-1">
+                                            Previous event: "{lastEventName}"
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium mb-2">Meron Fighter</label>
                                 <input
