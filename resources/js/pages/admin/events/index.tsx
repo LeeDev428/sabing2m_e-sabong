@@ -179,42 +179,31 @@ export default function EventsIndex({ events }: Props) {
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-center">
-                                    {(() => {
-                                        const eventDate = new Date(event.event_date);
-                                        const today = new Date();
-                                        today.setHours(0, 0, 0, 0);
-                                        const isPastEvent = eventDate < today;
-
-                                        if (isPastEvent) {
-                                            return (
-                                                <button
-                                                    onClick={() => {
-                                                        alert(
-                                                            `Event: ${event.name}\n` +
-                                                            `Date: ${formatDate(event.event_date)}\n` +
-                                                            `Revolving Funds: ₱${event.revolving_funds.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
-                                                            `Fights: ${event.fights_count}\n` +
-                                                            `Status: ${event.status}\n` +
-                                                            `Notes: ${event.notes || 'No notes'}\n\n` +
-                                                            `Past events cannot be edited.`
-                                                        );
-                                                    }}
-                                                    className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                                                >
-                                                    👁️ View
-                                                </button>
-                                            );
-                                        }
-
-                                        return (
-                                            <button
-                                                onClick={() => handleEdit(event)}
-                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                                            >
-                                                Edit
-                                            </button>
-                                        );
-                                    })()}
+                                    {event.status === 'active' ? (
+                                        <button
+                                            onClick={() => handleEdit(event)}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                        >
+                                            Edit
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                alert(
+                                                    `Event: ${event.name}\n` +
+                                                    `Date: ${formatDate(event.event_date)}\n` +
+                                                    `Revolving Funds: ₱${event.revolving_funds.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
+                                                    `Fights: ${event.fights_count}\n` +
+                                                    `Status: ${event.status}\n` +
+                                                    `Notes: ${event.notes || 'No notes'}\n\n` +
+                                                    `This event is ${event.status}. Only active events can be edited.`
+                                                );
+                                            }}
+                                            className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                        >
+                                            👁️ View
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}
