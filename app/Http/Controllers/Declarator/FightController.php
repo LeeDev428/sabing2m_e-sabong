@@ -22,24 +22,37 @@ class FightController extends Controller
             // Get the latest fight to copy settings from
             $latestFight = Fight::latest('id')->first();
             
-            // Auto-increment fight number
-            $nextFightNumber = $latestFight ? $latestFight->fight_number + 1 : 1;
+            // Check if this is a new event (event_name will be different)
+            $isNewEvent = false;
+            if ($request->has('event_name') && $latestFight && $request->event_name !== $latestFight->event_name) {
+                $isNewEvent = true;
+            }
+            
+            // If new event, close previous fights and reset to fight #1
+            if ($isNewEvent) {
+                Fight::whereNotIn('status', ['result_declared', 'cancelled'])
+                    ->update(['status' => 'closed']);
+                $nextFightNumber = 1;
+            } else {
+                // Auto-increment fight number normally
+                $nextFightNumber = $latestFight ? $latestFight->fight_number + 1 : 1;
+            }
 
             // Create new fight with auto-populated event settings
             $fight = Fight::create([
                 'fight_number' => $nextFightNumber,
-                'meron_fighter' => 'Fighter ' . $nextFightNumber . 'A',  // Default name
-                'wala_fighter' => 'Fighter ' . $nextFightNumber . 'B',    // Default name
+                'meron_fighter' => $request->meron_fighter ?? 'Fighter ' . $nextFightNumber . 'A',
+                'wala_fighter' => $request->wala_fighter ?? 'Fighter ' . $nextFightNumber . 'B',
                 
-                // Auto-populate from latest fight
-                'venue' => $latestFight?->venue,
-                'event_name' => $latestFight?->event_name,
-                'event_date' => $latestFight?->event_date,
-                'commission_percentage' => $latestFight?->commission_percentage ?? 7.5,
-                'round_number' => $latestFight ? ($latestFight->round_number ?? 0) + 1 : 1,
-                'match_type' => $latestFight?->match_type ?? 'regular',
-                'special_conditions' => $latestFight?->special_conditions,
-                'revolving_funds' => $latestFight?->revolving_funds ?? 0,
+                // Use event_name from request if provided, otherwise from latest fight
+                'venue' => $request->venue ?? $latestFight?->venue,
+                'event_name' => $request->event_name ?? $latestFight?->event_name,
+                'event_date' => $request->event_date ?? $latestFight?->event_date,
+                'commission_percentage' => $request->commission_percentage ?? $latestFight?->commission_percentage ?? 7.5,
+                'round_number' => $isNewEvent ? 1 : ($latestFight ? ($latestFight->round_number ?? 0) + 1 : 1),
+                'match_type' => $request->match_type ?? $latestFight?->match_type ?? 'regular',
+                'special_conditions' => $request->special_conditions ?? $latestFight?->special_conditions,
+                'revolving_funds' => $request->revolving_funds ?? $latestFight?->revolving_funds ?? 0,
                 
                 // Default odds settings
                 'meron_odds' => 1.0,
