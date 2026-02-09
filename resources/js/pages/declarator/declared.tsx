@@ -37,6 +37,9 @@ interface Fight {
     total_draw_bets?: number;
     revolving_funds?: number;
     teller_assignments?: TellerAssignment[];
+    event_name?: string;
+    event_date?: string;
+    venue?: string;
 }
 
 interface Teller {
