@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('fights', function (Blueprint $table) {
-            //
+            $table->dropUnique(['fight_number']); // Remove unique constraint
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('fights', function (Blueprint $table) {
-            //
+            $table->unique('fight_number'); // Re-add unique constraint if rolled back
         });
     }
 };
