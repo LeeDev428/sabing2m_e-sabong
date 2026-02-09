@@ -25,7 +25,6 @@ class Event extends Model
     // Relationship: Event has many fights
     public function fights()
     {
-        return $this->hasMany(Fight::class, 'event_name', 'name')
-            ->where('event_date', $this->event_date);
+        return $this->hasMany(Fight::class, 'event_name', 'name');
     }
 }
