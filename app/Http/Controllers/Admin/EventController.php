@@ -154,23 +154,37 @@ class EventController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Check if event already exists
-        $event = Event::where('name', $validated['name'])
-            ->where('event_date', $validated['event_date'])
-            ->first();
+        DB::beginTransaction();
+        try {
+            // Check if event already exists
+            $event = Event::where('name', $validated['name'])
+                ->where('event_date', $validated['event_date'])
+                ->first();
 
-        if ($event) {
-            // Update existing event
-            $event->update([
-                'revolving_funds' => $validated['revolving_funds'],
-                'notes' => $validated['notes'] ?? $event->notes,
-            ]);
-        } else {
-            // Create new event
-            $event = Event::create($validated);
+            if ($event) {
+                // Update existing event
+                $event->update([
+                    'revolving_funds' => $validated['revolving_funds'],
+                    'notes' => $validated['notes'] ?? $event->notes,
+                    'status' => 'active',
+                ]);
+            } else {
+                // Set all other events to completed
+                Event::where('status', 'active')->update(['status' => 'completed']);
+                
+                // Create new event as active
+                $event = Event::create([
+                    ...$validated,
+                    'status' => 'active',
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Event created successfully! New fights will use this event.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Failed to create event: ' . $e->getMessage()]);
         }
-
-        return redirect()->back()->with('success', 'Event revolving funds updated successfully!');
     }
 
     public function update(Request $request, Event $event)
