@@ -96,17 +96,30 @@ class TellerBalanceController extends Controller
         }
 
         DB::transaction(function () use ($user, $request) {
-            // Get the latest teller cash assignment to update real-time balance
-            $latestAssignment = TellerCashAssignment::where('teller_id', $user->id)
-                ->orderBy('id', 'desc')
-                ->first();
+            // Get the CURRENT/LATEST fight to assign balance to
+            $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
             
-            if ($latestAssignment) {
-                // Add to existing balance
-                $latestAssignment->update([
-                    'current_balance' => $latestAssignment->current_balance + $request->amount,
-                ]);
+            if (!$currentFight) {
+                throw new \Exception('No fights found. Please create a fight first.');
             }
+            
+            // Find or create assignment for CURRENT fight
+            $currentAssignment = TellerCashAssignment::firstOrCreate(
+                [
+                    'teller_id' => $user->id,
+                    'fight_id' => $currentFight->id,
+                ],
+                [
+                    'assigned_amount' => 0,
+                    'current_balance' => 0,
+                ]
+            );
+            
+            // Add to current balance for THIS fight
+            $currentAssignment->update([
+                'current_balance' => $currentAssignment->current_balance + $request->amount,
+                'assigned_amount' => $currentAssignment->assigned_amount + $request->amount,
+            ]);
             
             // Also update the deprecated user.teller_balance for backwards compatibility
             $user->increment('teller_balance', $request->amount);
@@ -116,7 +129,7 @@ class TellerBalanceController extends Controller
                 'to_teller_id' => $user->id,
                 'amount' => $request->amount,
                 'type' => 'initial_balance',
-                'remarks' => $request->remarks ?? "Admin added balance",
+                'remarks' => $request->remarks ?? "Admin added ₱{$request->amount}",
                 'approved_by' => auth()->id(),
             ]);
         });
@@ -136,21 +149,31 @@ class TellerBalanceController extends Controller
         }
 
         DB::transaction(function () use ($user, $request) {
-            // Get the latest teller cash assignment to update real-time balance
-            $latestAssignment = TellerCashAssignment::where('teller_id', $user->id)
-                ->orderBy('id', 'desc')
+            // Get the CURRENT/LATEST fight
+            $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+            
+            if (!$currentFight) {
+                throw new \Exception('No fights found. Please create a fight first.');
+            }
+            
+            // Find assignment for CURRENT fight
+            $currentAssignment = TellerCashAssignment::where('teller_id', $user->id)
+                ->where('fight_id', $currentFight->id)
                 ->first();
             
-            if ($latestAssignment) {
-                // Deduct from existing balance
-                $newBalance = $latestAssignment->current_balance - $request->amount;
-                if ($newBalance < 0) {
-                    throw new \Exception('Insufficient balance to deduct');
-                }
-                $latestAssignment->update([
-                    'current_balance' => $newBalance,
-                ]);
+            if (!$currentAssignment) {
+                throw new \Exception('No balance assignment found for current fight.');
             }
+            
+            // Deduct from current balance
+            $newBalance = $currentAssignment->current_balance - $request->amount;
+            if ($newBalance < 0) {
+                throw new \Exception('Insufficient balance to deduct');
+            }
+            
+            $currentAssignment->update([
+                'current_balance' => $newBalance,
+            ]);
             
             // Also update the deprecated user.teller_balance for backwards compatibility
             if ($user->teller_balance < $request->amount) {
@@ -163,7 +186,7 @@ class TellerBalanceController extends Controller
                 'to_teller_id' => $user->id,
                 'amount' => $request->amount,
                 'type' => 'deduction',
-                'remarks' => $request->remarks ?? "Admin deducted balance",
+                'remarks' => $request->remarks ?? "Admin deducted ₱{$request->amount}",
                 'approved_by' => auth()->id(),
             ]);
         });
