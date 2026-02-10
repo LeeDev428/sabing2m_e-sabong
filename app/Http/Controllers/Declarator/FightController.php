@@ -70,16 +70,16 @@ class FightController extends Controller
                 'created_by' => auth()->id(),
             ]);
 
-            // Copy teller assignments from latest fight if they exist (only if not new event)
-            if ($latestFight && !$isNewEvent) {
+            // Handle teller assignments based on new event vs same event
+            if ($latestFight) {
                 $latestAssignments = TellerCashAssignment::where('fight_id', $latestFight->id)->get();
                 
                 foreach ($latestAssignments as $assignment) {
                     TellerCashAssignment::create([
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment->teller_id,
-                        'assigned_amount' => $assignment->assigned_amount,
-                        'current_balance' => $assignment->current_balance,
+                        'assigned_amount' => $isNewEvent ? 0 : $assignment->assigned_amount,
+                        'current_balance' => $isNewEvent ? 0 : $assignment->current_balance,  // Reset to ₱0 for new events
                     ]);
                 }
             }
