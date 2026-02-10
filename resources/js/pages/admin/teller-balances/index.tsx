@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/layouts/admin-layout';
+import Pagination from '@/components/pagination';
 
 interface Teller {
     id: number;
@@ -19,12 +20,30 @@ interface Transfer {
     created_at: string;
 }
 
-interface Props {
-    tellers: Teller[];
-    recentTransfers: Transfer[];
+interface PaginatedTransfers {
+    data: Transfer[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
 }
 
-export default function TellerBalances({ tellers, recentTransfers }: Props) {
+interface Props {
+    tellers: Teller[];
+    recentTransfers: PaginatedTransfers;
+    currentFight?: {
+        id: number;
+        fight_number: number;
+        event_name: string;
+    } | null;
+}
+
+export default function TellerBalances({ tellers, recentTransfers, currentFight }: Props) {
     const handleAddBalance = (teller: Teller) => {
         const addAmount = prompt(`Add balance to ${teller.name}:`);
         if (!addAmount) return;
@@ -92,12 +111,29 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
 
             {/* Summary Card */}
             <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-6 mb-6">
-                <div className="text-green-200 text-sm mb-2">Total Teller Balance</div>
-                <div className="text-5xl font-bold text-white">
-                    ₱{totalBalance.toLocaleString()}
-                </div>
-                <div className="text-green-200 text-sm mt-2">
-                    Across {tellers.length} teller{tellers.length !== 1 ? 's' : ''}
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="text-green-200 text-sm mb-2">Total Teller Balance (Current Event)</div>
+                        <div className="text-5xl font-bold text-white">
+                            ₱{totalBalance.toLocaleString()}
+                        </div>
+                        <div className="text-green-200 text-sm mt-2">
+                            Across {tellers.length} teller{tellers.length !== 1 ? 's' : ''}
+                        </div>
+                    </div>
+                    {currentFight && (
+                        <div className="text-right">
+                            <div className="text-green-200 text-xs mb-1">Current Event</div>
+                            <div className="text-lg font-bold text-white">{currentFight.event_name || 'No Event'}</div>
+                            <div className="text-green-200 text-sm">Fight #{currentFight.fight_number}</div>
+                        </div>
+                    )}
+                    {!currentFight && (
+                        <div className="text-right">
+                            <div className="text-yellow-200 text-sm">⚠️ No active fight</div>
+                            <div className="text-green-200 text-xs">Create a new fight to assign balances</div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -169,14 +205,14 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
                                     Date
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase">
-                                    From
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase">
-                                    To
-                                </th>
-                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
-                                    Amount
-                                </th>
+                                    Fromdata.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                                        No transfers yet
+                                    </td>
+                                </tr>
+                            ) : (
+                                recentTransfers.data
                                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase">
                                     Type
                                 </th>
@@ -210,6 +246,13 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
+                
+                {/* Pagination */}
+                {recentTransfers.last_page > 1 && (
+                    <div className="p-4 border-t border-gray-700">
+                        <Pagination links={recentTransfers.links} />
+                    </div>
+                )}
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                                 transfer.type === 'initial_balance' 
                                                     ? 'bg-purple-600 text-white' 
