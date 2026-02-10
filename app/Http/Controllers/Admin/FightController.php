@@ -119,10 +119,27 @@ class FightController extends Controller
                 $totalAssignments = collect($validated['teller_assignments'])->sum('amount');
                 $revolvingFunds = $validated['revolving_funds'] ?? 0;
                 
-                if ($totalAssignments > $revolvingFunds) {
-                    return redirect()->back()
-                        ->withErrors(['teller_assignments' => 'Total teller assignments (₱' . number_format($totalAssignments, 2) . ') exceed revolving funds (₱' . number_format($revolvingFunds, 2) . ')'])
-                        ->withInput();
+                // If existing event, also check total assigned across entire event
+                if ($existingEvent) {
+                    $totalAssignedInEvent = \App\Models\TellerCashAssignment::whereHas('fight', function ($query) use ($existingEvent) {
+                        $query->where('event_name', $existingEvent->name)
+                              ->where('event_date', $existingEvent->event_date);
+                    })->sum('assigned_amount');
+                    
+                    $totalAfterNewFight = $totalAssignedInEvent; // Will remain same since we copy balances
+                    
+                    if ($totalAfterNewFight > $revolvingFunds) {
+                        return redirect()->back()
+                            ->withErrors(['teller_assignments' => 'Event total assignments (₱' . number_format($totalAfterNewFight, 2) . ') exceed revolving funds (₱' . number_format($revolvingFunds, 2) . ')'])
+                            ->withInput();
+                    }
+                } else {
+                    // New event: just check the new assignments
+                    if ($totalAssignments > $revolvingFunds) {
+                        return redirect()->back()
+                            ->withErrors(['teller_assignments' => 'Total teller assignments (₱' . number_format($totalAssignments, 2) . ') exceed revolving funds (₱' . number_format($revolvingFunds, 2) . ')'])
+                            ->withInput();
+                    }
                 }
             }
 
@@ -656,25 +673,55 @@ class FightController extends Controller
 
         DB::beginTransaction();
         try {
+            // VALIDATION: Check if total assignments would exceed revolving funds
+            if (isset($validated['teller_assignments'])) {
+                $totalNewAssignments = collect($validated['teller_assignments'])->sum('amount');
+                
+                // For existing events, check total across entire event
+                if ($fight->event_name) {
+                    // Get total for other fights in same event
+                    $totalOtherFights = TellerCashAssignment::whereHas('fight', function ($query) use ($fight) {
+                        $query->where('event_name', $fight->event_name)
+                              ->where('event_date', $fight->event_date)
+                              ->where('id', '!=', $fight->id);
+                    })->sum('assigned_amount');
+                    
+                    $grandTotal = $totalOtherFights + $totalNewAssignments;
+                    
+                    if ($grandTotal > $validated['revolving_funds']) {
+                        throw new \Exception(
+                            'Total event assignments (₱' . number_format($grandTotal, 2) . ') ' .
+                            'would exceed revolving funds (₱' . number_format($validated['revolving_funds'], 2) . ')'
+                        );
+                    }
+                } else {
+                    // Single fight check
+                    if ($totalNewAssignments > $validated['revolving_funds']) {
+                        throw new \Exception(
+                            'Total teller assignments (₱' . number_format($totalNewAssignments, 2) . ') ' .
+                            'exceed revolving funds (₱' . number_format($validated['revolving_funds'], 2) . ')'
+                        );
+                    }
+                }
+            }
+            
             // Update revolving funds
             $fight->update([
                 'revolving_funds' => $validated['revolving_funds'],
             ]);
 
+            // Get current balances BEFORE deleting
+            $currentBalances = [];
+            $existingAssignments = TellerCashAssignment::where('fight_id', $fight->id)->get();
+            foreach ($existingAssignments as $oldAssignment) {
+                $currentBalances[$oldAssignment->teller_id] = $oldAssignment->current_balance;
+            }
+            
             // Delete existing assignments for this fight
             TellerCashAssignment::where('fight_id', $fight->id)->delete();
 
             // Create new assignments
             if (isset($validated['teller_assignments'])) {
-                // Get current balances before deleting
-                $currentBalances = [];
-                $existingAssignments = TellerCashAssignment::where('fight_id', $fight->id)->get();
-                foreach ($existingAssignments as $oldAssignment) {
-                    $currentBalances[$oldAssignment->teller_id] = $oldAssignment->current_balance;
-                }
-                
-                TellerCashAssignment::where('fight_id', $fight->id)->delete();
-                
                 foreach ($validated['teller_assignments'] as $assignment) {
                     TellerCashAssignment::create([
                         'fight_id' => $fight->id,
