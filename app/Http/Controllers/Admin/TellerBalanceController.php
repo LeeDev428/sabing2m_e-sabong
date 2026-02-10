@@ -63,9 +63,57 @@ class TellerBalanceController extends Controller
         }
 
         DB::transaction(function () use ($user, $request) {
-            $oldBalance = $user->teller_balance;
+            // Get the CURRENT/LATEST fight
+            $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+            
+            if (!$currentFight) {
+                throw new \Exception('No fights found. Please create a fight first.');
+            }
+            
+            // Find or create assignment for CURRENT fight
+            $currentAssignment = TellerCashAssignment::firstOrCreate(
+                [
+                    'teller_id' => $user->id,
+                    'fight_id' => $currentFight->id,
+                ],
+                [
+                    'assigned_amount' => 0,
+                    'current_balance' => 0,
+                ]
+            );
+            
+            $oldBalance = $currentAssignment->assigned_amount;
             $newBalance = $request->amount;
             
+            // VALIDATION: Check if total assigned balance would exceed event's revolving fund
+            $revolvingFund = $currentFight->revolving_funds ?? 0;
+            
+            // Get total assigned for OTHER tellers in current event (excluding this teller)
+            $totalAssignedOthers = TellerCashAssignment::whereHas('fight', function ($query) use ($currentFight) {
+                $query->where('event_name', $currentFight->event_name)
+                      ->where('event_date', $currentFight->event_date);
+            })
+            ->where('teller_id', '!=', $user->id)
+            ->sum('assigned_amount');
+            
+            // Calculate what total would be with new balance
+            $newTotal = $totalAssignedOthers + $newBalance;
+            
+            if ($newTotal > $revolvingFund) {
+                throw new \Exception(
+                    "Cannot set balance to ₱" . number_format($newBalance, 2) . ". " .
+                    "Total assigned would be ₱" . number_format($newTotal, 2) . " " .
+                    "which exceeds event's revolving fund of ₱" . number_format($revolvingFund, 2) . "."
+                );
+            }
+            
+            // Update assignment
+            $currentAssignment->update([
+                'assigned_amount' => $newBalance,
+                'current_balance' => $newBalance,
+            ]);
+            
+            // Also update deprecated user.teller_balance
             $user->update([
                 'teller_balance' => $newBalance,
             ]);
@@ -76,7 +124,7 @@ class TellerBalanceController extends Controller
                 'to_teller_id' => $user->id,
                 'amount' => abs($newBalance - $oldBalance),
                 'type' => 'initial_balance',
-                'remarks' => $request->remarks ?? "Balance set from {$oldBalance} to {$newBalance}",
+                'remarks' => $request->remarks ?? "Balance set from ₱{$oldBalance} to ₱{$newBalance}",
                 'approved_by' => auth()->id(),
             ]);
         });
@@ -114,6 +162,26 @@ class TellerBalanceController extends Controller
                     'current_balance' => 0,
                 ]
             );
+            
+            // VALIDATION: Check if total assigned balance would exceed event's revolving fund
+            $revolvingFund = $currentFight->revolving_funds ?? 0;
+            
+            // Get total assigned balance for ALL tellers in current event
+            $totalAssignedInEvent = TellerCashAssignment::whereHas('fight', function ($query) use ($currentFight) {
+                $query->where('event_name', $currentFight->event_name)
+                      ->where('event_date', $currentFight->event_date);
+            })->sum('assigned_amount');
+            
+            // Calculate what total would be after adding this amount
+            $newTotal = $totalAssignedInEvent + $request->amount;
+            
+            if ($newTotal > $revolvingFund) {
+                throw new \Exception(
+                    "Cannot add ₱" . number_format($request->amount, 2) . ". " .
+                    "Total assigned (₱" . number_format($totalAssignedInEvent, 2) . " + ₱" . number_format($request->amount, 2) . " = ₱" . number_format($newTotal, 2) . ") " .
+                    "would exceed event's revolving fund of ₱" . number_format($revolvingFund, 2) . "."
+                );
+            }
             
             // Add to current balance for THIS fight
             $currentAssignment->update([
