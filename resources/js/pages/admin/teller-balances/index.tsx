@@ -53,17 +53,41 @@ export default function TellerBalances({ tellers, recentTransfers }: Props) {
         });
     };
 
+    const handleResetAllBalances = () => {
+        if (!confirm(
+            '⚠️ WARNING: This will reset ALL teller balances to ₱0.\n\n' +
+            'This is typically done when starting a NEW EVENT.\n\n' +
+            'Are you sure you want to continue?'
+        )) return;
+
+        if (!confirm('Double confirmation: Reset all teller balances to ₱0?')) return;
+
+        router.post('/admin/teller-balances/reset-all', {}, {
+            onSuccess: () => {
+                alert('✅ All teller balances have been reset to ₱0');
+            },
+        });
+    };
+
     const totalBalance = tellers.reduce((sum, t) => sum + parseFloat(t.teller_balance.toString()), 0);
 
     return (
         <AdminLayout>
             <Head title="Teller Balances" />
 <br />
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-white">Teller Cash Management</h1>
-                <p className="text-gray-400 mt-2">
-                    Manage teller cash balances and view transfer history
-                </p>
+            <div className="mb-6 flex justify-between items-start">
+                <div>
+                    <h1 className="text-3xl font-bold text-white">Teller Cash Management</h1>
+                    <p className="text-gray-400 mt-2">
+                        Manage teller cash balances and view transfer history
+                    </p>
+                </div>
+                <button
+                    onClick={handleResetAllBalances}
+                    className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-bold flex items-center gap-2"
+                >
+                    <span>🔄</span> Reset All Balances
+                </button>
             </div>
 
             {/* Summary Card */}
