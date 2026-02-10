@@ -31,11 +31,16 @@ class CashTransferController extends Controller
             ->limit(20)
             ->get();
 
-        // Get current balance from latest cash assignment
+        // Get current balance from CURRENT fight assignment
         // ALWAYS show balance regardless of fight status (open, closed, standby, etc.)
-        $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $currentTeller->id)
-            ->orderBy('id', 'desc')
-            ->first();
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        $latestAssignment = null;
+        
+        if ($latestFight) {
+            $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $currentTeller->id)
+                ->where('fight_id', $latestFight->id)
+                ->first();
+        }
         
         $currentBalance = $latestAssignment ? (float) $latestAssignment->current_balance : 0;
 
