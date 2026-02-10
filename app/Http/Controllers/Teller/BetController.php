@@ -242,10 +242,15 @@ class BetController extends Controller
     {
         $teller = auth()->user();
         
-        // ALWAYS show balance from latest cash assignment, regardless of fight status
-        $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $teller->id)
-            ->orderBy('id', 'desc')
-            ->first();
+        // ALWAYS show balance from CURRENT fight assignment, regardless of fight status
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        $latestAssignment = null;
+        
+        if ($latestFight) {
+            $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $teller->id)
+                ->where('fight_id', $latestFight->id)
+                ->first();
+        }
         
         $balance = $latestAssignment ? (float) $latestAssignment->current_balance : 0;
         
