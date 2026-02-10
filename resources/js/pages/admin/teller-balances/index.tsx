@@ -101,12 +101,12 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                         Manage teller cash balances and view transfer history
                     </p>
                 </div>
-                <button
+                {/* <button
                     onClick={handleResetAllBalances}
                     className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 rounded-lg font-bold flex items-center gap-2"
                 >
                     <span>🔄</span> Reset All Balances
-                </button>
+                </button> */}
             </div>
 
             {/* Summary Card */}
