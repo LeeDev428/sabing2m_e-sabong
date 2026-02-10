@@ -183,11 +183,16 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
             'draw_bets' => $tellerBets->where('side', 'draw')->count(),
         ];
             
-        // Calculate teller's cash balance from the latest fight assignment
+        // Calculate teller's cash balance from the CURRENT fight assignment
         // ALWAYS show balance regardless of fight status (open, closed, standby, etc.)
-        $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
-            ->orderBy('id', 'desc')
-            ->first();
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        $latestAssignment = null;
+        
+        if ($latestFight) {
+            $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $tellerId)
+                ->where('fight_id', $latestFight->id)
+                ->first();
+        }
         
         $tellerBalance = $latestAssignment ? (float) $latestAssignment->current_balance : 0;
         
