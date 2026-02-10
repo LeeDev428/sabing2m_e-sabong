@@ -159,4 +159,30 @@ class TellerBalanceController extends Controller
 
         return back()->with('success', 'Balance deducted successfully');
     }
+
+    public function resetAllBalances(Request $request)
+    {
+        DB::transaction(function () use ($request) {
+            // Reset all teller_cash_assignments to 0
+            TellerCashAssignment::query()->update(['current_balance' => 0]);
+            
+            // Reset all teller balances in users table
+            User::where('role', 'teller')->update(['teller_balance' => 0]);
+            
+            // Log this action for all tellers
+            $tellers = User::where('role', 'teller')->get();
+            foreach ($tellers as $teller) {
+                CashTransfer::create([
+                    'from_teller_id' => $teller->id,
+                    'to_teller_id' => $teller->id,
+                    'amount' => 0,
+                    'type' => 'reset',
+                    'remarks' => 'All balances reset for new event by admin',
+                    'approved_by' => auth()->id(),
+                ]);
+            }
+        });
+
+        return back()->with('success', 'All teller balances have been reset to ₱0');
+    }
 }
