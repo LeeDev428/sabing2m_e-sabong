@@ -182,17 +182,25 @@ class FightController extends Controller
             // Create teller assignments
             if (!empty($assignmentsToCreate)) {
                 foreach ($assignmentsToCreate as $assignment) {
-                    // Check if teller has existing balance from latest fight
-                    $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $assignment['teller_id'])
-                        ->orderBy('id', 'desc')
-                        ->first();
+                    // For existing events, carry over balance from latest fight in SAME event
+                    // For new events, start fresh at ₱0
+                    $currentBalance = $assignment['amount'];
+                    
+                    if ($existingEvent && $latestFightInEvent) {
+                        // Same event: carry over actual balance
+                        $latestAssignment = \App\Models\TellerCashAssignment::where('fight_id', $latestFightInEvent->id)
+                            ->where('teller_id', $assignment['teller_id'])
+                            ->first();
+                        $currentBalance = $latestAssignment ? $latestAssignment->current_balance : $assignment['amount'];
+                    }
+                    // else: New event → use assigned amount (which is typically 0 for new events)
                     
                     \App\Models\TellerCashAssignment::create([
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment['teller_id'],
                         'assigned_by' => auth()->id(),
                         'assigned_amount' => $assignment['amount'],
-                        'current_balance' => $latestAssignment ? $latestAssignment->current_balance : $assignment['amount'],
+                        'current_balance' => $currentBalance,
                         'status' => 'active',
                     ]);
                 }
@@ -608,15 +616,17 @@ class FightController extends Controller
             ]);
 
             // Copy teller assignments from latest fight if they exist
+            // Reset to ₱0 if it's a new event
             if ($latestFight) {
+                $isNewEvent = $latestFight->event_name !== $fight->event_name;
                 $latestAssignments = TellerCashAssignment::where('fight_id', $latestFight->id)->get();
                 
                 foreach ($latestAssignments as $assignment) {
                     TellerCashAssignment::create([
                         'fight_id' => $fight->id,
                         'teller_id' => $assignment->teller_id,
-                        'assigned_amount' => $assignment->assigned_amount,
-                        'current_balance' => $assignment->current_balance, // CARRY OVER actual balance, not reset
+                        'assigned_amount' => $isNewEvent ? 0 : $assignment->assigned_amount,
+                        'current_balance' => $isNewEvent ? 0 : $assignment->current_balance,  // Reset to ₱0 for new events
                     ]);
                 }
             }
