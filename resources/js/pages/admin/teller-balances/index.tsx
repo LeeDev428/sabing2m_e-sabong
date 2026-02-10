@@ -205,14 +205,14 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                                     Date
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase">
-                                    Fromdata.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
-                                        No transfers yet
-                                    </td>
-                                </tr>
-                            ) : (
-                                recentTransfers.data
+                                    From
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase">
+                                    To
+                                </th>
+                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
+                                    Amount
+                                </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase">
                                     Type
                                 </th>
@@ -222,14 +222,14 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {recentTransfers.length === 0 ? (
+                            {recentTransfers.data.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                                         No transfers yet
                                     </td>
                                 </tr>
                             ) : (
-                                recentTransfers.map((transfer) => (
+                                recentTransfers.data.map((transfer) => (
                                     <tr key={transfer.id} className="hover:bg-gray-700/50">
                                         <td className="px-6 py-4 text-sm text-gray-300">
                                             {new Date(transfer.created_at).toLocaleString()}
@@ -246,13 +246,6 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                
-                {/* Pagination */}
-                {recentTransfers.last_page > 1 && (
-                    <div className="p-4 border-t border-gray-700">
-                        <Pagination links={recentTransfers.links} />
-                    </div>
-                )}
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                                 transfer.type === 'initial_balance' 
                                                     ? 'bg-purple-600 text-white' 
@@ -270,6 +263,13 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                         </tbody>
                     </table>
                 </div>
+                
+                {/* Pagination */}
+                {recentTransfers.last_page > 1 && (
+                    <div className="p-4 border-t border-gray-700">
+                        <Pagination links={recentTransfers.links} />
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );
