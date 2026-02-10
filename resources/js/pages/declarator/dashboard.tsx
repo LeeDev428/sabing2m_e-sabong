@@ -9,6 +9,7 @@ interface DeclaratorDashboardProps {
 
 export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboardProps) {
     const [showResultModal, setShowResultModal] = useState(false);
+    const [showNextFightModal, setShowNextFightModal] = useState(false);
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [result, setResult] = useState<'meron' | 'wala' | 'draw' | 'cancelled' | null>(null);
 
