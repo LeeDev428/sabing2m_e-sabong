@@ -20,6 +20,8 @@ interface PayoutScanProps {
         bet_amount?: number;
         odds?: number;
         event_name?: string;
+        is_refund?: boolean;
+        refund_reason?: string;
     };
 }
 
@@ -48,11 +50,14 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
         };
     }, []);
 
-    // Auto-print payout receipt when claim is successful
+    // Auto-print receipt when claim/refund is successful
     useEffect(() => {
         if (claimData && !claimData.already_claimed && isPrinterConnected) {
-            // Auto-print payout receipt
-            handlePrintPayout();
+            if (claimData.is_refund) {
+                handlePrintRefund();
+            } else {
+                handlePrintPayout();
+            }
         }
     }, [claimData, isPrinterConnected]);
 
@@ -91,6 +96,36 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                 event_name: claimData.event_name,
             });
             showToast('✅ Payout receipt printed!', 'success', 2000);
+        } catch (error: any) {
+            console.error('Print error:', error);
+            showToast(`❌ Print failed: ${error.message}`, 'error', 3000);
+        }
+    };
+
+    const handlePrintRefund = async () => {
+        if (!isPrinterConnected) {
+            showToast('❌ Printer not connected', 'error', 3000);
+            return;
+        }
+
+        if (!claimData) {
+            showToast('❌ No claim data available', 'error', 3000);
+            return;
+        }
+
+        try {
+            await thermalPrinter.printRefundReceipt({
+                ticket_id: claimData.ticket_id || 'N/A',
+                fight_number: claimData.fight_number || 0,
+                side: claimData.side || 'N/A',
+                bet_amount: claimData.bet_amount || 0,
+                refund_amount: claimData.amount,
+                bet_by: claimData.bet_by,
+                claimed_by: claimData.claimed_by,
+                event_name: claimData.event_name,
+                refund_reason: claimData.refund_reason || 'DRAW',
+            });
+            showToast('✅ Refund receipt printed!', 'success', 2000);
         } catch (error: any) {
             console.error('Print error:', error);
             showToast(`❌ Print failed: ${error.message}`, 'error', 3000);
