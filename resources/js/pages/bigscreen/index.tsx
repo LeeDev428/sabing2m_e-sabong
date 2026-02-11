@@ -69,7 +69,7 @@ export default function BigScreen() {
                 // Only show if this is a NEW result (different fight OR different result)
                 if (!fight || fight.id !== newFight.id || fight.result !== newFight.result) {
                     setShowWinner(true);
-                    setTimeout(() => setShowWinner(false), 2000); // Show for 2 seconds
+                    setTimeout(() => setShowWinner(false), 15000); // Show for 15 seconds
                 }
             }
             
