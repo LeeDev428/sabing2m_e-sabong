@@ -512,12 +512,15 @@ class FightController extends Controller
                 'declared_by' => auth()->id(),
             ]);
 
-            // Process payouts if not cancelled
-            if ($validated['result'] !== 'cancelled') {
-                $this->processPayouts($fight, $validated['result']);
+            // Process payouts
+            if ($validated['result'] === 'cancelled' || $validated['result'] === 'draw') {
+                // Refund all bets for cancelled or draw
+                $fight->bets()->where('status', 'active')->update([
+                    'status' => 'refunded',
+                    'actual_payout' => DB::raw('amount'),
+                ]);
             } else {
-                // Refund all bets if cancelled
-                $fight->bets()->update(['status' => 'refunded']);
+                $this->processPayouts($fight, $validated['result']);
             }
         });
 
