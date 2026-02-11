@@ -339,8 +339,15 @@ class BetController extends Controller
                 $assignment->save();
             }
 
-            $fightResult = $bet->fight->result ?? 'cancelled';
-            $reasonText = $fightResult === 'draw' ? 'DRAW' : 'CANCELLED';
+            // Determine refund reason from fight result or default to 'CANCELLED'
+            $fightResult = $bet->fight ? $bet->fight->result : null;
+            $reasonText = 'CANCELLED'; // Default
+            
+            if ($fightResult === 'draw') {
+                $reasonText = 'DRAW';
+            } elseif ($fightResult === 'cancelled') {
+                $reasonText = 'CANCELLED';
+            }
 
             \Log::info("💰 Refund claimed: {$bet->ticket_id}, Amount: ₱{$refundAmount}, Reason: {$reasonText}");
 
@@ -348,16 +355,16 @@ class BetController extends Controller
                 'message' => "Refund processed! ₱" . number_format($refundAmount, 2) . " returned to customer ({$reasonText}).",
                 'claimData' => [
                     'amount' => $refundAmount,
-                    'bet_by' => $bet->teller->name ?? 'Customer',
+                    'bet_by' => $bet->teller ? $bet->teller->name : 'Customer',
                     'claimed_by' => auth()->user()->name,
                     'status' => 'Refunded',
                     'already_claimed' => false,
                     'ticket_id' => $bet->ticket_id,
-                    'fight_number' => $bet->fight->fight_number ?? 0,
+                    'fight_number' => $bet->fight ? $bet->fight->fight_number : 0,
                     'side' => $bet->side,
                     'bet_amount' => (float) $bet->amount,
-                    'odds' => 0,
-                    'event_name' => $bet->fight->event_name ?? null,
+                    'odds' => 1.0, // Refunds have 1:1 odds
+                    'event_name' => ($bet->fight && $bet->fight->event_name) ? $bet->fight->event_name : null,
                     'is_refund' => true,
                     'refund_reason' => $reasonText,
                 ]
