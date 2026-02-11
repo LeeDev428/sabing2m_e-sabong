@@ -290,7 +290,7 @@ class BetController extends Controller
 
         $bet = Bet::with(['fight', 'teller'])->where('ticket_id', $validated['ticket_id'])->firstOrFail();
 
-        // Check if bet has already been claimed
+        // Check if bet has already been claimed or refunded
         if ($bet->status === 'claimed') {
             return Inertia::render('teller/payout-scan', [
                 'message' => 'This bet has already been claimed.',
@@ -300,6 +300,66 @@ class BetController extends Controller
                     'claimed_by' => auth()->user()->name,
                     'status' => 'Already Claimed',
                     'already_claimed' => true,
+                ]
+            ]);
+        }
+
+        // Check if bet is already refunded (scanned before)
+        if ($bet->status === 'refund_claimed') {
+            return Inertia::render('teller/payout-scan', [
+                'message' => 'This ticket has already been refunded.',
+                'claimData' => [
+                    'amount' => $bet->actual_payout ?? $bet->amount,
+                    'bet_by' => $bet->teller->name ?? 'Customer',
+                    'claimed_by' => auth()->user()->name,
+                    'status' => 'Already Refunded',
+                    'already_claimed' => true,
+                ]
+            ]);
+        }
+
+        // Handle REFUND flow (draw or cancelled fights)
+        if ($bet->status === 'refunded') {
+            $refundAmount = (float) $bet->amount; // Refund full bet amount
+
+            // Mark as refund claimed
+            $bet->status = 'refund_claimed';
+            $bet->claimed_at = now();
+            $bet->claimed_by = auth()->id();
+            $bet->actual_payout = $refundAmount;
+            $bet->save();
+
+            // Deduct refund from teller's cash assignment (teller gives cash back)
+            $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+                ->where('fight_id', $bet->fight_id)
+                ->first();
+
+            if ($assignment) {
+                $assignment->current_balance -= $refundAmount;
+                $assignment->save();
+            }
+
+            $fightResult = $bet->fight->result ?? 'cancelled';
+            $reasonText = $fightResult === 'draw' ? 'DRAW' : 'CANCELLED';
+
+            \Log::info("💰 Refund claimed: {$bet->ticket_id}, Amount: ₱{$refundAmount}, Reason: {$reasonText}");
+
+            return Inertia::render('teller/payout-scan', [
+                'message' => "Refund processed! ₱" . number_format($refundAmount, 2) . " returned to customer ({$reasonText}).",
+                'claimData' => [
+                    'amount' => $refundAmount,
+                    'bet_by' => $bet->teller->name ?? 'Customer',
+                    'claimed_by' => auth()->user()->name,
+                    'status' => 'Refunded',
+                    'already_claimed' => false,
+                    'ticket_id' => $bet->ticket_id,
+                    'fight_number' => $bet->fight->fight_number ?? 0,
+                    'side' => $bet->side,
+                    'bet_amount' => (float) $bet->amount,
+                    'odds' => 0,
+                    'event_name' => $bet->fight->event_name ?? null,
+                    'is_refund' => true,
+                    'refund_reason' => $reasonText,
                 ]
             ]);
         }
