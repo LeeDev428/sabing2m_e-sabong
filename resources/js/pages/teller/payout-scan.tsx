@@ -274,7 +274,7 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                 )}
 
                 {/* Success Message - Win */}
-                {claimData && !claimData.already_claimed && (
+                {claimData && !claimData.already_claimed && !claimData.is_refund && (
                     <div className="bg-green-900/30 border-2 border-green-500 rounded-lg p-6 mb-4">
                         <div className="text-center mb-6">
                             <div className="text-7xl mb-4">✅</div>
@@ -352,6 +352,106 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                             }`}
                         >
                             <span>🖨️</span> Print Payout Receipt
+                        </button>
+
+                        <button
+                            onClick={() => router.visit('/teller/payout-scan')}
+                            className="w-full mt-6 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-bold"
+                        >
+                            Scan Another
+                        </button>
+                    </div>
+                )}
+
+                {/* Refund Success - Draw/Cancelled */}
+                {claimData && !claimData.already_claimed && claimData.is_refund && (
+                    <div className="bg-orange-900/30 border-2 border-orange-500 rounded-lg p-6 mb-4">
+                        <div className="text-center mb-6">
+                            <div className="text-7xl mb-4">💰</div>
+                            <h2 className="text-3xl font-bold text-orange-400 mb-2">Refund Processed!</h2>
+                            <p className="text-white text-xl">Fight {claimData.refund_reason || 'DRAW'} — Full Refund</p>
+                        </div>
+
+                        <div className="space-y-3 bg-[#1a1a1a] rounded-lg p-4">
+                            {/* Fight Number */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Fight#:</span>
+                                <span className="text-white font-semibold">{claimData.fight_number || 'N/A'}</span>
+                            </div>
+                            
+                            {/* Teller */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Teller:</span>
+                                <span className="text-white font-semibold">{claimData.bet_by}</span>
+                            </div>
+                            
+                            {/* Receipt/Ticket ID */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Receipt:</span>
+                                <span className="text-white font-semibold text-xs">{claimData.ticket_id || 'N/A'}</span>
+                            </div>
+
+                            {/* Reason */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Reason:</span>
+                                <span className="text-orange-400 font-bold">{claimData.refund_reason || 'DRAW'}</span>
+                            </div>
+                            
+                            {/* Date and Time */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Date:</span>
+                                <span className="text-white font-semibold">{new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Time:</span>
+                                <span className="text-white font-semibold">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
+                            </div>
+                            
+                            {/* Divider */}
+                            <div className="border-t-2 border-gray-700 my-2"></div>
+                            
+                            {/* Refund Amount - BIG */}
+                            <div className="text-center py-4">
+                                <div className="text-lg text-gray-400 mb-1">REFUND AMOUNT</div>
+                                <div className="text-4xl font-bold text-orange-400">
+                                    ₱{claimData.amount.toLocaleString()}
+                                </div>
+                                <div className="text-sm text-gray-400 mt-1">
+                                    ({(claimData.side || 'N/A').toUpperCase()} — Bet: ₱{(claimData.bet_amount || 0).toLocaleString()})
+                                </div>
+                            </div>
+                            
+                            {/* Divider */}
+                            <div className="border-t-2 border-gray-700 my-2"></div>
+                            
+                            {/* Claimed By */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Refunded By:</span>
+                                <span className="text-white font-semibold">{claimData.claimed_by}</span>
+                            </div>
+                            
+                            {/* Status */}
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-400">Status:</span>
+                                <span className="text-orange-400 font-bold">{claimData.status}</span>
+                            </div>
+                            
+                            {/* Official Refund Badge */}
+                            <div className="text-center pt-2">
+                                <div className="text-sm font-bold text-gray-400">OFFICIAL REFUND RECEIPT</div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handlePrintRefund}
+                            disabled={!isPrinterConnected}
+                            className={`w-full mt-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${
+                                isPrinterConnected
+                                    ? 'bg-purple-600 hover:bg-purple-700'
+                                    : 'bg-gray-600 cursor-not-allowed opacity-50'
+                            }`}
+                        >
+                            <span>🖨️</span> Print Refund Receipt
                         </button>
 
                         <button
