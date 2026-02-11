@@ -397,6 +397,84 @@ export class ThermalPrinter {
             throw error;
         }
     }
+
+    async printRefundReceipt(refundData: {
+        ticket_id: string;
+        fight_number: number;
+        side: string;
+        bet_amount: number;
+        refund_amount: number;
+        bet_by: string;
+        claimed_by: string;
+        event_name?: string;
+        refund_reason?: string;
+    }) {
+        console.log('[ThermalPrinter] printRefundReceipt() called with data:', refundData);
+        
+        const sideDisplay = refundData.side.toUpperCase();
+        const eventName = refundData.event_name || 'SABONG EVENT';
+        const reason = refundData.refund_reason || 'DRAW';
+        
+        console.log('[ThermalPrinter] Building refund receipt ESC/POS commands...');
+        const commands = [
+            `${ESC}@`, // Initialize
+            
+            // Event Title (centered, BOLD)
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(16)}`, // Double width only
+            `${eventName}\n`,
+            `${ESC}!${String.fromCharCode(0)}`, // Normal font
+            '================================\n',
+            
+            // Receipt Type
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(8)}`, // Bold
+            'REFUND RECEIPT\n',
+            `${ESC}!${String.fromCharCode(0)}`, // Normal
+            `Reason: ${reason}\n`,
+            '================================\n',
+            
+            // Receipt details
+            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            `Fight#: ${refundData.fight_number}\n`,
+            `Bet By: ${refundData.bet_by}\n`,
+            `Refunded By: ${refundData.claimed_by}\n`,
+            `Receipt: ${refundData.ticket_id}\n`,
+            `Date: ${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}\n`,
+            `Time: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}\n`,
+            '================================\n',
+            '\n',
+            // Bet Info
+            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            `Side: ${sideDisplay}\n`,
+            `Bet Amount: P${refundData.bet_amount.toLocaleString()}\n`,
+            '================================\n',
+            '\n',
+            // Refund Amount (BIGGER)
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
+            `REFUND: P${refundData.refund_amount.toLocaleString()}\n`,
+            `${ESC}!${String.fromCharCode(0)}`, // Normal
+            '\n',
+            '================================\n',
+            '\n',
+            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            `${reason} - REFUND RECEIPT\n`,
+            '\n\n\n\n',
+            `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
+        ].join('');
+
+        console.log('[ThermalPrinter] Commands built, length:', commands.length);
+        console.log('[ThermalPrinter] Calling write()...');
+        
+        try {
+            await this.write(commands);
+            console.log('[ThermalPrinter] ✅ Refund receipt printed successfully');
+        } catch (error) {
+            console.error('[ThermalPrinter] ❌ Refund receipt print failed:', error);
+            throw error;
+        }
+    }
 }
 
 export const thermalPrinter = new ThermalPrinter();
