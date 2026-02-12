@@ -280,7 +280,7 @@ export default function History({ bets, summary }: HistoryProps) {
 
                         <div className="bg-[#1a1a1a] rounded-lg p-6 border border-gray-700">
                             <div className="text-center">
-                                <div className="text-sm text-gray-400 mb-2">Total Bet Amount</div>
+                                <div className="text-sm text-gray-400 mb-2">Teller's Cash Balance</div>
                                 <div className="text-3xl font-bold text-yellow-400">₱{summary.total_amount.toLocaleString()}</div>
                             </div>
                         </div>
