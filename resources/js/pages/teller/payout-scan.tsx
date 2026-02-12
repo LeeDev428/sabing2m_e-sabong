@@ -52,13 +52,22 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
 
     // Auto-print receipt when claim/refund is successful
     useEffect(() => {
-        if (claimData && !claimData.already_claimed && isPrinterConnected) {
-            if (claimData.is_refund) {
-                handlePrintRefund();
-            } else {
-                handlePrintPayout();
+        const autoPrint = async () => {
+            if (claimData && !claimData.already_claimed && isPrinterConnected) {
+                try {
+                    if (claimData.is_refund) {
+                        await handlePrintRefund();
+                    } else {
+                        await handlePrintPayout();
+                    }
+                } catch (error) {
+                    console.error('Auto-print failed:', error);
+                    // Don't show toast on auto-print failure, user can manually print
+                }
             }
-        }
+        };
+        
+        autoPrint();
     }, [claimData, isPrinterConnected]);
 
     useEffect(() => {
@@ -84,13 +93,16 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
         }
 
         try {
+            const betAmount = claimData.bet_amount ?? claimData.amount ?? 0;
+            const odds = claimData.odds ?? 1.0;
+            
             await thermalPrinter.printPayoutReceipt({
                 ticket_id: claimData.ticket_id || 'N/A',
                 fight_number: claimData.fight_number || 0,
                 side: claimData.side || 'N/A',
-                bet_amount: claimData.bet_amount || 0,
-                odds: claimData.odds || 1.0,
-                payout_amount: claimData.amount,
+                bet_amount: Number(betAmount),
+                odds: Number(odds),
+                payout_amount: Number(claimData.amount),
                 bet_by: claimData.bet_by,
                 claimed_by: claimData.claimed_by,
                 event_name: claimData.event_name,
