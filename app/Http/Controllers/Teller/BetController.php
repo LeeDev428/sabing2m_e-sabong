@@ -324,7 +324,7 @@ class BetController extends Controller
             $refundAmount = (float) $bet->amount; // Refund full bet amount
 
             // Mark as refund claimed
-            $bet->status = 'refund_claimed';
+            $bet->status = 'claimed';
             $bet->claimed_at = now();
             $bet->claimed_by = auth()->id();
             $bet->actual_payout = $refundAmount;
@@ -461,12 +461,14 @@ class BetController extends Controller
         // Calculate summary stats (today's stats only)
         $totalBets = Bet::where('teller_id', $teller->id)
             ->whereDate('created_at', today())
+            ->whereNotIn('status', ['voided', 'cancelled', 'refunded'])
             ->count();
             
         $summary = [
             'total_bets' => $totalBets,
             'total_amount' => (float) Bet::where('teller_id', $teller->id)
                 ->whereDate('created_at', today())
+                ->whereNotIn('status', ['voided', 'cancelled', 'refunded'])
                 ->sum('amount'),
             'won_bets' => Bet::where('teller_id', $teller->id)
                 ->whereDate('created_at', today())
@@ -482,7 +484,7 @@ class BetController extends Controller
                 ->count(),
             'voided_bets' => Bet::where('teller_id', $teller->id)
                 ->whereDate('created_at', today())
-                ->where('status', 'void')
+                ->where('status', 'voided')
                 ->count(),
         ];
 
