@@ -21,18 +21,13 @@ class TellerBalanceController extends Controller
             ->select('id', 'name', 'email', 'teller_balance')
             ->orderBy('name')
             ->get()
-            ->map(function ($teller) use ($latestFight) {
-                // ONLY show balance for CURRENT/LATEST fight
-                // If new event/fight created, this will show ₱0 until assigned
-                if ($latestFight) {
-                    $currentAssignment = TellerCashAssignment::where('teller_id', $teller->id)
-                        ->where('fight_id', $latestFight->id)
-                        ->first();
-                    
-                    $teller->teller_balance = $currentAssignment ? $currentAssignment->current_balance : 0;
-                } else {
-                    $teller->teller_balance = 0;
-                }
+            ->map(function ($teller) {
+                // Get balance from latest assignment (regardless of fight) - consistent with declarator page
+                $latestAssignment = TellerCashAssignment::where('teller_id', $teller->id)
+                    ->orderBy('id', 'desc')
+                    ->first();
+                
+                $teller->teller_balance = $latestAssignment ? $latestAssignment->current_balance : 0;
                 return $teller;
             });
 
