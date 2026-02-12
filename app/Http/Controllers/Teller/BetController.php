@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bet;
 use App\Models\Fight;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class BetController extends Controller
@@ -354,16 +355,16 @@ class BetController extends Controller
             return Inertia::render('teller/payout-scan', [
                 'message' => "Refund processed! ₱" . number_format($refundAmount, 2) . " returned to customer ({$reasonText}).",
                 'claimData' => [
-                    'amount' => $refundAmount,
+                    'amount' => (float) $refundAmount,
                     'bet_by' => $bet->teller ? $bet->teller->name : 'Customer',
                     'claimed_by' => auth()->user()->name,
                     'status' => 'Refunded',
                     'already_claimed' => false,
                     'ticket_id' => $bet->ticket_id,
-                    'fight_number' => $bet->fight ? $bet->fight->fight_number : 0,
+                    'fight_number' => $bet->fight ? (int) $bet->fight->fight_number : 0,
                     'side' => $bet->side,
                     'bet_amount' => (float) $bet->amount,
-                    'odds' => 1.0, // Refunds have 1:1 odds
+                    'odds' => (float) 1.0, // Refunds have 1:1 odds
                     'event_name' => ($bet->fight && $bet->fight->event_name) ? $bet->fight->event_name : null,
                     'is_refund' => true,
                     'refund_reason' => $reasonText,
@@ -517,6 +518,8 @@ class BetController extends Controller
         }
 
         try {
+            DB::beginTransaction();
+            
             // Void the bet and refund amount
             $bet->status = 'voided';
             
@@ -543,14 +546,22 @@ class BetController extends Controller
             
             if ($assignment) {
                 // Subtract the bet amount from current balance (return cash to customer)
+                $oldBalance = $assignment->current_balance;
                 $assignment->current_balance -= $bet->amount;
                 $assignment->save();
+                
+                \Log::info("✅ Balance updated for void: Old={$oldBalance}, New={$assignment->current_balance}, Deducted={$bet->amount}");
+            } else {
+                \Log::warning("⚠️ No assignment found for teller " . auth()->id() . " fight {$bet->fight_id}");
             }
 
             \Log::info("✅ Bet voided: {$bet->ticket_id}, Amount refunded: ₱{$bet->amount}");
+            
+            DB::commit();
 
             return back()->with('success', "Bet {$bet->ticket_id} voided successfully! ₱{$bet->amount} refunded to customer.");
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::error("❌ Void bet failed: " . $e->getMessage(), [
                 'ticket_id' => $validated['ticket_id'],
                 'trace' => $e->getTraceAsString()
