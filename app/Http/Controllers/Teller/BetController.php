@@ -458,6 +458,18 @@ class BetController extends Controller
                 ];
             });
 
+        // Get teller's current cash balance from latest assignment
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        $latestAssignment = null;
+        $cashBalance = 0;
+        
+        if ($latestFight) {
+            $latestAssignment = \App\Models\TellerCashAssignment::where('teller_id', $teller->id)
+                ->where('fight_id', $latestFight->id)
+                ->first();
+            $cashBalance = $latestAssignment ? (float) $latestAssignment->current_balance : 0;
+        }
+        
         // Calculate summary stats (today's stats only)
         $totalBets = Bet::where('teller_id', $teller->id)
             ->whereDate('created_at', today())
@@ -466,10 +478,7 @@ class BetController extends Controller
             
         $summary = [
             'total_bets' => $totalBets,
-            'total_amount' => (float) Bet::where('teller_id', $teller->id)
-                ->whereDate('created_at', today())
-                ->whereNotIn('status', ['voided', 'cancelled', 'refunded'])
-                ->sum('amount'),
+            'total_amount' => $cashBalance, // Show actual cash balance, not sum of bets
             'won_bets' => Bet::where('teller_id', $teller->id)
                 ->whereDate('created_at', today())
                 ->where('status', 'won')
