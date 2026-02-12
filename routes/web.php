@@ -170,17 +170,17 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
                 ];
             });
         
-        // Get teller's bet statistics
+        // Get teller's bet statistics (excluding voided/cancelled/refunded bets)
         $tellerBets = \App\Models\Bet::where('teller_id', $tellerId);
         
         $summary = [
-            'total_bets' => $tellerBets->count(),
-            'total_bet_amount' => $tellerBets->sum('amount'),
-            'total_payouts' => $tellerBets->where('status', 'won')->sum('actual_payout'),
-            'active_bets' => $tellerBets->where('status', 'active')->sum('amount'),
-            'meron_bets' => $tellerBets->where('side', 'meron')->count(),
-            'wala_bets' => $tellerBets->where('side', 'wala')->count(),
-            'draw_bets' => $tellerBets->where('side', 'draw')->count(),
+            'total_bets' => (clone $tellerBets)->whereNotIn('status', ['voided', 'cancelled', 'refunded'])->count(),
+            'total_bet_amount' => (clone $tellerBets)->whereNotIn('status', ['voided', 'cancelled', 'refunded'])->sum('amount'),
+            'total_payouts' => (clone $tellerBets)->where('status', 'won')->sum('actual_payout'),
+            'active_bets' => (clone $tellerBets)->where('status', 'active')->sum('amount'),
+            'meron_bets' => (clone $tellerBets)->whereNotIn('status', ['voided', 'cancelled', 'refunded'])->where('side', 'meron')->count(),
+            'wala_bets' => (clone $tellerBets)->whereNotIn('status', ['voided', 'cancelled', 'refunded'])->where('side', 'wala')->count(),
+            'draw_bets' => (clone $tellerBets)->whereNotIn('status', ['voided', 'cancelled', 'refunded'])->where('side', 'draw')->count(),
         ];
             
         // Calculate teller's cash balance from the CURRENT fight assignment
