@@ -48,7 +48,34 @@ class CashTransferController extends Controller
             'tellers' => $tellers,
             'transfers' => $transfers,
             'currentBalance' => $currentBalance,
+            'latestFight' => $latestFight ? [
+                'id' => $latestFight->id,
+                'fight_number' => $latestFight->fight_number,
+                'revolving_funds' => (float) $latestFight->revolving_funds,
+            ] : null,
         ]);
+    }
+
+    public function request(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        $fromTeller = auth()->user();
+
+        // Create a cash request (pending approval)
+        CashTransfer::create([
+            'from_teller_id' => $fromTeller->id,
+            'to_teller_id' => $fromTeller->id, // Request for self
+            'amount' => $request->amount,
+            'type' => 'request',
+            'status' => 'pending',
+            'remarks' => $request->remarks,
+        ]);
+
+        return redirect()->back()->with('success', 'Cash request submitted. Waiting for approval.');
     }
 
     public function transfer(Request $request)
