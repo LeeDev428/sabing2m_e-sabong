@@ -42,6 +42,7 @@ class TellerBalanceController extends Controller
                 'id' => $latestFight->id,
                 'fight_number' => $latestFight->fight_number,
                 'event_name' => $latestFight->event_name,
+                'revolving_funds' => (float) ($latestFight->revolving_funds ?? 0),
             ] : null,
         ]);
     }
@@ -239,10 +240,7 @@ class TellerBalanceController extends Controller
             ]);
             
             // Also update the deprecated user.teller_balance for backwards compatibility
-            if ($user->teller_balance < $request->amount) {
-                throw new \Exception('Insufficient balance to deduct');
-            }
-            $user->decrement('teller_balance', $request->amount);
+            $user->update(['teller_balance' => $newBalance]);
 
             CashTransfer::create([
                 'from_teller_id' => $user->id,
