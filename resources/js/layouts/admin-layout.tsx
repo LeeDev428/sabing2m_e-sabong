@@ -122,13 +122,23 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     </button>
                     <button
                         onClick={() => {
+                            router.visit('/admin/cash-requests');
+                            setSidebarOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
+                        style={{ fontSize: '14px' }}
+                    >
+                        💰 Cash Requests
+                    </button>
+                    <button
+                        onClick={() => {
                             router.visit('/admin/cash-transfer');
                             setSidebarOpen(false);
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
                         style={{ fontSize: '14px' }}
                     >
-                        💰 Cash Transfer
+                        💵 Cash Transfer
                     </button>
                     <button
                         onClick={() => {
