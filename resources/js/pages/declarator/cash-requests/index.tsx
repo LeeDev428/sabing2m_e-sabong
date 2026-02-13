@@ -13,18 +13,17 @@ interface CashRequest {
     amount: number;
     remarks: string | null;
     status: 'pending' | 'approved' | 'declined';
-    approved_by_user: { name: string } | null;
+    approved_by: { name: string } | null;
     created_at: string;
     updated_at: string;
 }
 
 interface Props {
-    requests: CashRequest[];
+    pendingRequests: CashRequest[];
+    processedRequests: CashRequest[];
 }
 
-export default function CashRequests({ requests }: Props) {
-    const pendingRequests = requests.filter(r => r.status === 'pending');
-    const processedRequests = requests.filter(r => r.status !== 'pending');
+export default function CashRequests({ pendingRequests = [], processedRequests = [] }: Props) {
 
     const handleApprove = (requestId: number) => {
         if (!confirm('Are you sure you want to approve this cash request?')) return;
@@ -155,8 +154,8 @@ export default function CashRequests({ requests }: Props) {
                                             <div className="text-sm text-gray-400 space-y-1">
                                                 <div>Requested: {new Date(request.created_at).toLocaleString()}</div>
                                                 <div>Processed: {new Date(request.updated_at).toLocaleString()}</div>
-                                                {request.approved_by_user && (
-                                                    <div>Processed by: <span className="text-orange-400">{request.approved_by_user.name}</span></div>
+                                                {request.approved_by && (
+                                                    <div>Processed by: <span className="text-orange-400">{request.approved_by.name}</span></div>
                                                 )}
                                             </div>
                                             {request.remarks && (
