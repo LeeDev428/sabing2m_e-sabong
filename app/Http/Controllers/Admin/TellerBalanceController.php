@@ -75,32 +75,31 @@ class TellerBalanceController extends Controller
                 [
                     'assigned_amount' => 0,
                     'current_balance' => 0,
+                    'assigned_by' => auth()->id(),
+                    'status' => 'active',
                 ]
             );
             
             $oldBalance = $currentAssignment->assigned_amount;
             $newBalance = $request->amount;
+            $difference = $newBalance - $oldBalance;
             
-            // VALIDATION: Check if total assigned balance would exceed event's revolving fund
+            // VALIDATION & REVOLVING FUND ADJUSTMENT
             $revolvingFund = $currentFight->revolving_funds ?? 0;
             
-            // Get total assigned for OTHER tellers in current event (excluding this teller)
-            $totalAssignedOthers = TellerCashAssignment::whereHas('fight', function ($query) use ($currentFight) {
-                $query->where('event_name', $currentFight->event_name)
-                      ->where('event_date', $currentFight->event_date);
-            })
-            ->where('teller_id', '!=', $user->id)
-            ->sum('assigned_amount');
-            
-            // Calculate what total would be with new balance
-            $newTotal = $totalAssignedOthers + $newBalance;
-            
-            if ($newTotal > $revolvingFund) {
-                throw new \Exception(
-                    "Cannot set balance to ₱" . number_format($newBalance, 2) . ". " .
-                    "Total assigned would be ₱" . number_format($newTotal, 2) . " " .
-                    "which exceeds event's revolving fund of ₱" . number_format($revolvingFund, 2) . "."
-                );
+            if ($difference > 0) {
+                // Increasing balance - need to deduct from revolving fund
+                if ($difference > $revolvingFund) {
+                    throw new \Exception(
+                        "Cannot set balance to ₱" . number_format($newBalance, 2) . ". " .
+                        "Would need ₱" . number_format($difference, 2) . " more, " .
+                        "but only ₱" . number_format($revolvingFund, 2) . " available in revolving fund."
+                    );
+                }
+                $currentFight->decrement('revolving_funds', $difference);
+            } else if ($difference < 0) {
+                // Decreasing balance - add back to revolving fund
+                $currentFight->increment('revolving_funds', abs($difference));
             }
             
             // Update assignment
@@ -118,14 +117,14 @@ class TellerBalanceController extends Controller
             CashTransfer::create([
                 'from_teller_id' => $user->id,
                 'to_teller_id' => $user->id,
-                'amount' => abs($newBalance - $oldBalance),
+                'amount' => abs($difference),
                 'type' => 'initial_balance',
                 'remarks' => $request->remarks ?? "Balance set from ₱{$oldBalance} to ₱{$newBalance}",
                 'approved_by' => auth()->id(),
             ]);
         });
 
-        return back()->with('success', 'Teller balance updated successfully');
+        return back()->with('success', 'Teller balance updated and revolving fund adjusted');
     }
 
     public function addBalance(Request $request, User $user)
