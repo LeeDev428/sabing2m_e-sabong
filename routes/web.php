@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\TellerController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\CashTransferController as AdminCashTransferController;
+use App\Http\Controllers\Admin\CashRequestController as AdminCashRequestController;
 use App\Http\Controllers\Teller\BetController;
 use App\Http\Controllers\Teller\TransactionController;
 use App\Http\Controllers\Teller\CashTransferController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Declarator\ResultController;
 use App\Http\Controllers\Declarator\BetControlController as DeclaratorBetControlController;
 use App\Http\Controllers\Declarator\FightController as DeclaratorFightController;
 use App\Http\Controllers\Declarator\CashTransferController as DeclaratorCashTransferController;
+use App\Http\Controllers\Declarator\CashRequestController as DeclaratorCashRequestController;
 use App\Http\Controllers\BigScreenController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -95,6 +97,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::post('cash-transfer/{transfer}/approve', [AdminCashTransferController::class, 'approve'])->name('cash-transfer.approve');
     Route::delete('cash-transfer/{transfer}/reject', [AdminCashTransferController::class, 'reject'])->name('cash-transfer.reject');
     
+    // Cash Requests from Tellers
+    Route::get('cash-requests', [AdminCashRequestController::class, 'index'])->name('cash-requests.index');
+    Route::post('cash-requests/{cashRequest}/approve', [AdminCashRequestController::class, 'approve'])->name('cash-requests.approve');
+    Route::post('cash-requests/{cashRequest}/decline', [AdminCashRequestController::class, 'decline'])->name('cash-requests.decline');
+    
     // Event Management (Revolving Funds per Event/Day)
     Route::get('events', [EventController::class, 'index'])->name('events.index');
     Route::get('events/today-funds', [EventController::class, 'getTodayFunds'])->name('events.today-funds');
@@ -138,6 +145,11 @@ Route::middleware(['auth', 'verified', 'role:declarator'])->prefix('declarator')
     Route::post('bet-controls/{fight}/toggle-wala', [DeclaratorBetControlController::class, 'toggleWala'])->name('bet-controls.toggle-wala');
     Route::post('bet-controls/{fight}/toggle-draw', [DeclaratorBetControlController::class, 'toggleDraw'])->name('bet-controls.toggle-draw');
     Route::post('bet-controls/{fight}/commission', [DeclaratorBetControlController::class, 'updateCommission'])->name('bet-controls.commission');
+    
+    // Cash Requests from Tellers
+    Route::get('cash-requests', [DeclaratorCashRequestController::class, 'index'])->name('cash-requests.index');
+    Route::post('cash-requests/{cashRequest}/approve', [DeclaratorCashRequestController::class, 'approve'])->name('cash-requests.approve');
+    Route::post('cash-requests/{cashRequest}/decline', [DeclaratorCashRequestController::class, 'decline'])->name('cash-requests.decline');
     
     // Cash Transfer Monitoring
     Route::get('cash-transfer', [DeclaratorCashTransferController::class, 'index'])->name('cash-transfer.index');
@@ -220,6 +232,7 @@ Route::middleware(['auth', 'verified', 'role:teller'])->prefix('teller')->name('
     // History & Summary (merged)
     Route::get('history', [BetController::class, 'historyAndSummary'])->name('history');
     Route::post('bets/void', [BetController::class, 'voidBet'])->name('bets.void');
+    Route::post('cash-transfer/request', [CashTransferController::class, 'request'])->name('cash-transfer.request');
     
     // API endpoint for live odds
     Route::get('api/fights/{fight}/odds', [BetController::class, 'getLiveOdds']);
