@@ -113,10 +113,19 @@ class CashTransferController extends Controller
             ->latest()
             ->limit(20)
             ->get();
+        
+        // Get the latest fight (current event)
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
 
         return Inertia::render('declarator/teller-balances', [
             'tellers' => $tellers,
             'recentTransfers' => $recentTransfers,
+            'currentFight' => $latestFight ? [
+                'id' => $latestFight->id,
+                'fight_number' => $latestFight->fight_number,
+                'event_name' => $latestFight->event_name,
+                'revolving_funds' => (float) ($latestFight->revolving_funds ?? 0),
+            ] : null,
         ]);
     }
 }
