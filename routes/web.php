@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\TellerBalanceController;
 use App\Http\Controllers\Admin\TellerController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\CashTransferController as AdminCashTransferController;
 use App\Http\Controllers\Teller\BetController;
 use App\Http\Controllers\Teller\TransactionController;
 use App\Http\Controllers\Teller\CashTransferController;
@@ -88,6 +89,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::post('teller-balances/{user}/add', [TellerBalanceController::class, 'addBalance'])->name('teller-balances.add');
     Route::post('teller-balances/{user}/deduct', [TellerBalanceController::class, 'deductBalance'])->name('teller-balances.deduct');
     Route::post('teller-balances/reset-all', [TellerBalanceController::class, 'resetAllBalances'])->name('teller-balances.reset-all');
+    
+    // Cash Transfer Monitoring
+    Route::get('cash-transfer', [AdminCashTransferController::class, 'index'])->name('cash-transfer.index');
+    Route::post('cash-transfer/{transfer}/approve', [AdminCashTransferController::class, 'approve'])->name('cash-transfer.approve');
+    Route::delete('cash-transfer/{transfer}/reject', [AdminCashTransferController::class, 'reject'])->name('cash-transfer.reject');
     
     // Event Management (Revolving Funds per Event/Day)
     Route::get('events', [EventController::class, 'index'])->name('events.index');
