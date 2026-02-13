@@ -55,15 +55,17 @@ export default function TellerBalancesMonitoring({ tellers, recentTransfers, cur
                         <div className="text-green-200 text-sm mt-2">
                             Across {tellers.length} teller{tellers.length !== 1 ? 's' : ''}
                         </div>
+                        {currentFight && (
+                            <div className="text-green-100 text-sm mt-4 pt-4 border-t border-green-400/30">
+                                Revolving Fund: <span className="font-bold">₱{(currentFight.revolving_funds || 0).toLocaleString()}</span>
+                            </div>
+                        )}
                     </div>
                     {currentFight && (
                         <div className="text-right">
                             <div className="text-green-200 text-xs mb-1">Current Event</div>
                             <div className="text-lg font-bold text-white">{currentFight.event_name || 'No Event'}</div>
                             <div className="text-green-200 text-sm">Fight #{currentFight.fight_number}</div>
-                            <div className="text-green-100 text-xs mt-1">
-                                Revolving Fund: ₱{(currentFight.revolving_funds || 0).toLocaleString()}
-                            </div>
                         </div>
                     )}
                     {!currentFight && (
