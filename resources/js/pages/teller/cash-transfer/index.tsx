@@ -21,12 +21,21 @@ interface Props {
     tellers: Teller[];
     transfers: Transfer[];
     currentBalance: number;
+    latestFight?: {
+        id: number;
+        fight_number: string;
+        revolving_funds: number;
+    };
 }
 
-export default function CashTransfer({ tellers, transfers, currentBalance }: Props) {
+export default function CashTransfer({ tellers, transfers, currentBalance, latestFight }: Props) {
     const [selectedTeller, setSelectedTeller] = useState('');
     const [amount, setAmount] = useState('');
     const [remarks, setRemarks] = useState('');
+    
+    // Cash request state
+    const [requestAmount, setRequestAmount] = useState('');
+    const [requestRemarks, setRequestRemarks] = useState('');
 
     const handleTransfer = (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,6 +56,33 @@ export default function CashTransfer({ tellers, transfers, currentBalance }: Pro
                 setSelectedTeller('');
                 setAmount('');
                 setRemarks('');
+            },
+        });
+    };
+
+    const handleRequest = (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!requestAmount) return;
+
+        if (!latestFight) {
+            alert('No active fight available!');
+            return;
+        }
+
+        if (parseFloat(requestAmount) > latestFight.revolving_funds) {
+            alert(`Insufficient revolving funds! Available: ₱${latestFight.revolving_funds.toLocaleString()}`);
+            return;
+        }
+
+        router.post('/teller/cash-transfer/request', {
+            amount: parseFloat(requestAmount),
+            remarks: requestRemarks,
+        }, {
+            onSuccess: () => {
+                setRequestAmount('');
+                setRequestRemarks('');
+                alert('Cash request submitted! Waiting for approval.');
             },
         });
     };
@@ -138,6 +174,66 @@ export default function CashTransfer({ tellers, transfers, currentBalance }: Pro
                     </button>
                 </form>
             </div>
+
+            {/* Request Cash from Revolving Fund */}
+            {latestFight && (
+                <div className="bg-[#1a1a1a] rounded-lg p-6 mb-4 border border-purple-500/30">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-bold text-purple-400">Request Cash from Revolving Fund</h2>
+                        <div className="text-right">
+                            <div className="text-xs text-gray-400">Available Funds</div>
+                            <div className="text-lg font-bold text-purple-300">
+                                ₱{latestFight.revolving_funds.toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form onSubmit={handleRequest} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-300">
+                                Request Amount (₱)
+                            </label>
+                            <input
+                                type="number"
+                                value={requestAmount}
+                                onChange={(e) => setRequestAmount(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white text-2xl"
+                                step="0.01"
+                                min="0.01"
+                                max={latestFight.revolving_funds}
+                                required
+                            />
+                            {parseFloat(requestAmount) > latestFight.revolving_funds && (
+                                <p className="text-red-400 text-sm mt-1">
+                                    Amount exceeds available revolving funds!
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-300">
+                                Remarks / Reason for Request
+                            </label>
+                            <textarea
+                                value={requestRemarks}
+                                onChange={(e) => setRequestRemarks(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white"
+                                rows={3}
+                                placeholder="e.g., Cash needed for betting operations"
+                                required
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={!requestAmount || parseFloat(requestAmount) > latestFight.revolving_funds}
+                            className="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-bold text-xl"
+                        >
+                            Request ₱{requestAmount || '0'}
+                        </button>
+                    </form>
+                </div>
+            )}
 
             {/* Transfer History */}
             <div className="bg-[#1a1a1a] rounded-lg overflow-hidden border border-gray-700">
