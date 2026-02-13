@@ -126,6 +126,9 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                             <div className="text-green-200 text-xs mb-1">Current Event</div>
                             <div className="text-lg font-bold text-white">{currentFight.event_name || 'No Event'}</div>
                             <div className="text-green-200 text-sm">Fight #{currentFight.fight_number}</div>
+                            <div className="text-green-100 text-xs mt-1">
+                                Revolving Fund: ₱{((currentFight as any).revolving_funds || 0).toLocaleString()}
+                            </div>
                         </div>
                     )}
                     {!currentFight && (
