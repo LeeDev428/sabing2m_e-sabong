@@ -213,29 +213,22 @@ class TellerBalanceController extends Controller
         }
 
         DB::transaction(function () use ($user, $request) {
-            // Get the CURRENT/LATEST fight
-            $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
-            
-            if (!$currentFight) {
-                throw new \Exception('No fights found. Please create a fight first.');
-            }
-            
-            // Find assignment for CURRENT fight
-            $currentAssignment = TellerCashAssignment::where('teller_id', $user->id)
-                ->where('fight_id', $currentFight->id)
+            // Get LATEST assignment for this teller (regardless of fight)
+            $latestAssignment = TellerCashAssignment::where('teller_id', $user->id)
+                ->orderBy('id', 'desc')
                 ->first();
             
-            if (!$currentAssignment) {
-                throw new \Exception('No balance assignment found for current fight.');
+            if (!$latestAssignment) {
+                throw new \Exception('No balance assignment found for this teller.');
             }
             
             // Deduct from current balance
-            $newBalance = $currentAssignment->current_balance - $request->amount;
+            $newBalance = $latestAssignment->current_balance - $request->amount;
             if ($newBalance < 0) {
-                throw new \Exception('Insufficient balance to deduct');
+                throw new \Exception('Insufficient balance to deduct. Current balance: ₱' . number_format($latestAssignment->current_balance, 2));
             }
             
-            $currentAssignment->update([
+            $latestAssignment->update([
                 'current_balance' => $newBalance,
             ]);
             
