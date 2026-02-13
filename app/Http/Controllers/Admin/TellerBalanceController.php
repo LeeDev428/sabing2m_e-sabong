@@ -147,6 +147,16 @@ class TellerBalanceController extends Controller
                 throw new \Exception('No fights found. Please create a fight first.');
             }
             
+            // VALIDATION: Check if adding amount would exceed revolving fund
+            $revolvingFund = $currentFight->revolving_funds ?? 0;
+            
+            if ($request->amount > $revolvingFund) {
+                throw new \Exception(
+                    "Cannot add ₱" . number_format($request->amount, 2) . ". " .
+                    "Insufficient revolving funds. Available: ₱" . number_format($revolvingFund, 2) . "."
+                );
+            }
+            
             // Find or create assignment for CURRENT fight
             $currentAssignment = TellerCashAssignment::firstOrCreate(
                 [
@@ -156,34 +166,19 @@ class TellerBalanceController extends Controller
                 [
                     'assigned_amount' => 0,
                     'current_balance' => 0,
+                    'assigned_by' => auth()->id(),
+                    'status' => 'active',
                 ]
             );
-            
-            // VALIDATION: Check if total assigned balance would exceed event's revolving fund
-            $revolvingFund = $currentFight->revolving_funds ?? 0;
-            
-            // Get total assigned balance for ALL tellers in current event
-            $totalAssignedInEvent = TellerCashAssignment::whereHas('fight', function ($query) use ($currentFight) {
-                $query->where('event_name', $currentFight->event_name)
-                      ->where('event_date', $currentFight->event_date);
-            })->sum('assigned_amount');
-            
-            // Calculate what total would be after adding this amount
-            $newTotal = $totalAssignedInEvent + $request->amount;
-            
-            if ($newTotal > $revolvingFund) {
-                throw new \Exception(
-                    "Cannot add ₱" . number_format($request->amount, 2) . ". " .
-                    "Total assigned (₱" . number_format($totalAssignedInEvent, 2) . " + ₱" . number_format($request->amount, 2) . " = ₱" . number_format($newTotal, 2) . ") " .
-                    "would exceed event's revolving fund of ₱" . number_format($revolvingFund, 2) . "."
-                );
-            }
             
             // Add to current balance for THIS fight
             $currentAssignment->update([
                 'current_balance' => $currentAssignment->current_balance + $request->amount,
                 'assigned_amount' => $currentAssignment->assigned_amount + $request->amount,
             ]);
+            
+            // DEDUCT from revolving fund
+            $currentFight->decrement('revolving_funds', $request->amount);
             
             // Also update the deprecated user.teller_balance for backwards compatibility
             $user->increment('teller_balance', $request->amount);
@@ -198,7 +193,7 @@ class TellerBalanceController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Balance added successfully');
+        return back()->with('success', 'Balance added successfully and revolving fund deducted');
     }
 
     public function deductBalance(Request $request, User $user)
@@ -232,6 +227,12 @@ class TellerBalanceController extends Controller
                 'current_balance' => $newBalance,
             ]);
             
+            // ADD back to revolving fund (returned to pool)
+            $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+            if ($currentFight) {
+                $currentFight->increment('revolving_funds', $request->amount);
+            }
+            
             // Also update the deprecated user.teller_balance for backwards compatibility
             $user->update(['teller_balance' => $newBalance]);
 
@@ -245,7 +246,7 @@ class TellerBalanceController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Balance deducted successfully');
+        return back()->with('success', 'Balance deducted and returned to revolving fund');
     }
 
     public function resetAllBalances(Request $request)
