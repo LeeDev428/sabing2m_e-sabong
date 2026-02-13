@@ -22,9 +22,15 @@ interface Transfer {
 interface Props {
     tellers: Teller[];
     recentTransfers: Transfer[];
+    currentFight?: {
+        id: number;
+        fight_number: number;
+        event_name: string;
+        revolving_funds?: number;
+    } | null;
 }
 
-export default function TellerBalancesMonitoring({ tellers, recentTransfers }: Props) {
+export default function TellerBalancesMonitoring({ tellers, recentTransfers, currentFight }: Props) {
     const totalBalance = tellers.reduce((sum, t) => sum + Number(t.teller_balance), 0);
 
     return (
@@ -40,12 +46,31 @@ export default function TellerBalancesMonitoring({ tellers, recentTransfers }: P
 
             {/* Summary Card */}
             <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-6 mb-6">
-                <div className="text-green-200 text-sm mb-2">Total Teller Balance</div>
-                <div className="text-4xl lg:text-5xl font-bold text-white">
-                    ₱{Number(totalBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-                <div className="text-green-200 text-sm mt-2">
-                    Across {tellers.length} teller{tellers.length !== 1 ? 's' : ''}
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="text-green-200 text-sm mb-2">Total Teller Balance</div>
+                        <div className="text-4xl lg:text-5xl font-bold text-white">
+                            ₱{Number(totalBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-green-200 text-sm mt-2">
+                            Across {tellers.length} teller{tellers.length !== 1 ? 's' : ''}
+                        </div>
+                    </div>
+                    {currentFight && (
+                        <div className="text-right">
+                            <div className="text-green-200 text-xs mb-1">Current Event</div>
+                            <div className="text-lg font-bold text-white">{currentFight.event_name || 'No Event'}</div>
+                            <div className="text-green-200 text-sm">Fight #{currentFight.fight_number}</div>
+                            <div className="text-green-100 text-xs mt-1">
+                                Revolving Fund: ₱{(currentFight.revolving_funds || 0).toLocaleString()}
+                            </div>
+                        </div>
+                    )}
+                    {!currentFight && (
+                        <div className="text-right">
+                            <div className="text-yellow-200 text-sm">⚠️ No active fight</div>
+                        </div>
+                    )}
                 </div>
             </div>
 
