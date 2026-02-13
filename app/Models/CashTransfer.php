@@ -12,6 +12,7 @@ class CashTransfer extends Model
         'to_teller_id',
         'amount',
         'type',
+        'status',
         'remarks',
         'approved_by',
     ];
