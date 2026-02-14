@@ -12,33 +12,46 @@ use Inertia\Inertia;
 class CashTransferController extends Controller
 {
     /**
-     * Display cash transfer monitoring page with real-time teller balances
+     * Display cash transfer monitoring page with real-time teller balances and event filter
      */
-    public function index()
+    public function index(Request $request)
     {
+        $eventFilter = $request->input('event');
+
+        // Get events for dropdown
+        $events = Fight::select('event_name')
+            ->whereNotNull('event_name')
+            ->distinct()
+            ->orderBy('event_name')
+            ->pluck('event_name');
+
         // Only teller-to-teller transfers (type='transfer')
-        $pending = CashTransfer::with(['fromTeller', 'toTeller'])
+        $pending = CashTransfer::with(['fromTeller', 'toTeller', 'fight'])
             ->where('type', 'transfer')
             ->where('status', 'pending')
+            ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
             ->latest()
             ->get();
 
-        $approved = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
+        $approved = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy', 'fight'])
             ->where('type', 'transfer')
             ->where('status', 'approved')
+            ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
             ->latest()
             ->take(50)
             ->get();
 
-        $declined = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
+        $declined = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy', 'fight'])
             ->where('type', 'transfer')
             ->where('status', 'declined')
+            ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
             ->latest()
             ->take(20)
             ->get();
 
-        $allTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
+        $allTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy', 'fight'])
             ->where('type', 'transfer')
+            ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
             ->latest()
             ->take(100)
             ->get();
@@ -64,6 +77,8 @@ class CashTransferController extends Controller
             'declined' => $declined,
             'allTransfers' => $allTransfers,
             'tellers' => $tellers, // Add real-time teller balances
+            'events' => $events,
+            'filters' => ['event' => $eventFilter],
         ]);
     }
 
@@ -124,10 +139,12 @@ class CashTransferController extends Controller
             $fromTeller->decrement('teller_balance', $transfer->amount);
             $toTeller->increment('teller_balance', $transfer->amount);
             
-            // Mark transfer as approved
+            // Mark transfer as approved and track event
             $transfer->update([
                 'status' => 'approved',
                 'approved_by' => auth()->id(),
+                'event_name' => $latestFight->event_name,
+                'fight_id' => $latestFight->id,
             ]);
         });
 
