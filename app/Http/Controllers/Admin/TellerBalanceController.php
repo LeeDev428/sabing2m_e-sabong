@@ -121,6 +121,8 @@ class TellerBalanceController extends Controller
                 'type' => 'initial_balance',
                 'remarks' => $request->remarks ?? "Balance set from ₱{$oldBalance} to ₱{$newBalance}",
                 'approved_by' => auth()->id(),
+                'event_name' => $currentFight?->event_name,
+                'fight_id' => $currentFight?->id,
             ]);
         });
 
@@ -189,6 +191,8 @@ class TellerBalanceController extends Controller
                 'type' => 'initial_balance',
                 'remarks' => $request->remarks ?? "Admin added ₱{$request->amount}",
                 'approved_by' => auth()->id(),
+                'event_name' => $currentFight?->event_name,
+                'fight_id' => $currentFight?->id,
             ]);
         });
 
@@ -242,6 +246,8 @@ class TellerBalanceController extends Controller
                 'type' => 'deduction',
                 'remarks' => $request->remarks ?? "Admin deducted ₱{$request->amount}",
                 'approved_by' => auth()->id(),
+                'event_name' => $currentFight?->event_name,
+                'fight_id' => $currentFight?->id,
             ]);
         });
 
@@ -259,6 +265,7 @@ class TellerBalanceController extends Controller
             
             // Log this action for all tellers
             $tellers = User::where('role', 'teller')->get();
+            $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
             foreach ($tellers as $teller) {
                 CashTransfer::create([
                     'from_teller_id' => $teller->id,
@@ -267,6 +274,8 @@ class TellerBalanceController extends Controller
                     'type' => 'reset',
                     'remarks' => 'All balances reset for new event by admin',
                     'approved_by' => auth()->id(),
+                    'event_name' => $latestFight?->event_name,
+                    'fight_id' => $latestFight?->id,
                 ]);
             }
         });
