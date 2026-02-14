@@ -204,6 +204,9 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                                                 {fight.meron_fighter} vs {fight.wala_fighter}
                                             </div>
                                         </td>
+                                        <td className="px-6 py-4 text-gray-300 text-sm">
+                                            {fight.event_name || '-'}
+                                        </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${getResultColor(fight.result)}`}>
                                                 {fight.result.toUpperCase()}
