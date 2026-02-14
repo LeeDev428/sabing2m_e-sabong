@@ -15,6 +15,8 @@ class CashTransfer extends Model
         'status',
         'remarks',
         'approved_by',
+        'event_name',
+        'fight_id',
     ];
 
     protected $casts = [
@@ -34,5 +36,10 @@ class CashTransfer extends Model
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function fight(): BelongsTo
+    {
+        return $this->belongsTo(Fight::class);
     }
 }
