@@ -15,8 +15,9 @@ class CashTransferController extends Controller
     {
         $currentTeller = auth()->user();
         
-        // Only show admin and declarator users as transfer recipients
-        $tellers = User::whereIn('role', ['admin', 'declarator'])
+        // Only show OTHER tellers as transfer recipients (teller-to-teller only)
+        $tellers = User::where('role', 'teller')
+            ->where('id', '!=', $currentTeller->id) // Exclude self
             ->select('id', 'name', 'email', 'role')
             ->orderBy('name')
             ->get();
@@ -89,20 +90,55 @@ class CashTransferController extends Controller
         $fromTeller = auth()->user();
         $toTeller = User::findOrFail($request->to_teller_id);
 
-        // Only allow transfers to admin or declarator
-        if (!in_array($toTeller->role, ['admin', 'declarator'])) {
-            return back()->withErrors(['error' => 'Transfers can only be made to admin or declarator']);
+        // Only allow transfers to other tellers (teller-to-teller only)
+        if ($toTeller->role !== 'teller') {
+            return back()->withErrors(['error' => 'Transfers can only be made to other tellers']);
         }
 
         if ($fromTeller->id === $toTeller->id) {
             return back()->withErrors(['error' => 'Cannot transfer to yourself']);
         }
 
-        if ($fromTeller->teller_balance < $request->amount) {
-            return back()->withErrors(['error' => 'Insufficient balance']);
+        // Get latest fight for both tellers
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        
+        if (!$latestFight) {
+            return back()->withErrors(['error' => 'No active fight found. Cannot transfer.']);
         }
 
-        DB::transaction(function () use ($fromTeller, $toTeller, $request) {
+        // Get current balance from TellerCashAssignment
+        $fromAssignment = \App\Models\TellerCashAssignment::where('teller_id', $fromTeller->id)
+            ->where('fight_id', $latestFight->id)
+            ->first();
+        
+        $currentBalance = $fromAssignment ? $fromAssignment->current_balance : 0;
+        
+        if ($currentBalance < $request->amount) {
+            return back()->withErrors(['error' => 'Insufficient balance. Current balance: ₱' . number_format($currentBalance, 2)]);
+        }
+
+        DB::transaction(function () use ($fromTeller, $toTeller, $request, $latestFight, $fromAssignment) {
+            // Deduct from sender's TellerCashAssignment
+            if ($fromAssignment) {
+                $fromAssignment->decrement('current_balance', $request->amount);
+            }
+            
+            // Add to receiver's TellerCashAssignment (create if doesn't exist)
+            $toAssignment = \App\Models\TellerCashAssignment::firstOrCreate(
+                [
+                    'teller_id' => $toTeller->id,
+                    'fight_id' => $latestFight->id,
+                ],
+                [
+                    'assigned_amount' => 0,
+                    'current_balance' => 0,
+                    'assigned_by' => auth()->id(),
+                    'status' => 'active',
+                ]
+            );
+            $toAssignment->increment('current_balance', $request->amount);
+            
+            // Also update deprecated user.teller_balance for backwards compatibility
             $fromTeller->decrement('teller_balance', $request->amount);
             $toTeller->increment('teller_balance', $request->amount);
 
