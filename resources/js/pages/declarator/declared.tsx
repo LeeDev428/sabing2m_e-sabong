@@ -1,7 +1,6 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import DeclaratorLayout from '@/layouts/declarator-layout';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 
 interface TellerAssignment {
     id: number;
@@ -54,7 +53,7 @@ interface Props {
     tellers?: Teller[];
 }
 
-export default function DeclaredFights({ declared_fights: initialDeclaredFights = [], tellers: initialTellers = [] }: Props) {
+export default function DeclaredFights({ declared_fights = [], tellers = [] }: Props) {
     const [showResultModal, setShowResultModal] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showCommissionModal, setShowCommissionModal] = useState(false);
@@ -64,34 +63,15 @@ export default function DeclaredFights({ declared_fights: initialDeclaredFights 
     const [commission, setCommission] = useState('7.5');
     const [editingFunds, setEditingFunds] = useState<number | null>(null);
     const [fundsData, setFundsData] = useState<{[key: number]: {revolving_funds: string, assignments: any[]}}>({});
-    const [declared_fights, setDeclaredFights] = useState<Fight[]>(initialDeclaredFights);
-    const [tellers, setTellers] = useState<Teller[]>(initialTellers);
     const { data, setData, post, processing, errors } = useForm({
         new_result: '',
     });
 
-    // Real-time polling for declared fights
+    // Real-time polling using Inertia router.reload() - preserves state and works with button actions
     useEffect(() => {
-        const pollFights = async () => {
-            try {
-                const response = await axios.get('/declarator/declared', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                    },
-                });
-                
-                if (response.data.props) {
-                    setDeclaredFights(response.data.props.declared_fights || []);
-                    setTellers(response.data.props.tellers || []);
-                }
-            } catch (error) {
-                console.error('Failed to poll declared fights:', error);
-            }
-        };
-
-        // Poll every 3 seconds
-        const interval = setInterval(pollFights, 3000);
+        const interval = setInterval(() => {
+            router.reload({ only: ['declared_fights', 'tellers'], preserveScroll: true, preserveState: true });
+        }, 3000);
 
         return () => clearInterval(interval);
     }, []);
