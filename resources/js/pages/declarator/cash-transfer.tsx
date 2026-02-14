@@ -42,10 +42,18 @@ interface CashTransferProps {
     declined: CashTransfer[];
     allTransfers: CashTransfer[];
     tellers: Teller[];
+    events: string[];
+    filters: { event?: string };
 }
 
-export default function CashTransferMonitoring({ pending, approved, declined, allTransfers, tellers }: CashTransferProps) {
+export default function CashTransferMonitoring({ pending, approved, declined, allTransfers, tellers, events = [], filters = {} }: CashTransferProps) {
     const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'declined' | 'all'>('pending');
+    const [selectedEvent, setSelectedEvent] = useState(filters.event || '');
+
+    const handleEventFilter = (event: string) => {
+        setSelectedEvent(event);
+        router.get('/declarator/cash-transfer', { event: event || undefined }, { preserveState: true });
+    };
 
     const handleApprove = (transferId: number) => {
         if (confirm('Approve this cash transfer?')) {
@@ -143,6 +151,31 @@ export default function CashTransferMonitoring({ pending, approved, declined, al
             <div className="mb-6">
                 <h1 className="text-2xl lg:text-3xl font-bold">Cash Transfer Monitoring</h1>
                 <p className="text-sm lg:text-base text-gray-400">Monitor, approve, and track cash transfers</p>
+            </div>
+
+            {/* Event Filter */}
+            <div className="mb-6 bg-gray-800 rounded-lg p-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <label className="text-sm font-medium text-gray-300 shrink-0">Filter by Event:</label>
+                    <select
+                        value={selectedEvent}
+                        onChange={(e) => handleEventFilter(e.target.value)}
+                        className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                    >
+                        <option value="">All Events</option>
+                        {events.map((event) => (
+                            <option key={event} value={event}>{event}</option>
+                        ))}
+                    </select>
+                    {selectedEvent && (
+                        <button
+                            onClick={() => handleEventFilter('')}
+                            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm"
+                        >
+                            Clear Filter
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Real-Time Teller Balances */}
