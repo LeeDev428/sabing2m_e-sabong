@@ -1,9 +1,10 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { Head, router } from '@inertiajs/react';
 import { Fight } from '@/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Pagination from '@/components/pagination';
 import EventFundsModal from '@/components/EventFundsModal';
+import axios from 'axios';
 
 interface PaginationLinks {
     url: string | null;
@@ -43,15 +44,43 @@ interface FightsIndexProps {
     eventOptions: EventOption[];
 }
 
-export default function FightsIndex({ fights, tellers, currentFight = null, events, eventOptions }: FightsIndexProps) {
+export default function FightsIndex({ fights: initialFights, tellers, currentFight: initialCurrentFight = null, events, eventOptions }: FightsIndexProps) {
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showDeclareModal, setShowDeclareModal] = useState(false);
-    const [declareResult, setDeclareResult] = useState<'meron' | 'wala' | 'draw' | 'cancel'>('meron');
+    const [declareResult, setDeclareResult] = useState<'meron' | 'wala' | 'draw' | 'cancelled'>('meron');
     const [editingFundsFor, setEditingFundsFor] = useState<number | null>(null);
     const [revolvingFunds, setRevolvingFunds] = useState<{[key: number]: string}>({});
     const [tellerAssignments, setTellerAssignments] = useState<{[key: number]: Array<{teller_id: string; amount: string}>}>({});
     const [showEventFundsModal, setShowEventFundsModal] = useState(false);
+    const [fights, setFights] = useState<PaginatedFights>(initialFights);
+    const [currentFight, setCurrentFight] = useState<Fight | null>(initialCurrentFight);
+
+    // Real-time polling for fights data
+    useEffect(() => {
+        const pollFights = async () => {
+            try {
+                const response = await axios.get('/admin/fights', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+                
+                if (response.data.props) {
+                    setFights(response.data.props.fights);
+                    setCurrentFight(response.data.props.currentFight);
+                }
+            } catch (error) {
+                console.error('Failed to poll fights:', error);
+            }
+        };
+
+        // Poll every 3 seconds
+        const interval = setInterval(pollFights, 3000);
+
+        return () => clearInterval(interval);
+    }, []);
 
 
     // Check if "Next Fight" button should be enabled
@@ -499,9 +528,9 @@ export default function FightsIndex({ fights, tellers, currentFight = null, even
                                 </button>
 
                                 <button
-                                    onClick={() => setDeclareResult('cancel')}
+                                    onClick={() => setDeclareResult('cancelled')}
                                     className={`p-6 rounded-lg text-center transition-all ${
-                                        declareResult === 'cancel'
+                                        declareResult === 'cancelled'
                                             ? 'bg-gray-600 ring-4 ring-gray-400'
                                             : 'bg-gray-700 hover:bg-gray-600'
                                     }`}
