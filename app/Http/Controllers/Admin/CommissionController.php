@@ -15,10 +15,19 @@ class CommissionController extends Controller
     {
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
+        $eventFilter = $request->input('event');
+
+        // Get events for dropdown
+        $events = Fight::select('event_name')
+            ->whereNotNull('event_name')
+            ->distinct()
+            ->orderBy('event_name')
+            ->pluck('event_name');
 
         // Get fights with commission data
         $fights = Fight::where('status', 'result_declared')
             ->whereBetween('result_declared_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
             ->with(['declarator'])
             ->latest('result_declared_at')
             ->get()
@@ -32,6 +41,8 @@ class CommissionController extends Controller
                 return [
                     'id' => $fight->id,
                     'fight_number' => $fight->fight_number,
+                    'event_name' => $fight->event_name,
+                    'event_date' => $fight->event_date,
                     'meron_fighter' => $fight->meron_fighter,
                     'wala_fighter' => $fight->wala_fighter,
                     'result' => $fight->result,
@@ -55,9 +66,11 @@ class CommissionController extends Controller
         return Inertia::render('admin/commissions/index', [
             'fights' => $fights,
             'stats' => $stats,
+            'events' => $events,
             'filters' => [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
+                'event' => $eventFilter,
             ],
         ]);
     }
