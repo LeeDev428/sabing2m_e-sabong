@@ -208,15 +208,6 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight,
                                 <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
                                     Current Balance
                                 </th>
-                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
-                                    Tot. Assigned
-                                </th>
-                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
-                                    Bets
-                                </th>
-                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
-                                    Bet Amount
-                                </th>
                                 <th className="px-6 py-4 text-center text-xs font-medium text-gray-300 uppercase">
                                     Actions
                                 </th>
@@ -232,21 +223,6 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight,
                                     <td className="px-6 py-4 text-right">
                                         <span className="text-2xl font-bold text-green-400">
                                             ₱{parseFloat(teller.teller_balance.toString()).toLocaleString()}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className="text-lg font-semibold text-purple-400">
-                                            ₱{(teller.total_assigned || 0).toLocaleString()}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className="text-lg font-semibold text-blue-400">
-                                            {(teller.total_bets || 0).toLocaleString()}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className="text-lg font-semibold text-yellow-400">
-                                            ₱{(teller.total_bet_amount || 0).toLocaleString()}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
