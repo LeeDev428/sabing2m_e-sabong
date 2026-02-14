@@ -47,6 +47,16 @@ export default function CashTransfer({ tellers, transfers, currentBalance, lates
             return;
         }
 
+        const tellerName = tellers.find(t => t.id === parseInt(selectedTeller))?.name || 'Unknown';
+        const confirmMessage = `Confirm Transfer Request\n\n` +
+            `Amount: ₱${parseFloat(amount).toLocaleString()}\n` +
+            `To: ${tellerName}\n` +
+            `Remarks: ${remarks || 'None'}\n\n` +
+            `This transfer will be pending until approved by Admin or Declarator.\n\n` +
+            `Continue?`;
+
+        if (!confirm(confirmMessage)) return;
+
         router.post('/teller/cash-transfer', {
             to_teller_id: parseInt(selectedTeller),
             amount: parseFloat(amount),
