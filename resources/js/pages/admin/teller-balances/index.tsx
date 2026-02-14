@@ -234,6 +234,21 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight,
                                             ₱{parseFloat(teller.teller_balance.toString()).toLocaleString()}
                                         </span>
                                     </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <span className="text-lg font-semibold text-purple-400">
+                                            ₱{(teller.total_assigned || 0).toLocaleString()}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <span className="text-lg font-semibold text-blue-400">
+                                            {(teller.total_bets || 0).toLocaleString()}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <span className="text-lg font-semibold text-yellow-400">
+                                            ₱{(teller.total_bet_amount || 0).toLocaleString()}
+                                        </span>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="flex justify-center gap-2">
                                             <button
