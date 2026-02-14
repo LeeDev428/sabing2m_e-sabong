@@ -117,41 +117,18 @@ class CashTransferController extends Controller
             return back()->withErrors(['error' => 'Insufficient balance. Current balance: ₱' . number_format($currentBalance, 2)]);
         }
 
-        DB::transaction(function () use ($fromTeller, $toTeller, $request, $latestFight, $fromAssignment) {
-            // Deduct from sender's TellerCashAssignment
-            if ($fromAssignment) {
-                $fromAssignment->decrement('current_balance', $request->amount);
-            }
-            
-            // Add to receiver's TellerCashAssignment (create if doesn't exist)
-            $toAssignment = \App\Models\TellerCashAssignment::firstOrCreate(
-                [
-                    'teller_id' => $toTeller->id,
-                    'fight_id' => $latestFight->id,
-                ],
-                [
-                    'assigned_amount' => 0,
-                    'current_balance' => 0,
-                    'assigned_by' => auth()->id(),
-                    'status' => 'active',
-                ]
-            );
-            $toAssignment->increment('current_balance', $request->amount);
-            
-            // Also update deprecated user.teller_balance for backwards compatibility
-            $fromTeller->decrement('teller_balance', $request->amount);
-            $toTeller->increment('teller_balance', $request->amount);
+        // Create PENDING transfer request (requires admin/declarator approval)
+        CashTransfer::create([
+            'from_teller_id' => $fromTeller->id,
+            'to_teller_id' => $toTeller->id,
+            'amount' => $request->amount,
+            'type' => 'transfer',
+            'status' => 'pending', // Pending approval
+            'remarks' => $request->remarks,
+            'approved_by' => null, // Not approved yet
+        ]);
 
-            CashTransfer::create([
-                'from_teller_id' => $fromTeller->id,
-                'to_teller_id' => $toTeller->id,
-                'amount' => $request->amount,
-                'type' => 'transfer',
-                'remarks' => $request->remarks,
-            ]);
-        });
-
-        return back()->with('success', "Successfully transferred ₱{$request->amount} to {$toTeller->name}");
+        return back()->with('success', "Transfer request submitted for ₱{$request->amount} to {$toTeller->name}. Waiting for admin/declarator approval.");
     }
 }
 
