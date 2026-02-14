@@ -1,6 +1,7 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import DeclaratorLayout from '@/layouts/declarator-layout';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 interface TellerAssignment {
     id: number;
@@ -53,19 +54,47 @@ interface Props {
     tellers?: Teller[];
 }
 
-export default function DeclaredFights({ declared_fights = [], tellers = [] }: Props) {
+export default function DeclaredFights({ declared_fights: initialDeclaredFights = [], tellers: initialTellers = [] }: Props) {
     const [showResultModal, setShowResultModal] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showCommissionModal, setShowCommissionModal] = useState(false);
     const [showDeclareModal, setShowDeclareModal] = useState(false);
-    const [declareResult, setDeclareResult] = useState<'meron' | 'wala' | 'draw' | 'cancel'>('meron');
+    const [declareResult, setDeclareResult] = useState<'meron' | 'wala' | 'draw' | 'cancelled'>('meron');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [commission, setCommission] = useState('7.5');
     const [editingFunds, setEditingFunds] = useState<number | null>(null);
     const [fundsData, setFundsData] = useState<{[key: number]: {revolving_funds: string, assignments: any[]}}>({});
+    const [declared_fights, setDeclaredFights] = useState<Fight[]>(initialDeclaredFights);
+    const [tellers, setTellers] = useState<Teller[]>(initialTellers);
     const { data, setData, post, processing, errors } = useForm({
         new_result: '',
     });
+
+    // Real-time polling for declared fights
+    useEffect(() => {
+        const pollFights = async () => {
+            try {
+                const response = await axios.get('/declarator/declared', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+                
+                if (response.data.props) {
+                    setDeclaredFights(response.data.props.declared_fights || []);
+                    setTellers(response.data.props.tellers || []);
+                }
+            } catch (error) {
+                console.error('Failed to poll declared fights:', error);
+            }
+        };
+
+        // Poll every 3 seconds
+        const interval = setInterval(pollFights, 3000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     // Check if "Next Fight" button should be enabled
     const latestFight = declared_fights[0]; // Assuming sorted by latest first
@@ -810,9 +839,9 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                 </button>
 
                                 <button
-                                    onClick={() => setDeclareResult('cancel')}
+                                    onClick={() => setDeclareResult('cancelled')}
                                     className={`p-6 rounded-lg text-center transition-all ${
-                                        declareResult === 'cancel'
+                                        declareResult === 'cancelled'
                                             ? 'bg-gray-600 ring-4 ring-gray-400'
                                             : 'bg-gray-700 hover:bg-gray-600'
                                     }`}
