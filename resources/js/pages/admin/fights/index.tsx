@@ -4,7 +4,6 @@ import { Fight } from '@/types';
 import { useState, useEffect } from 'react';
 import Pagination from '@/components/pagination';
 import EventFundsModal from '@/components/EventFundsModal';
-import axios from 'axios';
 
 interface PaginationLinks {
     url: string | null;
@@ -44,7 +43,7 @@ interface FightsIndexProps {
     eventOptions: EventOption[];
 }
 
-export default function FightsIndex({ fights: initialFights, tellers, currentFight: initialCurrentFight = null, events, eventOptions }: FightsIndexProps) {
+export default function FightsIndex({ fights, tellers, currentFight = null, events, eventOptions }: FightsIndexProps) {
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showDeclareModal, setShowDeclareModal] = useState(false);
@@ -53,31 +52,12 @@ export default function FightsIndex({ fights: initialFights, tellers, currentFig
     const [revolvingFunds, setRevolvingFunds] = useState<{[key: number]: string}>({});
     const [tellerAssignments, setTellerAssignments] = useState<{[key: number]: Array<{teller_id: string; amount: string}>}>({});
     const [showEventFundsModal, setShowEventFundsModal] = useState(false);
-    const [fights, setFights] = useState<PaginatedFights>(initialFights);
-    const [currentFight, setCurrentFight] = useState<Fight | null>(initialCurrentFight);
 
-    // Real-time polling for fights data
+    // Real-time polling using Inertia router.reload() - preserves state and works with button actions
     useEffect(() => {
-        const pollFights = async () => {
-            try {
-                const response = await axios.get('/admin/fights', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                    },
-                });
-                
-                if (response.data.props) {
-                    setFights(response.data.props.fights);
-                    setCurrentFight(response.data.props.currentFight);
-                }
-            } catch (error) {
-                console.error('Failed to poll fights:', error);
-            }
-        };
-
-        // Poll every 3 seconds
-        const interval = setInterval(pollFights, 3000);
+        const interval = setInterval(() => {
+            router.reload({ only: ['fights', 'currentFight'], preserveScroll: true, preserveState: true });
+        }, 3000);
 
         return () => clearInterval(interval);
     }, []);
