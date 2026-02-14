@@ -112,8 +112,8 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
             {/* Summary Card */}
             <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-6 mb-6">
                 <div className="flex justify-between items-start">
-                    <div>
-                        <div className="text-green-200 text-sm mb-2">Total Teller Balance (Current Event)</div>
+                    <div className="flex-1">
+                        <div className="text-green-200 text-sm mb-2">Total Distributed to Tellers (Current Event)</div>
                         <div className="text-5xl font-bold text-white">
                             ₱{totalBalance.toLocaleString()}
                         </div>
@@ -121,20 +121,28 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                             Across {tellers.length} teller{tellers.length !== 1 ? 's' : ''}
                         </div>
                         {currentFight && (
-                            <div className="text-green-100 text-sm mt-4 pt-4 border-t border-green-400/30">
-                                Revolving Fund: <span className="font-bold">₱{((currentFight as any).revolving_funds || 0).toLocaleString()}</span>
+                            <div className="mt-6 pt-6 border-t border-green-400/30 space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-green-100 text-sm">Platform Revolving Balance (Unused):</span>
+                                    <span className="text-2xl font-bold text-yellow-200">
+                                        ₱{((currentFight as any).revolving_funds || 0).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className="text-xs text-green-200/70">
+                                    💡 This is the remaining funds available for distribution to tellers
+                                </div>
                             </div>
                         )}
                     </div>
                     {currentFight && (
-                        <div className="text-right">
+                        <div className="text-right ml-6">
                             <div className="text-green-200 text-xs mb-1">Current Event</div>
                             <div className="text-lg font-bold text-white">{currentFight.event_name || 'No Event'}</div>
                             <div className="text-green-200 text-sm">Fight #{currentFight.fight_number}</div>
                         </div>
                     )}
                     {!currentFight && (
-                        <div className="text-right">
+                        <div className="text-right ml-6">
                             <div className="text-yellow-200 text-sm">⚠️ No active fight</div>
                             <div className="text-green-200 text-xs">Create a new fight to assign balances</div>
                         </div>
@@ -272,7 +280,14 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                 {/* Pagination */}
                 {recentTransfers.last_page > 1 && (
                     <div className="p-4 border-t border-gray-700">
-                        <Pagination links={recentTransfers.links} />
+                        <Pagination 
+                            links={recentTransfers.links}
+                            currentPage={recentTransfers.current_page}
+                            lastPage={recentTransfers.last_page}
+                            from={recentTransfers.data.length > 0 ? ((recentTransfers.current_page - 1) * recentTransfers.per_page + 1) : 0}
+                            to={Math.min(recentTransfers.current_page * recentTransfers.per_page, recentTransfers.total)}
+                            total={recentTransfers.total}
+                        />
                     </div>
                 )}
             </div>
