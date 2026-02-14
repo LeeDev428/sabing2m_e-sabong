@@ -28,8 +28,21 @@ class TellerBalanceController extends Controller
                     ->first();
                 
                 $teller->teller_balance = $latestAssignment ? $latestAssignment->current_balance : 0;
+                
+                // Get additional stats for teller balances report
+                $allAssignments = TellerCashAssignment::where('teller_id', $teller->id)->get();
+                $teller->total_assigned = $allAssignments->sum('assigned_amount');
+                $teller->total_bets = \App\Models\Bet::where('teller_id', $teller->id)->count();
+                $teller->total_bet_amount = \App\Models\Bet::where('teller_id', $teller->id)->sum('amount');
+                
                 return $teller;
             });
+        
+        // Calculate total balance and stats for all tellers
+        $totalBalance = $tellers->sum('teller_balance');
+        $totalAssigned = $tellers->sum('total_assigned');
+        $totalBets = $tellers->sum('total_bets');
+        $totalBetAmount = $tellers->sum('total_bet_amount');
 
         $recentTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
             ->latest()
@@ -44,6 +57,12 @@ class TellerBalanceController extends Controller
                 'event_name' => $latestFight->event_name,
                 'revolving_funds' => (float) ($latestFight->revolving_funds ?? 0),
             ] : null,
+            'stats' => [
+                'total_balance' => $totalBalance,
+                'total_assigned' => $totalAssigned,
+                'total_bets' => $totalBets,
+                'total_bet_amount' => $totalBetAmount,
+            ],
         ]);
     }
 
