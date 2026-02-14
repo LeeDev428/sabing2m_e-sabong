@@ -80,9 +80,11 @@ class CashRequestController extends Controller
             $latestFight->revolving_funds -= $cashRequest->amount;
             $latestFight->save();
 
-            // Update request status
+            // Mark request as approved and track event
             $cashRequest->status = 'approved';
             $cashRequest->approved_by = auth()->id();
+            $cashRequest->event_name = $latestFight->event_name;
+            $cashRequest->fight_id = $latestFight->id;
             $cashRequest->save();
 
             DB::commit();
