@@ -5,6 +5,8 @@ import AdminLayout from '@/layouts/admin-layout';
 interface Fight {
     id: number;
     fight_number: number;
+    event_name?: string;
+    event_date?: string;
     meron_fighter: string;
     wala_fighter: string;
     result: string;
@@ -26,22 +28,26 @@ interface Stats {
 interface Filters {
     start_date: string;
     end_date: string;
+    event?: string;
 }
 
 interface Props {
     fights: Fight[];
     stats: Stats;
     filters: Filters;
+    events: string[];
 }
 
-export default function CommissionReports({ fights, stats, filters }: Props) {
+export default function CommissionReports({ fights, stats, filters, events = [] }: Props) {
     const [startDate, setStartDate] = useState(filters.start_date);
     const [endDate, setEndDate] = useState(filters.end_date);
+    const [selectedEvent, setSelectedEvent] = useState(filters.event || '');
 
     const applyFilters = () => {
         router.get('/admin/commissions', {
             start_date: startDate,
             end_date: endDate,
+            event: selectedEvent || undefined,
         }, {
             preserveState: true,
         });
