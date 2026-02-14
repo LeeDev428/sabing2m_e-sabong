@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Declarator;
 
 use App\Http\Controllers\Controller;
 use App\Models\CashTransfer;
+use App\Models\Fight;
 use App\Models\User;
 use App\Models\TellerCashAssignment;
 use Illuminate\Http\Request;
