@@ -7,6 +7,9 @@ interface Teller {
     name: string;
     email: string;
     teller_balance: number;
+    total_assigned: number;
+    total_bets: number;
+    total_bet_amount: number;
 }
 
 interface Transfer {
@@ -41,9 +44,15 @@ interface Props {
         fight_number: number;
         event_name: string;
     } | null;
+    stats?: {
+        total_balance: number;
+        total_assigned: number;
+        total_bets: number;
+        total_bet_amount: number;
+    };
 }
 
-export default function TellerBalances({ tellers, recentTransfers, currentFight }: Props) {
+export default function TellerBalances({ tellers, recentTransfers, currentFight, stats }: Props) {
     const handleAddBalance = (teller: Teller) => {
         const addAmount = prompt(`Add balance to ${teller.name}:`);
         if (!addAmount) return;
@@ -150,6 +159,40 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                 </div>
             </div>
 
+            {/* Overall Stats Summary */}
+            {stats && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg p-4">
+                        <div className="text-blue-200 text-xs mb-1">Total Balance</div>
+                        <div className="text-2xl font-bold text-white">
+                            ₱{stats.total_balance.toLocaleString()}
+                        </div>
+                        <div className="text-blue-200 text-xs mt-1">Current across all tellers</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg p-4">
+                        <div className="text-purple-200 text-xs mb-1">Total Assigned (All Time)</div>
+                        <div className="text-2xl font-bold text-white">
+                            ₱{stats.total_assigned.toLocaleString()}
+                        </div>
+                        <div className="text-purple-200 text-xs mt-1">Cumulative assignments</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-4">
+                        <div className="text-green-200 text-xs mb-1">Total Bets Processed</div>
+                        <div className="text-2xl font-bold text-white">
+                            {stats.total_bets.toLocaleString()}
+                        </div>
+                        <div className="text-green-200 text-xs mt-1">Across all tellers</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-lg p-4">
+                        <div className="text-yellow-200 text-xs mb-1">Total Bet Amount</div>
+                        <div className="text-2xl font-bold text-white">
+                            ₱{stats.total_bet_amount.toLocaleString()}
+                        </div>
+                        <div className="text-yellow-200 text-xs mt-1">Combined bet value</div>
+                    </div>
+                </div>
+            )}
+
             {/* Teller Balances */}
             <div className="bg-gray-800 rounded-lg overflow-hidden mb-6">
                 <div className="p-4 bg-gray-700 border-b border-gray-600">
@@ -164,6 +207,15 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight 
                                 </th>
                                 <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
                                     Current Balance
+                                </th>
+                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
+                                    Tot. Assigned
+                                </th>
+                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
+                                    Bets
+                                </th>
+                                <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase">
+                                    Bet Amount
                                 </th>
                                 <th className="px-6 py-4 text-center text-xs font-medium text-gray-300 uppercase">
                                     Actions
