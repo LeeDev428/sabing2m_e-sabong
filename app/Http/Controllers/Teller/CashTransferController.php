@@ -66,6 +66,9 @@ class CashTransferController extends Controller
 
         $fromTeller = auth()->user();
 
+        // Get latest fight for event tracking
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+
         // Create a cash request (pending approval)
         CashTransfer::create([
             'from_teller_id' => $fromTeller->id,
@@ -74,6 +77,8 @@ class CashTransferController extends Controller
             'type' => 'request',
             'status' => 'pending',
             'remarks' => $request->remarks,
+            'event_name' => $latestFight?->event_name,
+            'fight_id' => $latestFight?->id,
         ]);
 
         return redirect()->back()->with('success', 'Cash request submitted. Waiting for approval.');
@@ -126,6 +131,8 @@ class CashTransferController extends Controller
             'status' => 'pending', // Pending approval
             'remarks' => $request->remarks,
             'approved_by' => null, // Not approved yet
+            'event_name' => $latestFight?->event_name,
+            'fight_id' => $latestFight?->id,
         ]);
 
         return back()->with('success', "Transfer request submitted for ₱{$request->amount} to {$toTeller->name}. Waiting for admin/declarator approval.");
