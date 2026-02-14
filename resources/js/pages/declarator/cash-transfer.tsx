@@ -8,6 +8,7 @@ interface CashTransfer {
     to_teller_id: number;
     amount: number;
     type: string;
+    status: string; // 'pending', 'approved', 'declined'
     remarks: string | null;
     from_teller: {
         id: number;
@@ -38,12 +39,13 @@ interface Teller {
 interface CashTransferProps {
     pending: CashTransfer[];
     approved: CashTransfer[];
+    declined: CashTransfer[];
     allTransfers: CashTransfer[];
     tellers: Teller[];
 }
 
-export default function CashTransferMonitoring({ pending, approved, allTransfers, tellers }: CashTransferProps) {
-    const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'all'>('pending');
+export default function CashTransferMonitoring({ pending, approved, declined, allTransfers, tellers }: CashTransferProps) {
+    const [activeTab, setActiveTab] = useState<'pending' | 'approved' | 'declined' | 'all'>('pending');
 
     const handleApprove = (transferId: number) => {
         if (confirm('Approve this cash transfer?')) {
@@ -52,7 +54,7 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
     };
 
     const handleReject = (transferId: number) => {
-        if (confirm('Reject and delete this cash transfer? This action cannot be undone.')) {
+        if (confirm('Reject this cash transfer? The balances will stay the same.')) {
             router.delete(`/declarator/cash-transfer/${transferId}/reject`);
         }
     };
@@ -81,9 +83,11 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
                     <div className="flex items-center gap-3 mb-2">
                         <span className="text-xl font-bold text-green-400">{formatCurrency(transfer.amount)}</span>
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            transfer.type === 'initial_balance' ? 'bg-purple-600' : 'bg-blue-600'
+                            transfer.status === 'pending' ? 'bg-yellow-600' :
+                            transfer.status === 'approved' ? 'bg-green-600' :
+                            transfer.status === 'declined' ? 'bg-red-600' : 'bg-gray-600'
                         }`}>
-                            {transfer.type === 'initial_balance' ? 'INITIAL' : 'TRANSFER'}
+                            {transfer.status.toUpperCase()}
                         </span>
                     </div>
                     <div className="text-sm space-y-1">
@@ -170,14 +174,12 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
                     <div className="text-3xl font-bold text-yellow-400">{pending.length}</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <div className="text-sm text-gray-400 mb-1">Approved Today</div>
+                    <div className="text-sm text-gray-400 mb-1">Approved</div>
                     <div className="text-3xl font-bold text-green-400">{approved.length}</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                    <div className="text-sm text-gray-400 mb-1">Total Amount (Pending)</div>
-                    <div className="text-xl font-bold text-blue-400">
-                        {formatCurrency(pending.reduce((sum, t) => sum + Number(t.amount), 0))}
-                    </div>
+                    <div className="text-sm text-gray-400 mb-1">Declined</div>
+                    <div className="text-3xl font-bold text-red-400">{declined.length}</div>
                 </div>
             </div>
 
@@ -203,6 +205,16 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
                         }`}
                     >
                         ✅ Approved ({approved.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('declined')}
+                        className={`flex-1 px-6 py-4 font-semibold transition-colors ${
+                            activeTab === 'declined'
+                                ? 'bg-red-600 text-white'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-750'
+                        }`}
+                    >
+                        ❌ Declined ({declined.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('all')}
@@ -240,6 +252,20 @@ export default function CashTransferMonitoring({ pending, approved, allTransfers
                             ) : (
                                 <div className="text-center py-12 text-gray-400">
                                     No approved transfers yet
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'declined' && (
+                        <div>
+                            {declined.length > 0 ? (
+                                <div className="space-y-4">
+                                    {declined.map((transfer) => renderTransferCard(transfer, false))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-gray-400">
+                                    No declined transfers
                                 </div>
                             )}
                         </div>
