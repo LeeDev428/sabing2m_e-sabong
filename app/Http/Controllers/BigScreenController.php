@@ -16,19 +16,20 @@ class BigScreenController extends Controller
 
     public function api()
     {
-        // Get the current active fight (open, lastcall, or closed awaiting result)
-        $fight = Fight::whereIn('status', ['open', 'lastcall', 'closed'])
+        // Get the current active fight (standby, open, lastcall, or closed awaiting result)
+        $fight = Fight::whereIn('status', ['standby', 'open', 'lastcall', 'closed'])
             ->with(['creator', 'declarator'])
             ->latest()
             ->first();
 
         if (!$fight) {
-            // Check for recently declared fight
+            // Check for LATEST declared fight (no time limit - keep showing until next fight)
             $fight = Fight::where('status', 'result_declared')
                 ->latest('result_declared_at')
                 ->first();
             
-            if ($fight && $fight->result_declared_at && $fight->result_declared_at->diffInSeconds(now()) < 30) {
+            // Show the last declared fight indefinitely until next fight opens
+            if ($fight) {
                 // Get final bet totals
                 $meronTotal = Bet::where('fight_id', $fight->id)
                     ->where('side', 'meron')
