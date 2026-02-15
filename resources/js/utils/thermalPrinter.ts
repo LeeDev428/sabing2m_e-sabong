@@ -244,7 +244,7 @@ export class ThermalPrinter {
             'Bluetooth Connection: OK\n',
             'Printer Status: Connected\n',
             '================================\n',
-            '\n\n\n',
+            '\n',
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
         ].join('');
 
@@ -305,7 +305,7 @@ export class ThermalPrinter {
             '\n',
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             'OFFICIAL BETTING RECEIPT\n',
-            '\n\n\n\n',
+            '\n',
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
         ].join('');
 
@@ -382,7 +382,7 @@ export class ThermalPrinter {
             '\n',
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             'WINNER - CLAIM RECEIPT\n',
-            '\n\n\n\n',
+            '\n',
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
         ].join('');
 
@@ -460,7 +460,7 @@ export class ThermalPrinter {
             '\n',
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${reason} - REFUND RECEIPT\n`,
-            '\n\n\n\n',
+            '\n',
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
         ].join('');
 
