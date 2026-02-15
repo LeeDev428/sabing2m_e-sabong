@@ -5,7 +5,8 @@ interface WinnerOverlayProps {
 }
 
 export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverlayProps) {
-    if (!show || !result) return null;
+    // Don't show overlay for cancelled or invalid results
+    if (!show || !result || result === 'cancelled' || result === 'cancel') return null;
 
     const getResultColor = (result: string) => {
         return result === 'meron' ? 'text-red-500' : 
