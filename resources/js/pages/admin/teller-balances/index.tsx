@@ -170,25 +170,25 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight,
                         <div className="text-blue-200 text-xs mt-1">Current across all tellers</div>
                     </div>
                     <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg p-4">
-                        <div className="text-purple-200 text-xs mb-1">Total Assigned (All Time)</div>
+                        <div className="text-purple-200 text-xs mb-1">Total Assigned (Current Event)</div>
                         <div className="text-2xl font-bold text-white">
                             ₱{stats.total_assigned.toLocaleString()}
                         </div>
-                        <div className="text-purple-200 text-xs mt-1">Cumulative assignments</div>
+                        <div className="text-purple-200 text-xs mt-1">Total for this event</div>
                     </div>
                     <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-4">
                         <div className="text-green-200 text-xs mb-1">Total Bets Processed</div>
                         <div className="text-2xl font-bold text-white">
                             {stats.total_bets.toLocaleString()}
                         </div>
-                        <div className="text-green-200 text-xs mt-1">Across all tellers</div>
+                        <div className="text-green-200 text-xs mt-1">Current event only</div>
                     </div>
                     <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-lg p-4">
                         <div className="text-yellow-200 text-xs mb-1">Total Bet Amount</div>
                         <div className="text-2xl font-bold text-white">
                             ₱{stats.total_bet_amount.toLocaleString()}
                         </div>
-                        <div className="text-yellow-200 text-xs mt-1">Combined bet value</div>
+                        <div className="text-yellow-200 text-xs mt-1">Current event only</div>
                     </div>
                 </div>
             )}
