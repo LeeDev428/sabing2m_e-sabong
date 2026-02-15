@@ -5,9 +5,11 @@ interface FighterCardProps {
     totalBets: number;
     betCount: number;
     bettingOpen?: boolean;
+    isWinner?: boolean;
+    isCancelled?: boolean;
 }
 
-export default function FighterCard({ side, fighter, odds, totalBets, betCount, bettingOpen }: FighterCardProps) {
+export default function FighterCard({ side, fighter, odds, totalBets, betCount, bettingOpen, isWinner, isCancelled }: FighterCardProps) {
     const colors = {
         meron: {
             gradient: 'from-red-600 to-red-800',
@@ -32,9 +34,29 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
     const color = colors[side];
 
     return (
-        <div className={`bg-gradient-to-br ${color.gradient} rounded-3xl p-8 shadow-2xl transform transition-all hover:scale-105 relative border-4 ${color.border}`}>
+        <div className={`bg-gradient-to-br ${color.gradient} rounded-3xl p-8 shadow-2xl transform transition-all hover:scale-105 relative border-4 ${
+            isWinner ? 'border-yellow-400 ring-8 ring-yellow-300/50 animate-pulse' : color.border
+        }`}>
+            {/* Winner Crown Overlay */}
+            {isWinner && (
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20">
+                    <div className="text-8xl animate-bounce drop-shadow-2xl">🏆</div>
+                </div>
+            )}
+            
+            {/* Cancelled Overlay */}
+            {isCancelled && (
+                <div className="absolute inset-0 bg-black/70 rounded-3xl flex items-center justify-center z-10">
+                    <div className="text-center">
+                        <div className="text-6xl mb-2">❌</div>
+                        <div className="text-3xl font-bold text-white">CANCELLED</div>
+                        <div className="text-xl text-gray-300 mt-2">REFUND</div>
+                    </div>
+                </div>
+            )}
+
             {/* Betting Closed Overlay */}
-            {bettingOpen === false && (
+            {bettingOpen === false && !isWinner && !isCancelled && (
                 <div className="absolute inset-0 bg-black/70 rounded-3xl flex items-center justify-center z-10">
                     <div className="text-center">
                         <div className="text-6xl mb-2">🔒</div>
