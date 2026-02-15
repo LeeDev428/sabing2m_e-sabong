@@ -1,15 +1,28 @@
 interface BettingStatusProps {
     status: string;
+    result?: string;
     meronBettingOpen?: boolean;
     walaBettingOpen?: boolean;
 }
 
-export default function BettingStatus({ status, meronBettingOpen, walaBettingOpen }: BettingStatusProps) {
+export default function BettingStatus({ status, result, meronBettingOpen, walaBettingOpen }: BettingStatusProps) {
     const getStatusBadge = () => {
+        // If declared, show winner result
+        if (status === 'declared' && result) {
+            const resultMessages: { [key: string]: { bg: string; text: string; pulse: boolean } } = {
+                'meron': { bg: 'bg-red-600', text: '🏆 MERON WINS!', pulse: true },
+                'wala': { bg: 'bg-blue-600', text: '🏆 WALA WINS!', pulse: true },
+                'draw': { bg: 'bg-green-600', text: '🤝 DRAW - REFUND', pulse: false },
+                'cancelled': { bg: 'bg-gray-600', text: '❌ CANCELLED - REFUND', pulse: false },
+            };
+            return resultMessages[result.toLowerCase()] || { bg: 'bg-purple-500', text: 'RESULT DECLARED', pulse: false };
+        }
+        
         const badges = {
-            open: { bg: 'bg-green-500', text: 'OPEN BETTING', pulse: true },
-            lastcall: { bg: 'bg-yellow-500', text: 'LAST CALL', pulse: true },
-            closed: { bg: 'bg-red-500', text: 'BETTING CLOSED', pulse: false },
+            open: { bg: 'bg-green-500', text: '✅ OPEN BETTING', pulse: true },
+            lastcall: { bg: 'bg-yellow-500', text: '⏰ LAST CALL', pulse: true },
+            closed: { bg: 'bg-red-500', text: '🔒 BETTING CLOSED', pulse: false },
+            standby: { bg: 'bg-gray-600', text: '⏸️ STANDBY - NEXT FIGHT SOON', pulse: false },
             declared: { bg: 'bg-purple-500', text: 'RESULT DECLARED', pulse: false },
         };
         return badges[status as keyof typeof badges] || badges.open;
