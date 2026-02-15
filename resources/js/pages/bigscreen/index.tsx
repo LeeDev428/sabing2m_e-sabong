@@ -104,8 +104,12 @@ export default function BigScreen() {
                 <div className="text-center p-8">
                     <div className="text-9xl mb-8 animate-bounce">🐓</div>
                     <h1 className="text-7xl font-bold text-orange-500 mb-4">SABING2M</h1>
-                    <p className="text-4xl text-gray-400">No Active Fight</p>
-                    <p className="text-2xl text-gray-600 mt-6">Next fight starting soon...</p>
+                    <p className="text-4xl text-gray-400">Waiting for Next Fight...</p>
+                    <p className="text-2xl text-gray-600 mt-6">Fight will start soon</p>
+                    <div className="mt-8 animate-pulse">
+                        <div className="text-6xl mb-4">⏳</div>
+                        <p className="text-xl text-gray-500">Preparing arena...</p>
+                    </div>
                 </div>
             </div>
         );
@@ -136,6 +140,7 @@ export default function BigScreen() {
                 {/* Betting Status with Individual Side Status */}
                 <BettingStatus
                     status={fight.status}
+                    result={fight.result}
                     meronBettingOpen={fight.meron_betting_open}
                     walaBettingOpen={fight.wala_betting_open}
                 />
@@ -149,6 +154,8 @@ export default function BigScreen() {
                         totalBets={fight.meron_total}
                         betCount={fight.meron_count}
                         bettingOpen={fight.meron_betting_open}
+                        isWinner={fight.status === 'declared' && fight.result === 'meron'}
+                        isCancelled={fight.status === 'declared' && fight.result === 'cancelled'}
                     />
 
                     {/* Draw is hidden for Big Screen - only show Meron and Wala */}
@@ -168,6 +175,8 @@ export default function BigScreen() {
                         totalBets={fight.wala_total}
                         betCount={fight.wala_count}
                         bettingOpen={fight.wala_betting_open}
+                        isWinner={fight.status === 'declared' && fight.result === 'wala'}
+                        isCancelled={fight.status === 'declared' && fight.result === 'cancelled'}
                     />
                 </div>
 
