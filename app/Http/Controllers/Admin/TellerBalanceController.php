@@ -14,14 +14,22 @@ class TellerBalanceController extends Controller
 {
     public function index()
     {
-        // Get the latest fight (current event)
+        // Get the latest fight to determine current event
         $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        
+        // Get all fight IDs for the current event (same event_name)
+        $currentEventFightIds = [];
+        if ($latestFight && $latestFight->event_name) {
+            $currentEventFightIds = \App\Models\Fight::where('event_name', $latestFight->event_name)
+                ->pluck('id')
+                ->toArray();
+        }
         
         $tellers = User::where('role', 'teller')
             ->select('id', 'name', 'email', 'teller_balance')
             ->orderBy('name')
             ->get()
-            ->map(function ($teller) use ($latestFight) {
+            ->map(function ($teller) use ($latestFight, $currentEventFightIds) {
                 // Get balance from latest assignment (regardless of fight) - consistent with declarator page
                 $latestAssignment = TellerCashAssignment::where('teller_id', $teller->id)
                     ->orderBy('id', 'desc')
@@ -29,18 +37,21 @@ class TellerBalanceController extends Controller
                 
                 $teller->teller_balance = $latestAssignment ? $latestAssignment->current_balance : 0;
                 
-                // Get stats ONLY for current fight (not all-time)
-                if ($latestFight) {
-                    $currentAssignment = TellerCashAssignment::where('teller_id', $teller->id)
-                        ->where('fight_id', $latestFight->id)
-                        ->first();
+                // Get stats ONLY for current EVENT (all fights in this event)
+                if (!empty($currentEventFightIds)) {
+                    // Total assigned across all fights in current event
+                    $teller->total_assigned = TellerCashAssignment::where('teller_id', $teller->id)
+                        ->whereIn('fight_id', $currentEventFightIds)
+                        ->sum('assigned_amount') ?? 0;
                     
-                    $teller->total_assigned = $currentAssignment ? $currentAssignment->assigned_amount : 0;
+                    // Total bets for current event
                     $teller->total_bets = \App\Models\Bet::where('teller_id', $teller->id)
-                        ->where('fight_id', $latestFight->id)
+                        ->whereIn('fight_id', $currentEventFightIds)
                         ->count();
+                    
+                    // Total bet amount for current event
                     $teller->total_bet_amount = \App\Models\Bet::where('teller_id', $teller->id)
-                        ->where('fight_id', $latestFight->id)
+                        ->whereIn('fight_id', $currentEventFightIds)
                         ->sum('amount') ?? 0;
                 } else {
                     $teller->total_assigned = 0;
@@ -51,16 +62,16 @@ class TellerBalanceController extends Controller
                 return $teller;
             });
         
-        // Calculate total balance and stats for all tellers (current fight only)
+        // Calculate total balance and stats for all tellers (current event only)
         $totalBalance = $tellers->sum('teller_balance');
         $totalAssigned = $tellers->sum('total_assigned');
         $totalBets = $tellers->sum('total_bets');
         $totalBetAmount = $tellers->sum('total_bet_amount');
 
-        // Show only transfers for current fight
+        // Show only transfers for current event (all fights in this event)
         $recentTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
-            ->when($latestFight, function ($query) use ($latestFight) {
-                return $query->where('fight_id', $latestFight->id);
+            ->when(!empty($currentEventFightIds), function ($query) use ($currentEventFightIds) {
+                return $query->whereIn('fight_id', $currentEventFightIds);
             })
             ->latest()
             ->paginate(20);
