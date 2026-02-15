@@ -65,7 +65,8 @@ export default function BigScreen() {
             const newFight = response.data.fight;
             
             // Show winner overlay only once when result is first declared
-            if (newFight && newFight.status === 'declared' && newFight.result) {
+            // Don't show for cancelled fights
+            if (newFight && newFight.status === 'declared' && newFight.result && newFight.result !== 'cancelled' && newFight.result !== 'cancel') {
                 // Only show if this is a NEW result (different fight OR different result)
                 if (!fight || fight.id !== newFight.id || fight.result !== newFight.result) {
                     setShowWinner(true);
