@@ -21,7 +21,7 @@ class TellerBalanceController extends Controller
             ->select('id', 'name', 'email', 'teller_balance')
             ->orderBy('name')
             ->get()
-            ->map(function ($teller) {
+            ->map(function ($teller) use ($latestFight) {
                 // Get balance from latest assignment (regardless of fight) - consistent with declarator page
                 $latestAssignment = TellerCashAssignment::where('teller_id', $teller->id)
                     ->orderBy('id', 'desc')
@@ -29,22 +29,39 @@ class TellerBalanceController extends Controller
                 
                 $teller->teller_balance = $latestAssignment ? $latestAssignment->current_balance : 0;
                 
-                // Get additional stats for teller balances report
-                $allAssignments = TellerCashAssignment::where('teller_id', $teller->id)->get();
-                $teller->total_assigned = $allAssignments->sum('assigned_amount');
-                $teller->total_bets = \App\Models\Bet::where('teller_id', $teller->id)->count();
-                $teller->total_bet_amount = \App\Models\Bet::where('teller_id', $teller->id)->sum('amount');
+                // Get stats ONLY for current fight (not all-time)
+                if ($latestFight) {
+                    $currentAssignment = TellerCashAssignment::where('teller_id', $teller->id)
+                        ->where('fight_id', $latestFight->id)
+                        ->first();
+                    
+                    $teller->total_assigned = $currentAssignment ? $currentAssignment->assigned_amount : 0;
+                    $teller->total_bets = \App\Models\Bet::where('teller_id', $teller->id)
+                        ->where('fight_id', $latestFight->id)
+                        ->count();
+                    $teller->total_bet_amount = \App\Models\Bet::where('teller_id', $teller->id)
+                        ->where('fight_id', $latestFight->id)
+                        ->sum('amount') ?? 0;
+                } else {
+                    $teller->total_assigned = 0;
+                    $teller->total_bets = 0;
+                    $teller->total_bet_amount = 0;
+                }
                 
                 return $teller;
             });
         
-        // Calculate total balance and stats for all tellers
+        // Calculate total balance and stats for all tellers (current fight only)
         $totalBalance = $tellers->sum('teller_balance');
         $totalAssigned = $tellers->sum('total_assigned');
         $totalBets = $tellers->sum('total_bets');
         $totalBetAmount = $tellers->sum('total_bet_amount');
 
+        // Show only transfers for current fight
         $recentTransfers = CashTransfer::with(['fromTeller', 'toTeller', 'approvedBy'])
+            ->when($latestFight, function ($query) use ($latestFight) {
+                return $query->where('fight_id', $latestFight->id);
+            })
             ->latest()
             ->paginate(20);
 
@@ -159,23 +176,24 @@ class TellerBalanceController extends Controller
             return back()->withErrors(['error' => 'User is not a teller']);
         }
 
-        DB::transaction(function () use ($user, $request) {
-            // Get the CURRENT/LATEST fight to assign balance to
-            $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
-            
-            if (!$currentFight) {
-                throw new \Exception('No fights found. Please create a fight first.');
-            }
-            
-            // VALIDATION: Check if adding amount would exceed revolving fund
-            $revolvingFund = $currentFight->revolving_funds ?? 0;
-            
-            if ($request->amount > $revolvingFund) {
-                throw new \Exception(
-                    "Cannot add ₱" . number_format($request->amount, 2) . ". " .
-                    "Insufficient revolving funds. Available: ₱" . number_format($revolvingFund, 2) . "."
-                );
-            }
+        // Get the CURRENT/LATEST fight to assign balance to
+        $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        
+        if (!$currentFight) {
+            return back()->withErrors(['error' => 'No fights found. Please create a fight first.']);
+        }
+        
+        // VALIDATION: Check if adding amount would exceed revolving fund
+        $revolvingFund = $currentFight->revolving_funds ?? 0;
+        
+        if ($request->amount > $revolvingFund) {
+            return back()->withErrors([
+                'amount' => "Cannot add ₱" . number_format($request->amount, 2) . ". " .
+                           "Insufficient revolving funds. Available: ₱" . number_format($revolvingFund, 2) . "."
+            ]);
+        }
+
+        DB::transaction(function () use ($user, $request, $currentFight) {
             
             // Find or create assignment for CURRENT fight
             $currentAssignment = TellerCashAssignment::firstOrCreate(
