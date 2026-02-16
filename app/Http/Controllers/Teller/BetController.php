@@ -330,14 +330,17 @@ class BetController extends Controller
             $bet->actual_payout = $refundAmount;
             $bet->save();
 
-            // Deduct refund from teller's cash assignment (teller gives cash back)
-            $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
-                ->where('fight_id', $bet->fight_id)
-                ->first();
+            // Deduct refund from teller's LATEST cash assignment (teller gives cash back from current balance)
+            $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+            if ($latestFight) {
+                $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+                    ->where('fight_id', $latestFight->id)
+                    ->first();
 
-            if ($assignment) {
-                $assignment->current_balance -= $refundAmount;
-                $assignment->save();
+                if ($assignment) {
+                    $assignment->current_balance -= $refundAmount;
+                    $assignment->save();
+                }
             }
 
             // Determine refund reason from fight result or default to 'CANCELLED'
@@ -393,14 +396,19 @@ class BetController extends Controller
         $bet->claimed_by = auth()->id();
         $bet->save();
 
-        // Deduct payout from teller's cash assignment (teller pays out winnings)
-        $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
-            ->where('fight_id', $bet->fight_id)
-            ->first();
-        
-        if ($assignment) {
-            $assignment->current_balance -= $payoutAmount;
-            $assignment->save();
+        // Deduct payout from teller's LATEST cash assignment (teller pays out from current balance)
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        if ($latestFight) {
+            $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+                ->where('fight_id', $latestFight->id)
+                ->first();
+            
+            if ($assignment) {
+                $assignment->current_balance -= $payoutAmount;
+                $assignment->save();
+                
+                \Log::info("💸 Payout deducted from teller's latest assignment (Fight #{$latestFight->fight_number}): ₱{$payoutAmount}");
+            }
         }
 
         \Log::info("✅ Payout claimed: {$bet->ticket_id}, Amount: ₱{$payoutAmount}");
