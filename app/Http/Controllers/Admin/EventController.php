@@ -179,10 +179,26 @@ class EventController extends Controller
                 ]);
             }
 
+            // IMMEDIATELY update all active fights that belong to this event
+            $affectedFights = Fight::where('event_name', $validated['name'])
+                ->where('event_date', $validated['event_date'])
+                ->whereNotIn('status', ['result_declared', 'cancelled'])
+                ->update([
+                    'revolving_funds' => $validated['revolving_funds'],
+                ]);
+            
+            \Log::info("✅ Event revolving funds updated: {$event->name} - ₱{$validated['revolving_funds']}, Affected fights: {$affectedFights}");
+
             DB::commit();
-            return redirect()->back()->with('success', 'Event created successfully! New fights will use this event.');
+            
+            $message = $affectedFights > 0 
+                ? "Event created successfully! Revolving funds (₱" . number_format($validated['revolving_funds'], 2) . ") applied to {$affectedFights} active fight(s)."
+                : "Event created successfully! Revolving funds will apply to new fights.";
+            
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Failed to create event: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Failed to create event: ' . $e->getMessage()]);
         }
     }
@@ -194,8 +210,31 @@ class EventController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $event->update($validated);
-
-        return redirect()->back()->with('success', 'Event revolving funds updated successfully!');
+        DB::beginTransaction();
+        try {
+            $event->update($validated);
+            
+            // IMMEDIATELY update all active fights that belong to this event
+            $affectedFights = Fight::where('event_name', $event->name)
+                ->where('event_date', $event->event_date)
+                ->whereNotIn('status', ['result_declared', 'cancelled'])
+                ->update([
+                    'revolving_funds' => $validated['revolving_funds'],
+                ]);
+            
+            \Log::info("✅ Event revolving funds updated: {$event->name} - ₱{$validated['revolving_funds']}, Affected fights: {$affectedFights}");
+            
+            DB::commit();
+            
+            $message = $affectedFights > 0
+                ? "Event revolving funds updated successfully! Applied to {$affectedFights} active fight(s)."
+                : "Event revolving funds updated successfully!";
+            
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Failed to update event: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Failed to update event: ' . $e->getMessage()]);
+        }
     }
 }
