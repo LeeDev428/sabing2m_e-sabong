@@ -390,6 +390,20 @@ class BetController extends Controller
         // Calculate the FINAL odds that were used (actual_payout / amount)
         $finalOdds = $bet->amount > 0 ? ($bet->actual_payout / $bet->amount) : 1.0;
 
+        // Check if teller has enough funds to process payout
+        $latestFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+        if ($latestFight) {
+            $assignment = \App\Models\TellerCashAssignment::where('teller_id', auth()->id())
+                ->where('fight_id', $latestFight->id)
+                ->first();
+            
+            if ($assignment && $assignment->current_balance < $payoutAmount) {
+                return Inertia::render('teller/payout-scan', [
+                    'message' => "⚠️ Insufficient funds to process payout. Available: ₱" . number_format($assignment->current_balance, 2) . ", Required: ₱" . number_format($payoutAmount, 2),
+                ]);
+            }
+        }
+
         // Update bet status to claimed
         $bet->status = 'claimed';
         $bet->claimed_at = now();
