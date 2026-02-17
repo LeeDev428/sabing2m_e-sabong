@@ -71,12 +71,35 @@ class TransactionController extends Controller
             ->orderBy('event_name')
             ->pluck('event_name');
 
-        // Statistics
+        // Statistics (apply same filters to stats)
+        $statsQuery = Bet::query();
+        
+        // Apply event filter to stats
+        if ($request->filled('event')) {
+            $statsQuery->whereHas('fight', function($q) use ($request) {
+                $q->where('event_name', $request->event);
+            });
+        }
+        
+        // Apply other filters to stats
+        if ($request->filled('status')) {
+            $statsQuery->where('status', $request->status);
+        }
+        if ($request->filled('teller_id')) {
+            $statsQuery->where('teller_id', $request->teller_id);
+        }
+        if ($request->filled('date_from')) {
+            $statsQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $statsQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+        
         $stats = [
-            'total_bets' => Bet::count(),
-            'total_amount' => Bet::sum('amount'),
-            'total_won' => Bet::where('status', 'won')->sum('actual_payout'),
-            'total_active' => Bet::where('status', 'active')->sum('amount'),
+            'total_bets' => (clone $statsQuery)->count(),
+            'total_amount' => (clone $statsQuery)->sum('amount'),
+            'total_won' => (clone $statsQuery)->where('status', 'won')->sum('actual_payout'),
+            'total_active' => (clone $statsQuery)->where('status', 'active')->sum('amount'),
         ];
 
         return Inertia::render('admin/transactions/index', [
