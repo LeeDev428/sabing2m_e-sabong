@@ -164,6 +164,9 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                                     Fight
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Event
+                                </th>
+                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                                     Result
                                 </th>
                                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
@@ -189,7 +192,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                         <tbody className="divide-y divide-gray-700">
                             {fights.length === 0 ? (
                                 <tr>
-                                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">
+                                    <td colSpan={9} className="px-6 py-12 text-center text-gray-400">
                                         No commission data found for selected date range
                                     </td>
                                 </tr>
@@ -217,7 +220,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <span className="font-semibold text-white">
-                                                ₱{fight.total_pot.toLocaleString()}
+                                                ₱{Number(fight.total_pot).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -227,12 +230,12 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <span className="font-bold text-purple-400">
-                                                ₱{fight.commission_amount.toLocaleString()}
+                                                ₱{Number(fight.commission_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <span className="font-semibold text-green-400">
-                                                ₱{fight.net_pot.toLocaleString()}
+                                                ₱{Number(fight.net_pot).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-gray-300 text-sm">
