@@ -449,7 +449,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         {/* Main Betting Interface */}
                         <div className="p-3">
                             {/* Fight Number Badge - Hexagonal Style (overlapping into buttons) */}
-                            <div className="flex justify-center relative z-10 -mb-8">
+                            <div className="flex justify-center relative z-10 -mb-32">
                                 <div 
                                     className="w-20 h-24 bg-gradient-to-b from-yellow-400 via-yellow-500 to-orange-500 flex flex-col items-center justify-center shadow-lg"
                                     style={{
@@ -466,7 +466,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             {/* MERON & WALA Buttons - Side by Side with hexagon overlap */}
                             {selectedFight && (
                                 <div 
-                                    className="grid grid-cols-2 gap-0 mb-4 pt-6"
+                                    className="grid grid-cols-2 gap-0 mb-4 pt-14"
                                     style={{ opacity: (selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 1 : 0.6 }}
                                 >
                                     {/* MERON Button */}
