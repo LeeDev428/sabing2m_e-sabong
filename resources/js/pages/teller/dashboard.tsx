@@ -451,9 +451,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             className="p-3 transition-colors duration-300"
                             style={{
                                 backgroundColor: betSide === 'meron'
-                                    ? 'rgba(185, 28, 28, 0.18)'
+                                    ? 'rgba(250, 2, 2, 0.4)'
                                     : betSide === 'wala'
-                                        ? 'rgba(29, 78, 216, 0.18)'
+                                        ? 'rgba(10, 72, 243, 0.5)'
                                         : 'transparent'
                             }}
                         >
