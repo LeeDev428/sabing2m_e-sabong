@@ -446,8 +446,17 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             </div>
                         )}
 
-                        {/* Main Betting Interface */}
-                        <div className="p-3">
+                        {/* Main Betting Interface - background tint based on selected side */}
+                        <div
+                            className="p-3 transition-colors duration-300"
+                            style={{
+                                backgroundColor: betSide === 'meron'
+                                    ? 'rgba(185, 28, 28, 0.18)'
+                                    : betSide === 'wala'
+                                        ? 'rgba(29, 78, 216, 0.18)'
+                                        : 'transparent'
+                            }}
+                        >
                             {/* Fight Number Badge - Hexagonal Style (overlapping into buttons) */}
                             <div className="flex justify-center relative z-10 -mb-32">
                                 <div 
@@ -463,55 +472,63 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 </div>
                             </div>
 
-                            {/* MERON & WALA Buttons - Side by Side with hexagon overlap */}
-                            {selectedFight && (
-                                <div 
-                                    className="grid grid-cols-2 gap-0 mb-4 pt-14"
-                                    style={{ opacity: (selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 1 : 0.6 }}
+                            {/* MERON & WALA Buttons - always rendered, disabled when no fight */}
+                            <div 
+                                className="grid grid-cols-2 gap-0 mb-4 pt-14"
+                                style={{ opacity: !selectedFight || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall') ? 0.6 : 1 }}
+                            >
+                                {/* MERON Button */}
+                                <button
+                                    onClick={() => selectedFight && currentFightData?.meron_betting_open && setBetSide('meron')}
+                                    disabled={!selectedFight || !currentFightData?.meron_betting_open}
+                                    className={`relative py-6 px-4 transition-all border-2 ${
+                                        betSide === 'meron'
+                                            ? 'bg-red-500 border-yellow-400 shadow-lg shadow-yellow-400/50 brightness-125'
+                                            : 'bg-red-600 border-red-700'
+                                    } ${!selectedFight || !currentFightData?.meron_betting_open ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110 active:brightness-125'}`}
+                                    style={{ borderRadius: '8px 0 0 8px' }}
                                 >
-                                    {/* MERON Button */}
-                                    <button
-                                        onClick={() => currentFightData?.meron_betting_open && setBetSide('meron')}
-                                        disabled={!currentFightData?.meron_betting_open}
-                                        className={`relative bg-red-600 py-6 px-4 transition-all border-2 ${
-                                            betSide === 'meron' ? 'border-yellow-400 shadow-lg shadow-yellow-400/50' : 'border-red-700'
-                                        } ${!currentFightData?.meron_betting_open ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110'}`}
-                                        style={{ borderRadius: '8px 0 0 8px' }}
-                                    >
-                                        <div className="text-white text-2xl font-black tracking-wider mb-1">MERON</div>
-                                        <div className="text-white/80 text-xs uppercase tracking-widest mb-0.5">ODDS</div>
-                                        <div className="text-white text-2xl font-bold">
-                                            {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '1.00'}
+                                    <div className="text-white text-2xl font-black tracking-wider mb-1">MERON</div>
+                                    <div className="text-white/80 text-xs uppercase tracking-widest mb-0.5">ODDS</div>
+                                    <div className="text-white text-2xl font-bold">
+                                        {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '---'}
+                                    </div>
+                                    <div className="text-white/60 text-xs mt-1">
+                                        ₱{(liveBetTotals?.meron_total ?? 0).toLocaleString()}
+                                    </div>
+                                    {selectedFight && !currentFightData?.meron_betting_open && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-l-lg">
+                                            <span className="text-white text-sm font-bold">🔒 CLOSED</span>
                                         </div>
-                                        {!currentFightData?.meron_betting_open && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-l-lg">
-                                                <span className="text-white text-sm font-bold">🔒 CLOSED</span>
-                                            </div>
-                                        )}
-                                    </button>
+                                    )}
+                                </button>
 
-                                    {/* WALA Button */}
-                                    <button
-                                        onClick={() => currentFightData?.wala_betting_open && setBetSide('wala')}
-                                        disabled={!currentFightData?.wala_betting_open}
-                                        className={`relative bg-blue-600 py-6 px-4 transition-all border-2 ${
-                                            betSide === 'wala' ? 'border-yellow-400 shadow-lg shadow-yellow-400/50' : 'border-blue-700'
-                                        } ${!currentFightData?.wala_betting_open ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110'}`}
-                                        style={{ borderRadius: '0 8px 8px 0' }}
-                                    >
-                                        <div className="text-white text-2xl font-black tracking-wider mb-1">WALA</div>
-                                        <div className="text-white/80 text-xs uppercase tracking-widest mb-0.5">ODDS</div>
-                                        <div className="text-white text-2xl font-bold">
-                                            {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '1.00'}
+                                {/* WALA Button */}
+                                <button
+                                    onClick={() => selectedFight && currentFightData?.wala_betting_open && setBetSide('wala')}
+                                    disabled={!selectedFight || !currentFightData?.wala_betting_open}
+                                    className={`relative py-6 px-4 transition-all border-2 ${
+                                        betSide === 'wala'
+                                            ? 'bg-blue-500 border-yellow-400 shadow-lg shadow-yellow-400/50 brightness-125'
+                                            : 'bg-blue-600 border-blue-700'
+                                    } ${!selectedFight || !currentFightData?.wala_betting_open ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110 active:brightness-125'}`}
+                                    style={{ borderRadius: '0 8px 8px 0' }}
+                                >
+                                    <div className="text-white text-2xl font-black tracking-wider mb-1">WALA</div>
+                                    <div className="text-white/80 text-xs uppercase tracking-widest mb-0.5">ODDS</div>
+                                    <div className="text-white text-2xl font-bold">
+                                        {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '---'}
+                                    </div>
+                                    <div className="text-white/60 text-xs mt-1">
+                                        ₱{(liveBetTotals?.wala_total ?? 0).toLocaleString()}
+                                    </div>
+                                    {selectedFight && !currentFightData?.wala_betting_open && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-r-lg">
+                                            <span className="text-white text-sm font-bold">🔒 CLOSED</span>
                                         </div>
-                                        {!currentFightData?.wala_betting_open && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-r-lg">
-                                                <span className="text-white text-sm font-bold">🔒 CLOSED</span>
-                                            </div>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
+                                    )}
+                                </button>
+                            </div>
 
                             {/* Amount Input with +/- Buttons */}
                             <div className="flex items-center gap-2 mb-4">
