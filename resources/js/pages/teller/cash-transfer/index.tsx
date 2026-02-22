@@ -98,7 +98,7 @@ export default function CashTransfer({ tellers, transfers, currentBalance, lates
     };
 
     return (
-        <TellerLayout currentPage="cash-transfer">
+        <TellerLayout currentPage="cash">
             <Head title="Cash Transfer" />
 
             <div className="p-4 max-w-2xl mx-auto">
