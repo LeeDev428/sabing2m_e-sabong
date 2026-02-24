@@ -836,62 +836,87 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
             {/* Summary Modal */}
             {showSummary && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-                    <div className="bg-[#1a2332] rounded-lg w-full max-w-md border-2 border-gray-600">
-                        {/* Modal Header */}
-                        <div className="bg-[#2a3544] px-6 py-3 flex justify-between items-center rounded-t-lg border-b border-gray-700">
-                            <h2 className="text-2xl font-bold flex items-center gap-2">
-                                <span>📊</span> VIEW SUMMARY
-                            </h2>
-                            <button onClick={() => setShowSummary(false)} className="text-white hover:text-gray-200 text-3xl leading-none">
+                <div className="fixed inset-0 bg-black/75 flex items-end sm:items-center justify-center z-50">
+                    <div className="bg-[#1c1c1c] w-full sm:max-w-sm sm:rounded-xl overflow-hidden" style={{ maxHeight: '92vh' }}>
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 py-3 bg-[#252525] border-b border-gray-700/60">
+                            <h2 className="text-base font-bold tracking-widest text-white uppercase">Summary Reports</h2>
+                            <button
+                                onClick={() => setShowSummary(false)}
+                                className="w-7 h-7 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center text-white text-lg leading-none transition-colors"
+                            >
                                 ×
                             </button>
                         </div>
 
-                        {/* Modal Body */}
-                        <div className="p-6 space-y-3">
-                            <div className="bg-[#0f1419] p-4 rounded-lg border border-gray-800">
-                                <div className="text-sm text-gray-400 mb-2">Fight Summary</div>
-                                <div className="text-2xl font-bold flex gap-4">
-                                    <span className="text-red-400">M: {summary?.meron_bets || 0}</span>
-                                    <span className="text-blue-400">W: {summary?.wala_bets || 0}</span>
-                                    <span className="text-green-400">D: {summary?.draw_bets || 0}</span>
+                        {/* Scrollable body */}
+                        <div className="overflow-y-auto" style={{ maxHeight: 'calc(92vh - 48px)' }}>
+
+                            {/* Summary rows */}
+                            <div className="divide-y divide-gray-800/70">
+                                {/* Username */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#1c1c1c]">
+                                    <span className="text-gray-500 text-sm">Username</span>
+                                    <span className="text-white text-sm font-semibold">{auth?.user?.name || '—'}</span>
+                                </div>
+                                {/* Cash In (current balance) */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#222222]">
+                                    <span className="text-gray-500 text-sm">Cash In</span>
+                                    <span className="text-white text-sm font-semibold tabular-nums">
+                                        {Number(liveBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                {/* Total Bets (amount) */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#1c1c1c]">
+                                    <span className="text-gray-500 text-sm">Total Bets</span>
+                                    <span className="text-white text-sm font-semibold tabular-nums">
+                                        {Number(summary?.total_bet_amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                {/* Total Bet Count */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#222222]">
+                                    <span className="text-gray-500 text-sm">Total Bet Count</span>
+                                    <span className="text-white text-sm font-semibold tabular-nums">{summary?.total_bets || 0}</span>
+                                </div>
+                                {/* Total Payout Paid */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#1c1c1c]">
+                                    <span className="text-gray-500 text-sm">Total Payout Paid</span>
+                                    <span className="text-white text-sm font-semibold tabular-nums">
+                                        {Number(summary?.total_payouts || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                {/* Active Bets Amount */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#222222]">
+                                    <span className="text-gray-500 text-sm">Active Bets Amount</span>
+                                    <span className="text-white text-sm font-semibold tabular-nums">
+                                        {Number(summary?.active_bets || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                {/* Meron Bets */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#1c1c1c]">
+                                    <span className="text-gray-500 text-sm">Meron Bets</span>
+                                    <span className="text-red-400 text-sm font-semibold tabular-nums">{summary?.meron_bets || 0}</span>
+                                </div>
+                                {/* Wala Bets */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#222222]">
+                                    <span className="text-gray-500 text-sm">Wala Bets</span>
+                                    <span className="text-blue-400 text-sm font-semibold tabular-nums">{summary?.wala_bets || 0}</span>
+                                </div>
+                                {/* Draw Bets */}
+                                <div className="flex justify-between items-center px-4 py-2.5 bg-[#1c1c1c]">
+                                    <span className="text-gray-500 text-sm">Draw Bets</span>
+                                    <span className="text-green-400 text-sm font-semibold tabular-nums">{summary?.draw_bets || 0}</span>
                                 </div>
                             </div>
 
-                            <div className="bg-[#0f1419] p-4 rounded-lg border border-gray-800">
-                                <div className="text-sm text-gray-400 mb-2">Total Bets</div>
-                                <div className="text-3xl font-bold">{summary?.total_bets || 0}</div>
+                            {/* Footer note */}
+                            <div className="px-4 py-3 border-t border-gray-700/60">
+                                <p className="text-gray-600 text-xs text-center italic">
+                                    Total bets display amount will not reflect until graded
+                                </p>
                             </div>
 
-                            <div className="bg-[#0f1419] p-4 rounded-lg border border-gray-800">
-                                <div className="text-sm text-gray-400 mb-2">Total Bet Amount</div>
-                                <div className="text-3xl font-bold text-yellow-400">
-                                    ₱ {summary?.total_bet_amount ? Number(summary.total_bet_amount).toLocaleString('en-PH', { minimumFractionDigits: 2 }) : '0.00'}
-                                </div>
-                            </div>
-
-                            <div className="bg-[#0f1419] p-4 rounded-lg border border-gray-800">
-                                <div className="text-sm text-gray-400 mb-2">Total Payouts</div>
-                                <div className="text-3xl font-bold text-green-400">
-                                    ₱ {summary?.total_payouts ? Number(summary.total_payouts).toLocaleString('en-PH', { minimumFractionDigits: 2 }) : '0.00'}
-                                </div>
-                            </div>
-
-                            <div className="bg-[#0f1419] p-4 rounded-lg border border-gray-800">
-                                <div className="text-sm text-gray-400 mb-2">Active Bets</div>
-                                <div className="text-3xl font-bold text-orange-400">{summary?.active_bets || 0}</div>
-                            </div>
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="p-6 pt-0">
-                            <button
-                                onClick={() => setShowSummary(false)}
-                                className="w-full bg-[#2a3544] hover:bg-[#3a4554] py-4 rounded-lg font-bold text-lg"
-                            >
-                                BACK
-                            </button>
                         </div>
                     </div>
                 </div>
