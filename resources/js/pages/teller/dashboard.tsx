@@ -402,16 +402,27 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
             <Head title="Teller - Sabing2m" />
 
             {/* Full screen dynamic gradient background */}
-            <div
-                className="min-h-screen transition-all duration-500"
-                style={{
-                    background: betSide === 'meron'
-                        ? 'linear-gradient(to top, #c01a1a 0%, #4a0e0e 35%, #1a1a1a 72%)'
-                        : betSide === 'wala'
-                            ? 'linear-gradient(to top, #1250a8 0%, #08183a 35%, #1a1a1a 72%)'
-                            : 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)',
-                }}
-            >
+            <div className="min-h-screen relative" style={{ background: 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)' }}>
+
+                {/* MERON gradient layer — fades in/out */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                        opacity: betSide === 'meron' ? 1 : 0,
+                        transition: 'opacity 0.6s ease',
+                        background: 'linear-gradient(to top, #c01a1a 0%, #6b1010 45%, #2a0808 70%, #1a1a1a 90%)',
+                    }}
+                />
+                {/* WALA gradient layer — fades in/out */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                        opacity: betSide === 'wala' ? 1 : 0,
+                        transition: 'opacity 0.6s ease',
+                        background: 'linear-gradient(to top, #1250a8 0%, #0a3575 45%, #08183a 70%, #1a1a1a 90%)',
+                    }}
+                />
+
                 {/* Main Layout - Responsive: Mobile (single column) / Tablet (two columns) */}
                 <div className="flex flex-col lg:flex-row">
 
