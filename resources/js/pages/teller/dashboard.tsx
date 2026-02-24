@@ -424,7 +424,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 />
 
                 {/* Main Layout - Responsive: Mobile (single column) / Tablet (two columns) */}
-                <div className="flex flex-col lg:flex-row">
+                <div className="relative flex flex-col lg:flex-row">
 
                     {/* LEFT PANEL - Betting Interface */}
                     <div className="flex-1 lg:max-w-md mx-auto w-full">
