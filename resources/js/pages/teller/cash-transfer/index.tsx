@@ -37,63 +37,7 @@ export default function CashTransfer({ tellers, transfers, currentBalance, lates
     const [requestAmount, setRequestAmount] = useState('');
     const [requestRemarks, setRequestRemarks] = useState('');
 
-    // Cash In / Cash Out modal state
-    const [showCashIn, setShowCashIn] = useState(false);
-    const [showCashOut, setShowCashOut] = useState(false);
-    const [cashInAmount, setCashInAmount] = useState('0');
-    const [cashOutAmount, setCashOutAmount] = useState('0');
 
-    const handleNumpad = (val: string, current: string, setter: (v: string) => void) => {
-        if (val === 'CLEAR') { setter('0'); return; }
-        if (val === '.') return; // No decimals needed
-        const next = current === '0' ? val : current + val;
-        setter(next);
-    };
-
-    const handleCashInSubmit = () => {
-        const amt = parseFloat(cashInAmount);
-        if (!amt || amt <= 0) return;
-        router.post('/teller/transactions/cash-in', { amount: amt, remarks: null }, {
-            onSuccess: () => { setShowCashIn(false); setCashInAmount('0'); },
-        });
-    };
-
-    const handleCashOutSubmit = () => {
-        const amt = parseFloat(cashOutAmount);
-        if (!amt || amt <= 0) return;
-        if (amt > currentBalance) { alert('Insufficient balance!'); return; }
-        router.post('/teller/transactions/cash-out', { amount: amt, remarks: null }, {
-            onSuccess: () => { setShowCashOut(false); setCashOutAmount('0'); },
-        });
-    };
-
-    // Numpad component
-    const Numpad = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-        <div className="grid grid-cols-3 gap-2">
-            {[7,8,9,4,5,6,1,2,3].map(n => (
-                <button key={n} type="button"
-                    onClick={() => handleNumpad(String(n), value, onChange)}
-                    className="bg-white hover:bg-gray-100 active:bg-gray-200 text-black py-4 text-2xl font-semibold border border-gray-300 transition-colors"
-                    style={{ borderRadius: '6px' }}
-                >{n}</button>
-            ))}
-            <button type="button"
-                onClick={() => handleNumpad('.', value, onChange)}
-                className="bg-white text-gray-400 py-4 text-2xl font-semibold border border-gray-300 cursor-not-allowed"
-                style={{ borderRadius: '6px' }} disabled
-            >.</button>
-            <button type="button"
-                onClick={() => handleNumpad('0', value, onChange)}
-                className="bg-white hover:bg-gray-100 active:bg-gray-200 text-black py-4 text-2xl font-semibold border border-gray-300 transition-colors"
-                style={{ borderRadius: '6px' }}
-            >0</button>
-            <button type="button"
-                onClick={() => handleNumpad('CLEAR', value, onChange)}
-                className="bg-white hover:bg-gray-100 active:bg-gray-200 text-black py-4 text-sm font-bold border border-gray-300 transition-colors tracking-wide"
-                style={{ borderRadius: '6px' }}
-            >CLEAR</button>
-        </div>
-    );
 
     const handleTransfer = (e: React.FormEvent) => {
         e.preventDefault();
@@ -171,31 +115,7 @@ export default function CashTransfer({ tellers, transfers, currentBalance, lates
 
                 <div className="px-4 pt-4 space-y-4">
 
-                    {/* ── CASH IN / CASH OUT buttons ── */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <button
-                            onClick={() => { setCashInAmount('0'); setShowCashIn(true); }}
-                            className="flex flex-col items-center justify-center gap-1 py-5 bg-[#1565c0] hover:bg-[#1976d2] active:bg-[#0d47a1] font-black text-lg tracking-wider transition-colors"
-                            style={{ borderRadius: '8px' }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16l4 4m0 0l4-4m-4 4V4" />
-                            </svg>
-                            CASH IN
-                        </button>
-                        <button
-                            onClick={() => { setCashOutAmount('0'); setShowCashOut(true); }}
-                            className="flex flex-col items-center justify-center gap-1 py-5 bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c] font-black text-lg tracking-wider transition-colors"
-                            style={{ borderRadius: '8px' }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8l-4-4m0 0l-4 4m4-4v16" />
-                            </svg>
-                            CASH OUT
-                        </button>
-                    </div>
-
-                    {/* ── TRANSFER CASH ── */}
+                    {/* ── TRANSFER CASH ── */
                     <div className="bg-[#1a1a1a] border border-gray-800 overflow-hidden" style={{ borderRadius: '8px' }}>
                         <div className="px-4 py-3 border-b border-gray-800 bg-[#222222]">
                             <h2 className="text-sm font-bold tracking-widest text-gray-300 uppercase">Transfer Cash</h2>
@@ -350,108 +270,7 @@ export default function CashTransfer({ tellers, transfers, currentBalance, lates
                 </div>
             </div>
 
-            {/* ══ CASH IN MODAL ══ */}
-            {showCashIn && (
-                <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50">
-                    <div className="bg-[#1c1c1c] w-full sm:max-w-xs overflow-hidden" style={{ borderRadius: '12px 12px 0 0' }}>
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-5 py-3.5 bg-[#1565c0]">
-                            <h2 className="text-lg font-black tracking-widest uppercase">Cash In</h2>
-                            <button onClick={() => setShowCashIn(false)}
-                                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-xl leading-none">×</button>
-                        </div>
 
-                        <div className="px-4 pt-4 pb-5 space-y-4">
-                            {/* Money on hand */}
-                            <div className="flex items-center justify-between bg-[#2a2a2a] border border-gray-700 px-4 py-2.5" style={{ borderRadius: '20px' }}>
-                                <div className="flex items-center gap-2 text-yellow-400 text-sm font-bold uppercase tracking-wider">
-                                    <span>🪙</span> Money On Hand
-                                </div>
-                                <span className="text-white text-sm font-bold tabular-nums">
-                                    {currentBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                </span>
-                            </div>
-
-                            {/* Amount display */}
-                            <div className="text-center">
-                                <div className="text-gray-500 text-sm mb-1">Enter Amount</div>
-                                <div className="text-5xl font-black text-white tabular-nums">
-                                    P {parseFloat(cashInAmount || '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                </div>
-                            </div>
-
-                            {/* Numpad */}
-                            <Numpad value={cashInAmount} onChange={setCashInAmount} />
-
-                            {/* Submit */}
-                            <button
-                                onClick={handleCashInSubmit}
-                                disabled={!parseFloat(cashInAmount) || parseFloat(cashInAmount) <= 0}
-                                className="w-full py-4 bg-[#1565c0] hover:bg-[#1976d2] disabled:bg-gray-700 disabled:text-gray-500 font-black text-base tracking-widest uppercase flex items-center justify-center gap-2 transition-colors"
-                                style={{ borderRadius: '6px' }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16l4 4m0 0l4-4m-4 4V4" />
-                                </svg>
-                                Cash In
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ══ CASH OUT MODAL ══ */}
-            {showCashOut && (
-                <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50">
-                    <div className="bg-[#1c1c1c] w-full sm:max-w-xs overflow-hidden" style={{ borderRadius: '12px 12px 0 0' }}>
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-5 py-3.5 bg-[#c62828]">
-                            <h2 className="text-lg font-black tracking-widest uppercase">Cash Out</h2>
-                            <button onClick={() => setShowCashOut(false)}
-                                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-xl leading-none">×</button>
-                        </div>
-
-                        <div className="px-4 pt-4 pb-5 space-y-4">
-                            {/* Money on hand */}
-                            <div className="flex items-center justify-between bg-[#2a2a2a] border border-gray-700 px-4 py-2.5" style={{ borderRadius: '20px' }}>
-                                <div className="flex items-center gap-2 text-yellow-400 text-sm font-bold uppercase tracking-wider">
-                                    <span>🪙</span> Money On Hand
-                                </div>
-                                <span className="text-white text-sm font-bold tabular-nums">
-                                    {currentBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                </span>
-                            </div>
-
-                            {/* Amount display */}
-                            <div className="text-center">
-                                <div className="text-gray-500 text-sm mb-1">Enter Amount</div>
-                                <div className="text-5xl font-black text-white tabular-nums">
-                                    P {parseFloat(cashOutAmount || '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                </div>
-                                {parseFloat(cashOutAmount) > currentBalance && (
-                                    <p className="text-red-400 text-xs mt-1">Exceeds balance!</p>
-                                )}
-                            </div>
-
-                            {/* Numpad */}
-                            <Numpad value={cashOutAmount} onChange={setCashOutAmount} />
-
-                            {/* Submit */}
-                            <button
-                                onClick={handleCashOutSubmit}
-                                disabled={!parseFloat(cashOutAmount) || parseFloat(cashOutAmount) <= 0 || parseFloat(cashOutAmount) > currentBalance}
-                                className="w-full py-4 bg-[#c62828] hover:bg-[#d32f2f] disabled:bg-gray-700 disabled:text-gray-500 font-black text-base tracking-widest uppercase flex items-center justify-center gap-2 transition-colors"
-                                style={{ borderRadius: '6px' }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8l-4-4m0 0l-4 4m4-4v16" />
-                                </svg>
-                                Cash Out
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
         </TellerLayout>
     );
