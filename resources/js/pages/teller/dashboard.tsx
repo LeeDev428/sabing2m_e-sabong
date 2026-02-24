@@ -397,41 +397,45 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
         return 'bg-blue-600 hover:bg-blue-700';
     };
 
-    // Rooster SVG silhouette component
+    // Rooster SVG silhouette - side view fighting stance
     const RoosterSilhouette = ({ mirrored = false }: { mirrored?: boolean }) => (
         <svg
-            viewBox="0 0 110 140"
-            fill="white"
-            className="absolute bottom-0 opacity-[0.13] w-full h-[88%] pointer-events-none"
-            style={{ transform: mirrored ? 'scaleX(-1)' : 'none', transformOrigin: 'center' }}
+            viewBox="0 0 100 100"
+            fill="currentColor"
+            className="absolute bottom-2 opacity-20 w-[85%] h-[75%] pointer-events-none text-white"
+            style={{ 
+                transform: mirrored ? 'scaleX(-1)' : 'none', 
+                transformOrigin: 'center',
+                left: mirrored ? 'auto' : '8%',
+                right: mirrored ? '8%' : 'auto',
+            }}
             preserveAspectRatio="xMidYMax meet"
         >
-            {/* Tail feathers */}
-            <path d="M18,72 C8,52 9,28 18,12 C15,35 15,58 22,78 Z" />
-            <path d="M12,82 C2,60 2,34 12,16 C9,42 10,66 18,88 Z" />
-            <path d="M24,65 C15,47 16,26 24,10 C21,30 21,52 26,70 Z" />
-            {/* Body */}
-            <ellipse cx="68" cy="108" rx="34" ry="26" />
-            {/* Neck connecting head to body */}
-            <path d="M52,82 C49,70 54,56 62,48 L68,66 C62,74 56,82 52,82 Z" />
+            {/* Tail feathers - flowing back */}
+            <path d="M8,45 Q2,30 12,18 Q10,35 15,48 Z" />
+            <path d="M12,50 Q4,38 10,22 Q12,40 18,52 Z" />
+            <path d="M15,48 Q8,32 16,20 Q15,38 20,50 Z" />
+            {/* Body - oval shape */}
+            <ellipse cx="45" cy="58" rx="28" ry="20" />
+            {/* Neck */}
+            <path d="M62,48 Q68,38 72,32 Q75,42 70,52 Q65,50 62,48 Z" />
             {/* Head */}
-            <circle cx="78" cy="44" r="18" />
-            {/* Beak */}
-            <polygon points="91,40 108,44 91,50" />
-            {/* Comb on top */}
-            <path d="M68,27 C70,16 76,18 74,28 C78,16 85,20 81,30 C86,18 93,23 88,34" strokeWidth="0" />
-            {/* Wattle under beak */}
-            <ellipse cx="86" cy="58" rx="6" ry="9" />
-            {/* Wing highlight */}
-            <path d="M36,100 C48,84 68,82 80,96 C64,88 46,90 36,100 Z" opacity="0.5" />
-            {/* Leg left */}
-            <rect x="56" y="130" width="7" height="20" rx="3" />
-            {/* Leg right */}
-            <rect x="72" y="130" width="7" height="20" rx="3" />
-            {/* Feet left */}
-            <path d="M50,148 L42,152 M50,148 L50,154 M50,148 L58,152" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
-            {/* Feet right */}
-            <path d="M66,148 L58,152 M66,148 L66,154 M66,148 L74,152" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <ellipse cx="76" cy="28" rx="12" ry="10" />
+            {/* Comb - spiky on top */}
+            <path d="M68,20 Q70,10 74,18 Q76,8 80,16 Q84,6 86,18 L82,22 Q78,20 74,22 Q70,20 68,20 Z" />
+            {/* Beak - pointed */}
+            <path d="M86,26 L98,28 L86,32 Z" />
+            {/* Eye */}
+            <circle cx="80" cy="26" r="2" fill="currentColor" opacity="0.5" />
+            {/* Wattle */}
+            <ellipse cx="82" cy="36" rx="4" ry="6" />
+            {/* Wing detail */}
+            <path d="M28,52 Q40,42 55,48 Q45,52 35,58 Q30,56 28,52 Z" opacity="0.4" />
+            {/* Legs */}
+            <path d="M38,75 L38,90 M38,90 L32,95 M38,90 L38,97 M38,90 L44,95" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M52,75 L52,88 M52,88 L46,93 M52,88 L52,95 M52,88 L58,93" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+            {/* Chest puff */}
+            <ellipse cx="60" cy="55" rx="8" ry="12" opacity="0.3" />
         </svg>
     );
 
