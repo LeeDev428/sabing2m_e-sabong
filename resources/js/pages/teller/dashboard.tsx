@@ -508,147 +508,99 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         {/* Main Betting Interface */}
                         <div className="px-3 pt-4 pb-4">
 
-                            {/* ── FIGHTER CARDS ROW ── */}
-                            <div
-                                className="grid mb-0"
-                                style={{ gridTemplateColumns: '1fr 72px 1fr', gap: 0 }}
-                            >
-                                {/* ── MERON CARD ── */}
-                                <button
-                                    onClick={() => selectedFight && currentFightData?.meron_betting_open && setBetSide('meron')}
-                                    disabled={!selectedFight || !currentFightData?.meron_betting_open}
-                                    className={`relative overflow-hidden flex flex-col justify-between p-3 min-h-[148px] transition-all duration-200
-                                        ${betSide === 'meron'
-                                            ? 'ring-2 ring-yellow-400 ring-inset brightness-110'
-                                            : ''}
-                                        ${!selectedFight || !currentFightData?.meron_betting_open
-                                            ? 'cursor-not-allowed opacity-60'
-                                            : 'active:brightness-125'}
-                                    `}
-                                    style={{
-                                        borderRadius: '14px 0 0 14px',
-                                        background: 'linear-gradient(160deg, #c0392b 0%, #7b0d0d 100%)',
-                                    }}
-                                >
-                                    {/* Rooster silhouette bg */}
-                                    <RoosterSilhouette mirrored={false} />
-
-                                    {/* Content */}
-                                    <div className="relative z-10 text-left">
-                                        <div className="text-white text-2xl font-black tracking-widest drop-shadow-lg">MERON</div>
-                                    </div>
-                                    <div className="relative z-10 text-center mt-auto">
-                                        <div className="text-white/70 text-[10px] uppercase tracking-widest font-semibold">ODDS</div>
-                                        <div className="text-white text-3xl font-black tabular-nums drop-shadow-md">
-                                            {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '--'}
-                                        </div>
-                                        <div className="mt-2 inline-block bg-black/40 rounded-full px-3 py-0.5 text-white/80 text-[11px] font-semibold tabular-nums">
-                                            {(liveBetTotals?.meron_total ?? 0).toLocaleString()}
-                                        </div>
-                                    </div>
-
-                                    {/* Closed overlay */}
-                                    {selectedFight && !currentFightData?.meron_betting_open && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20" style={{ borderRadius: '14px 0 0 14px' }}>
-                                            <span className="text-white text-sm font-bold">🔒 CLOSED</span>
-                                        </div>
-                                    )}
-
-                                    {/* Selected glow bottom */}
-                                    {betSide === 'meron' && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400 z-20"></div>
-                                    )}
-                                </button>
-
-                                {/* ── CENTER: Fight badge + Draw ── */}
-                                <div className="flex flex-col items-center" style={{ zIndex: 10 }}>
-                                    {/* Hexagon Fight Badge */}
+                            {/* ── FIGHTER CARDS with overlapping hexagon ── */}
+                            <div className="relative mb-4">
+                                {/* Hexagon Fight Badge - positioned at top center, overlapping cards */}
+                                <div className="absolute left-1/2 -translate-x-1/2 -top-1 z-20">
                                     <div
-                                        className="w-[68px] h-[78px] bg-gradient-to-b from-yellow-300 via-yellow-500 to-orange-500 flex flex-col items-center justify-center shadow-lg shadow-yellow-900/60 flex-shrink-0"
+                                        className="w-[72px] h-[82px] bg-gradient-to-b from-yellow-300 via-yellow-500 to-orange-500 flex flex-col items-center justify-center shadow-lg"
                                         style={{
                                             clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                                            marginTop: '0px',
                                         }}
                                     >
-                                        <span className="text-[9px] font-black text-red-900 uppercase tracking-widest leading-none mt-1">FIGHT</span>
-                                        <span className="text-[22px] font-black text-red-900 leading-none">
+                                        <span className="text-[9px] font-black text-red-900 uppercase tracking-wider leading-none">FIGHT</span>
+                                        <span className="text-[26px] font-black text-red-900 leading-none">
                                             {selectedFight?.fight_number || '--'}
                                         </span>
                                     </div>
+                                </div>
 
-                                    {/* Draw button below badge */}
+                                {/* Cards Row */}
+                                <div className="grid grid-cols-2 gap-0 pt-8">
+                                    {/* ── MERON CARD ── */}
                                     <button
-                                        onClick={() => selectedFight && currentFightData?.draw_betting_open && setBetSide('draw')}
-                                        disabled={!selectedFight || !currentFightData?.draw_betting_open}
-                                        className={`relative w-full flex-1 flex flex-col items-center justify-center transition-all duration-200
-                                            ${betSide === 'draw' ? 'ring-2 ring-inset ring-yellow-400' : ''}
-                                            ${!selectedFight || !currentFightData?.draw_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-125'}
+                                        onClick={() => selectedFight && currentFightData?.meron_betting_open && setBetSide('meron')}
+                                        disabled={!selectedFight || !currentFightData?.meron_betting_open}
+                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-8 px-4 min-h-[140px] transition-all duration-200
+                                            ${betSide === 'meron' ? 'ring-2 ring-yellow-400 ring-inset' : ''}
+                                            ${!selectedFight || !currentFightData?.meron_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-110'}
                                         `}
                                         style={{
-                                            background: 'linear-gradient(180deg, #145214 0%, #0a2e0a 100%)',
-                                            minHeight: '70px',
+                                            borderRadius: '6px 0 0 6px',
+                                            background: '#e53935',
                                         }}
                                     >
-                                        <div className="text-green-300 text-[11px] font-black tracking-wider">DRAW</div>
-                                        <div className="text-white/60 text-[9px] uppercase tracking-widest">ODDS</div>
-                                        <div className="text-green-200 text-base font-black tabular-nums">
-                                            {currentFightData?.draw_odds ? Number(currentFightData.draw_odds).toFixed(2) : '--'}
+                                        {/* Rooster silhouette */}
+                                        <RoosterSilhouette mirrored={false} />
+
+                                        {/* Content */}
+                                        <div className="relative z-10 text-center">
+                                            <div className="text-white text-2xl font-black tracking-wide mb-3">MERON</div>
+                                            <div className="w-16 h-[2px] bg-white/40 mx-auto mb-3"></div>
+                                            <div className="text-white/70 text-[10px] uppercase tracking-widest font-medium">ODDS</div>
+                                            <div className="text-white text-3xl font-black tabular-nums">
+                                                {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '--'}
+                                            </div>
+                                            <div className="mt-3 bg-black/30 rounded px-3 py-1 text-white/90 text-xs font-semibold tabular-nums">
+                                                {(liveBetTotals?.meron_total ?? 0).toLocaleString()}
+                                            </div>
                                         </div>
-                                        <div className="mt-1 bg-black/40 rounded-full px-2 py-0.5 text-white/70 text-[9px] font-semibold tabular-nums">
-                                            {(liveBetTotals?.draw_total ?? 0).toLocaleString()}
+
+                                        {/* Closed overlay */}
+                                        {selectedFight && !currentFightData?.meron_betting_open && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20" style={{ borderRadius: '6px 0 0 6px' }}>
+                                                <span className="text-white text-sm font-bold">🔒 CLOSED</span>
+                                            </div>
+                                        )}
+                                    </button>
+
+                                    {/* ── WALA CARD ── */}
+                                    <button
+                                        onClick={() => selectedFight && currentFightData?.wala_betting_open && setBetSide('wala')}
+                                        disabled={!selectedFight || !currentFightData?.wala_betting_open}
+                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-8 px-4 min-h-[140px] transition-all duration-200
+                                            ${betSide === 'wala' ? 'ring-2 ring-yellow-400 ring-inset' : ''}
+                                            ${!selectedFight || !currentFightData?.wala_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-110'}
+                                        `}
+                                        style={{
+                                            borderRadius: '0 6px 6px 0',
+                                            background: '#1565c0',
+                                        }}
+                                    >
+                                        {/* Rooster silhouette (mirrored) */}
+                                        <RoosterSilhouette mirrored={true} />
+
+                                        {/* Content */}
+                                        <div className="relative z-10 text-center">
+                                            <div className="text-white text-2xl font-black tracking-wide mb-3">WALA</div>
+                                            <div className="w-16 h-[2px] bg-white/40 mx-auto mb-3"></div>
+                                            <div className="text-white/70 text-[10px] uppercase tracking-widest font-medium">ODDS</div>
+                                            <div className="text-white text-3xl font-black tabular-nums">
+                                                {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '--'}
+                                            </div>
+                                            <div className="mt-3 bg-black/30 rounded px-3 py-1 text-white/90 text-xs font-semibold tabular-nums">
+                                                {(liveBetTotals?.wala_total ?? 0).toLocaleString()}
+                                            </div>
                                         </div>
-                                        {betSide === 'draw' && (
-                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400"></div>
+
+                                        {/* Closed overlay */}
+                                        {selectedFight && !currentFightData?.wala_betting_open && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20" style={{ borderRadius: '0 6px 6px 0' }}>
+                                                <span className="text-white text-sm font-bold">🔒 CLOSED</span>
+                                            </div>
                                         )}
                                     </button>
                                 </div>
-
-                                {/* ── WALA CARD ── */}
-                                <button
-                                    onClick={() => selectedFight && currentFightData?.wala_betting_open && setBetSide('wala')}
-                                    disabled={!selectedFight || !currentFightData?.wala_betting_open}
-                                    className={`relative overflow-hidden flex flex-col justify-between p-3 min-h-[148px] transition-all duration-200
-                                        ${betSide === 'wala'
-                                            ? 'ring-2 ring-yellow-400 ring-inset brightness-110'
-                                            : ''}
-                                        ${!selectedFight || !currentFightData?.wala_betting_open
-                                            ? 'cursor-not-allowed opacity-60'
-                                            : 'active:brightness-125'}
-                                    `}
-                                    style={{
-                                        borderRadius: '0 14px 14px 0',
-                                        background: 'linear-gradient(160deg, #1565c0 0%, #0a2a6e 100%)',
-                                    }}
-                                >
-                                    {/* Rooster silhouette bg (mirrored) */}
-                                    <RoosterSilhouette mirrored={true} />
-
-                                    {/* Content */}
-                                    <div className="relative z-10 text-right">
-                                        <div className="text-white text-2xl font-black tracking-widest drop-shadow-lg">WALA</div>
-                                    </div>
-                                    <div className="relative z-10 text-center mt-auto">
-                                        <div className="text-white/70 text-[10px] uppercase tracking-widest font-semibold">ODDS</div>
-                                        <div className="text-white text-3xl font-black tabular-nums drop-shadow-md">
-                                            {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '--'}
-                                        </div>
-                                        <div className="mt-2 inline-block bg-black/40 rounded-full px-3 py-0.5 text-white/80 text-[11px] font-semibold tabular-nums">
-                                            {(liveBetTotals?.wala_total ?? 0).toLocaleString()}
-                                        </div>
-                                    </div>
-
-                                    {/* Closed overlay */}
-                                    {selectedFight && !currentFightData?.wala_betting_open && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20" style={{ borderRadius: '0 14px 14px 0' }}>
-                                            <span className="text-white text-sm font-bold">🔒 CLOSED</span>
-                                        </div>
-                                    )}
-
-                                    {/* Selected glow bottom */}
-                                    {betSide === 'wala' && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400 z-20"></div>
-                                    )}
-                                </button>
                             </div>
 
                             {/* ── MIN / MAX / TOTAL ROW ── */}
@@ -657,79 +609,86 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     <span>Min: <span className="text-white font-semibold">20</span></span>
                                     <span className="mx-3">Max: <span className="text-white font-semibold">5,000</span></span>
                                 </div>
-                                <div className="bg-gray-800/80 border border-gray-700 rounded-full px-4 py-1 text-xs text-gray-400 flex gap-1.5 tabular-nums">
+                                <div className="bg-gray-800/80 border border-gray-700 rounded px-4 py-1 text-xs text-gray-400 flex gap-1.5 tabular-nums">
                                     Total <span className="text-white font-bold">{parseInt(amount) || 0}</span>
                                 </div>
                             </div>
 
-                            {/* ── AMOUNT INPUT with RED +/- ── */}
-                            <div className="flex items-center gap-2 mb-3">
+                            {/* ── AMOUNT INPUT with BLUE +/- ── */}
+                            <div className="flex items-center gap-0 mb-3">
                                 <button
                                     onClick={handleDecrement}
-                                    className="w-14 h-14 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-3xl font-black rounded-xl shadow-md shadow-red-900/50 flex items-center justify-center transition-colors flex-shrink-0"
+                                    className="w-14 h-14 bg-[#1565c0] hover:bg-[#1976d2] active:bg-[#0d47a1] text-white text-3xl font-black flex items-center justify-center transition-colors flex-shrink-0"
+                                    style={{ borderRadius: '6px 0 0 6px' }}
                                 >
                                     −
                                 </button>
-                                <div className="flex-1 bg-white rounded-xl py-3 px-3 shadow-inner">
-                                    <div className="text-black text-4xl font-black text-center tracking-widest tabular-nums">
+                                <div className="flex-1 bg-white py-3 px-3 border-y-2 border-gray-200">
+                                    <div className="text-black text-4xl font-bold text-center tabular-nums">
                                         {amount}
                                     </div>
                                 </div>
                                 <button
                                     onClick={handleIncrement}
-                                    className="w-14 h-14 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-3xl font-black rounded-xl shadow-md shadow-red-900/50 flex items-center justify-center transition-colors flex-shrink-0"
+                                    className="w-14 h-14 bg-[#1565c0] hover:bg-[#1976d2] active:bg-[#0d47a1] text-white text-3xl font-black flex items-center justify-center transition-colors flex-shrink-0"
+                                    style={{ borderRadius: '0 6px 6px 0' }}
                                 >
                                     +
                                 </button>
                             </div>
 
                             {/* ── NUMBER PAD ── */}
-                            <div className="grid grid-cols-3 gap-2 mb-3">
+                            <div className="grid grid-cols-3 gap-1.5 mb-3">
                                 {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
                                     <button
                                         key={num}
                                         onClick={() => handleNumberClick(num.toString())}
-                                        className="bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 text-black rounded-2xl py-4 text-2xl font-bold shadow-md transition-all"
+                                        className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-4 text-2xl font-semibold border border-gray-300 transition-colors"
+                                        style={{ borderRadius: '6px' }}
                                     >
                                         {num}
                                     </button>
                                 ))}
                                 {/* Row 4: . / 0 / CLEAR */}
                                 <button
-                                    className="bg-white text-gray-400 rounded-2xl py-4 text-2xl font-bold shadow-md cursor-not-allowed"
+                                    className="bg-[#f0f0f0] text-gray-400 py-4 text-2xl font-semibold border border-gray-300 cursor-not-allowed"
+                                    style={{ borderRadius: '6px' }}
                                     disabled
                                 >
                                     .
                                 </button>
                                 <button
                                     onClick={() => handleNumberClick('0')}
-                                    className="bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 text-black rounded-2xl py-4 text-2xl font-bold shadow-md transition-all"
+                                    className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-4 text-2xl font-semibold border border-gray-300 transition-colors"
+                                    style={{ borderRadius: '6px' }}
                                 >
                                     0
                                 </button>
                                 <button
                                     onClick={handleClear}
-                                    className="bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 text-black rounded-2xl py-4 text-sm font-bold shadow-md transition-all tracking-wide"
+                                    className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-4 text-sm font-bold border border-gray-300 transition-colors tracking-wide"
+                                    style={{ borderRadius: '6px' }}
                                 >
                                     CLEAR
                                 </button>
                             </div>
 
-                            {/* ── QUICK AMOUNTS — 5 buttons (50, 100, 200, 500, 1000) ── */}
+                            {/* ── QUICK AMOUNTS — 5 buttons ── */}
                             <div className="grid grid-cols-5 gap-1.5 mb-3">
                                 {[50, 100, 200, 500, 1000].map((quickAmount) => (
                                     <button
                                         key={quickAmount}
                                         onClick={() => handleQuickAmount(quickAmount)}
-                                        className="bg-[#1c1c2e] hover:bg-[#2a2a40] active:scale-95 border border-gray-700/60 text-white rounded-xl py-2.5 px-1 flex flex-col items-center gap-0.5 transition-all shadow-md"
+                                        className="bg-[#1a1f35] hover:bg-[#252b45] active:bg-[#151929] border border-[#3a4060] text-white py-2.5 px-1 flex flex-col items-center gap-0.5 transition-colors"
+                                        style={{ borderRadius: '6px' }}
                                     >
                                         {/* Ticket icon */}
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-yellow-400">
-                                            <path d="M15 5H9a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2z" />
-                                            <path d="M9 10h6M9 14h4" strokeLinecap="round" />
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-gray-400">
+                                            <rect x="4" y="4" width="16" height="16" rx="2" />
+                                            <path d="M4 9h16M9 4v16" strokeLinecap="round" />
                                         </svg>
-                                        <span className="text-[11px] font-bold leading-none tabular-nums">
-                                            {quickAmount >= 1000 ? `${quickAmount / 1000}K` : quickAmount}
+                                        <span className="text-xs font-semibold tabular-nums">
+                                            {quickAmount >= 1000 ? '1K' : quickAmount}
                                         </span>
                                     </button>
                                 ))}
@@ -739,11 +698,12 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             <button
                                 onClick={handleSubmit}
                                 disabled={!betSide || !selectedFight || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')}
-                                className={`w-full py-5 rounded-2xl text-2xl font-black mb-3 uppercase tracking-[0.15em] transition-all shadow-lg ${
+                                className={`w-full py-4 text-xl font-black mb-3 uppercase tracking-wider transition-all ${
                                     betSide && selectedFight && (selectedFight.status === 'open' || selectedFight.status === 'lastcall')
-                                        ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 active:scale-[0.99] text-white shadow-red-900/60'
-                                        : 'bg-gray-800 cursor-not-allowed text-gray-500'
+                                        ? 'bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c] text-white'
+                                        : 'bg-gray-700 cursor-not-allowed text-gray-500'
                                 }`}
+                                style={{ borderRadius: '6px' }}
                             >
                                 {!selectedFight
                                     ? 'NO FIGHT'
@@ -756,7 +716,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             {/* ── VIEW SUMMARY BUTTON ── */}
                             <button
                                 onClick={() => setShowSummary(true)}
-                                className="w-full bg-[#1e2d3d] hover:bg-[#2a3d52] active:bg-[#162330] py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2 text-white transition-all border border-gray-700/50 shadow-md"
+                                className="w-full bg-[#1e2d3d] hover:bg-[#2a3d52] active:bg-[#162330] py-3.5 font-bold text-base flex items-center justify-center gap-2 text-white transition-colors border border-gray-700/50"
+                                style={{ borderRadius: '6px' }}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
