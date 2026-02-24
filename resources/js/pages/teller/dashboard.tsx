@@ -406,9 +406,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 className="min-h-screen transition-all duration-500"
                 style={{
                     background: betSide === 'meron'
-                        ? 'linear-gradient(to top, #7f1212 0%, #2a0808 30%, #1a1a1a 60%)'
+                        ? 'linear-gradient(to top, #c01a1a 0%, #4a0e0e 35%, #1a1a1a 72%)'
                         : betSide === 'wala'
-                            ? 'linear-gradient(to top, #0d3a7a 0%, #050e22 30%, #1a1a1a 60%)'
+                            ? 'linear-gradient(to top, #1250a8 0%, #08183a 35%, #1a1a1a 72%)'
                             : 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)',
                 }}
             >
@@ -487,7 +487,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     <button
                                         onClick={() => selectedFight && currentFightData?.meron_betting_open && setBetSide('meron')}
                                         disabled={!selectedFight || !currentFightData?.meron_betting_open}
-                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-4 px-3 min-h-[110px] transition-all duration-200
+                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-3 px-3 min-h-[94px] transition-all duration-200
                                             ${betSide === 'meron' ? 'ring-2 ring-yellow-400 ring-inset' : ''}
                                             ${!selectedFight || !currentFightData?.meron_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-110'}
                                         `}
@@ -528,7 +528,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     <button
                                         onClick={() => selectedFight && currentFightData?.wala_betting_open && setBetSide('wala')}
                                         disabled={!selectedFight || !currentFightData?.wala_betting_open}
-                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-4 px-3 min-h-[110px] transition-all duration-200
+                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-3 px-3 min-h-[94px] transition-all duration-200
                                             ${betSide === 'wala' ? 'ring-2 ring-yellow-400 ring-inset' : ''}
                                             ${!selectedFight || !currentFightData?.wala_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-110'}
                                         `}
@@ -607,7 +607,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     <button
                                         key={num}
                                         onClick={() => handleNumberClick(num.toString())}
-                                        className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-4 text-2xl font-semibold border border-gray-300 transition-colors"
+                                        className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-3 text-2xl font-semibold border border-gray-300 transition-colors"
                                         style={{ borderRadius: '6px' }}
                                     >
                                         {num}
@@ -615,7 +615,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 ))}
                                 {/* Row 4: . / 0 / CLEAR */}
                                 <button
-                                    className="bg-[#f0f0f0] text-gray-400 py-4 text-2xl font-semibold border border-gray-300 cursor-not-allowed"
+                                    className="bg-[#f0f0f0] text-gray-400 py-3 text-2xl font-semibold border border-gray-300 cursor-not-allowed"
                                     style={{ borderRadius: '6px' }}
                                     disabled
                                 >
@@ -623,14 +623,14 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 </button>
                                 <button
                                     onClick={() => handleNumberClick('0')}
-                                    className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-4 text-2xl font-semibold border border-gray-300 transition-colors"
+                                    className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-3 text-2xl font-semibold border border-gray-300 transition-colors"
                                     style={{ borderRadius: '6px' }}
                                 >
                                     0
                                 </button>
                                 <button
                                     onClick={handleClear}
-                                    className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-4 text-sm font-bold border border-gray-300 transition-colors tracking-wide"
+                                    className="bg-[#f0f0f0] hover:bg-[#e5e5e5] active:bg-[#d5d5d5] text-black py-3 text-sm font-bold border border-gray-300 transition-colors tracking-wide"
                                     style={{ borderRadius: '6px' }}
                                 >
                                     CLEAR
