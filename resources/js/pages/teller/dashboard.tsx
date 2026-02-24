@@ -393,7 +393,6 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     const getSubmitButtonClass = () => {
         if (!betSide) return 'bg-gray-600 cursor-not-allowed';
         if (betSide === 'meron') return 'bg-red-600 hover:bg-red-700';
-        if (betSide === 'draw') return 'bg-green-600 hover:bg-green-700';
         return 'bg-blue-600 hover:bg-blue-700';
     };
 
@@ -451,9 +450,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         ? 'linear-gradient(to top, #7f0000 0%, #3a0000 35%, #111111 70%)'
                         : betSide === 'wala'
                             ? 'linear-gradient(to top, #00007a 0%, #000035 35%, #111111 70%)'
-                            : betSide === 'draw'
-                                ? 'linear-gradient(to top, #004d00 0%, #001a00 35%, #111111 70%)'
-                                : 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)',
+                            : 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)',
                 }}
             >
                 {/* Main Layout - Responsive: Mobile (single column) / Tablet (two columns) */}
@@ -747,7 +744,6 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                         <span className="text-gray-500 text-sm">SIDE</span>
                                         <span className={`px-3 py-1 rounded-lg text-sm font-bold ${
                                             betSide === 'meron' ? 'bg-red-700 text-white' :
-                                            betSide === 'draw' ? 'bg-green-700 text-white' :
                                             'bg-blue-700 text-white'
                                         }`}>
                                             {betSide.toUpperCase()}
