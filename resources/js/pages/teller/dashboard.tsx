@@ -406,9 +406,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 className="min-h-screen transition-all duration-500"
                 style={{
                     background: betSide === 'meron'
-                        ? 'linear-gradient(to top, #d32f2f 0%, #7f0000 40%, #1a1a1a 75%)'
+                        ? 'linear-gradient(to top, #7f1212 0%, #2a0808 30%, #1a1a1a 60%)'
                         : betSide === 'wala'
-                            ? 'linear-gradient(to top, #1565c0 0%, #00007a 40%, #1a1a1a 75%)'
+                            ? 'linear-gradient(to top, #0d3a7a 0%, #050e22 30%, #1a1a1a 60%)'
                             : 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)',
                 }}
             >
@@ -662,10 +662,10 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             <button
                                 onClick={handleSubmit}
                                 disabled={!betSide || !selectedFight || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')}
-                                className={`w-full py-4 text-xl font-black mb-3 uppercase tracking-wider transition-all ${
+                                className={`w-full py-3 text-lg font-black mb-3 uppercase tracking-wider transition-all border-2 ${
                                     betSide && selectedFight && (selectedFight.status === 'open' || selectedFight.status === 'lastcall')
-                                        ? 'bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c] text-white'
-                                        : 'bg-gray-700 cursor-not-allowed text-gray-500'
+                                        ? 'bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c] text-white border-[#ff4444]'
+                                        : 'bg-gray-800 cursor-not-allowed text-gray-500 border-gray-600'
                                 }`}
                                 style={{ borderRadius: '6px' }}
                             >
