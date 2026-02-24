@@ -396,47 +396,6 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
         return 'bg-blue-600 hover:bg-blue-700';
     };
 
-    // Rooster SVG silhouette - side view fighting stance
-    const RoosterSilhouette = ({ mirrored = false }: { mirrored?: boolean }) => (
-        <svg
-            viewBox="0 0 100 100"
-            fill="currentColor"
-            className="absolute bottom-2 opacity-20 w-[85%] h-[75%] pointer-events-none text-white"
-            style={{ 
-                transform: mirrored ? 'scaleX(-1)' : 'none', 
-                transformOrigin: 'center',
-                left: mirrored ? 'auto' : '8%',
-                right: mirrored ? '8%' : 'auto',
-            }}
-            preserveAspectRatio="xMidYMax meet"
-        >
-            {/* Tail feathers - flowing back */}
-            <path d="M8,45 Q2,30 12,18 Q10,35 15,48 Z" />
-            <path d="M12,50 Q4,38 10,22 Q12,40 18,52 Z" />
-            <path d="M15,48 Q8,32 16,20 Q15,38 20,50 Z" />
-            {/* Body - oval shape */}
-            <ellipse cx="45" cy="58" rx="28" ry="20" />
-            {/* Neck */}
-            <path d="M62,48 Q68,38 72,32 Q75,42 70,52 Q65,50 62,48 Z" />
-            {/* Head */}
-            <ellipse cx="76" cy="28" rx="12" ry="10" />
-            {/* Comb - spiky on top */}
-            <path d="M68,20 Q70,10 74,18 Q76,8 80,16 Q84,6 86,18 L82,22 Q78,20 74,22 Q70,20 68,20 Z" />
-            {/* Beak - pointed */}
-            <path d="M86,26 L98,28 L86,32 Z" />
-            {/* Eye */}
-            <circle cx="80" cy="26" r="2" fill="currentColor" opacity="0.5" />
-            {/* Wattle */}
-            <ellipse cx="82" cy="36" rx="4" ry="6" />
-            {/* Wing detail */}
-            <path d="M28,52 Q40,42 55,48 Q45,52 35,58 Q30,56 28,52 Z" opacity="0.4" />
-            {/* Legs */}
-            <path d="M38,75 L38,90 M38,90 L32,95 M38,90 L38,97 M38,90 L44,95" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <path d="M52,75 L52,88 M52,88 L46,93 M52,88 L52,95 M52,88 L58,93" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
-            {/* Chest puff */}
-            <ellipse cx="60" cy="55" rx="8" ry="12" opacity="0.3" />
-        </svg>
-    );
 
     return (
         <TellerLayout currentPage="dashboard">
@@ -447,9 +406,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 className="min-h-screen transition-all duration-500"
                 style={{
                     background: betSide === 'meron'
-                        ? 'linear-gradient(to top, #7f0000 0%, #3a0000 35%, #111111 70%)'
+                        ? 'linear-gradient(to top, #d32f2f 0%, #7f0000 40%, #1a1a1a 75%)'
                         : betSide === 'wala'
-                            ? 'linear-gradient(to top, #00007a 0%, #000035 35%, #111111 70%)'
+                            ? 'linear-gradient(to top, #1565c0 0%, #00007a 40%, #1a1a1a 75%)'
                             : 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)',
                 }}
             >
@@ -528,27 +487,31 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     <button
                                         onClick={() => selectedFight && currentFightData?.meron_betting_open && setBetSide('meron')}
                                         disabled={!selectedFight || !currentFightData?.meron_betting_open}
-                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-8 px-4 min-h-[140px] transition-all duration-200
+                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-4 px-3 min-h-[110px] transition-all duration-200
                                             ${betSide === 'meron' ? 'ring-2 ring-yellow-400 ring-inset' : ''}
                                             ${!selectedFight || !currentFightData?.meron_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-110'}
                                         `}
                                         style={{
                                             borderRadius: '6px 0 0 6px',
-                                            background: '#e53935',
+                                            background: 'linear-gradient(135deg, #ef5350 0%, #b71c1c 100%)',
                                         }}
                                     >
-                                        {/* Rooster silhouette */}
-                                        <RoosterSilhouette mirrored={false} />
+                                        {/* Silhouette image */}
+                                        <img
+                                            src="/silhouette/meron.png"
+                                            alt=""
+                                            className="absolute bottom-0 left-0 w-full h-full object-contain object-bottom opacity-20 pointer-events-none"
+                                        />
 
                                         {/* Content */}
                                         <div className="relative z-10 text-center">
-                                            <div className="text-white text-2xl font-black tracking-wide mb-3">MERON</div>
-                                            <div className="w-16 h-[2px] bg-white/40 mx-auto mb-3"></div>
+                                            <div className="text-white text-2xl font-black tracking-wide mb-2">MERON</div>
+                                            <div className="w-14 h-[2px] bg-white/40 mx-auto mb-2"></div>
                                             <div className="text-white/70 text-[10px] uppercase tracking-widest font-medium">ODDS</div>
                                             <div className="text-white text-3xl font-black tabular-nums">
                                                 {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '--'}
                                             </div>
-                                            <div className="mt-3 bg-black/30 rounded px-3 py-1 text-white/90 text-xs font-semibold tabular-nums">
+                                            <div className="mt-2 bg-black/30 rounded px-3 py-0.5 text-white/90 text-xs font-semibold tabular-nums">
                                                 {(liveBetTotals?.meron_total ?? 0).toLocaleString()}
                                             </div>
                                         </div>
@@ -565,27 +528,31 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     <button
                                         onClick={() => selectedFight && currentFightData?.wala_betting_open && setBetSide('wala')}
                                         disabled={!selectedFight || !currentFightData?.wala_betting_open}
-                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-8 px-4 min-h-[140px] transition-all duration-200
+                                        className={`relative overflow-hidden flex flex-col items-center justify-center py-4 px-3 min-h-[110px] transition-all duration-200
                                             ${betSide === 'wala' ? 'ring-2 ring-yellow-400 ring-inset' : ''}
                                             ${!selectedFight || !currentFightData?.wala_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-110'}
                                         `}
                                         style={{
                                             borderRadius: '0 6px 6px 0',
-                                            background: '#1565c0',
+                                            background: 'linear-gradient(135deg, #42a5f5 0%, #0d47a1 100%)',
                                         }}
                                     >
-                                        {/* Rooster silhouette (mirrored) */}
-                                        <RoosterSilhouette mirrored={true} />
+                                        {/* Silhouette image */}
+                                        <img
+                                            src="/silhouette/wala.png"
+                                            alt=""
+                                            className="absolute bottom-0 right-0 w-full h-full object-contain object-bottom opacity-20 pointer-events-none"
+                                        />
 
                                         {/* Content */}
                                         <div className="relative z-10 text-center">
-                                            <div className="text-white text-2xl font-black tracking-wide mb-3">WALA</div>
-                                            <div className="w-16 h-[2px] bg-white/40 mx-auto mb-3"></div>
+                                            <div className="text-white text-2xl font-black tracking-wide mb-2">WALA</div>
+                                            <div className="w-14 h-[2px] bg-white/40 mx-auto mb-2"></div>
                                             <div className="text-white/70 text-[10px] uppercase tracking-widest font-medium">ODDS</div>
                                             <div className="text-white text-3xl font-black tabular-nums">
                                                 {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '--'}
                                             </div>
-                                            <div className="mt-3 bg-black/30 rounded px-3 py-1 text-white/90 text-xs font-semibold tabular-nums">
+                                            <div className="mt-2 bg-black/30 rounded px-3 py-0.5 text-white/90 text-xs font-semibold tabular-nums">
                                                 {(liveBetTotals?.wala_total ?? 0).toLocaleString()}
                                             </div>
                                         </div>
@@ -670,21 +637,21 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 </button>
                             </div>
 
-                            {/* ── QUICK AMOUNTS — 5 buttons ── */}
-                            <div className="grid grid-cols-5 gap-1.5 mb-3">
-                                {[50, 100, 200, 500, 1000].map((quickAmount) => (
+                            {/* ── QUICK AMOUNTS — 4 buttons (100-1000) ── */}
+                            <div className="grid grid-cols-4 gap-1.5 mb-3">
+                                {[100, 200, 500, 1000].map((quickAmount) => (
                                     <button
                                         key={quickAmount}
                                         onClick={() => handleQuickAmount(quickAmount)}
-                                        className="bg-[#1a1f35] hover:bg-[#252b45] active:bg-[#151929] border border-[#3a4060] text-white py-2.5 px-1 flex flex-col items-center gap-0.5 transition-colors"
+                                        className="bg-[#1a1f35] hover:bg-[#252b45] active:bg-[#151929] border border-[#3a4060] text-white py-2.5 px-2 flex flex-row items-center justify-center gap-2 transition-colors"
                                         style={{ borderRadius: '6px' }}
                                     >
-                                        {/* Ticket icon */}
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-gray-400">
-                                            <rect x="4" y="4" width="16" height="16" rx="2" />
-                                            <path d="M4 9h16M9 4v16" strokeLinecap="round" />
+                                        {/* Ticket icon - left */}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-gray-400 flex-shrink-0">
+                                            <path d="M20 12V6a1 1 0 00-1-1H5a1 1 0 00-1 1v6a2 2 0 010 4v6a1 1 0 001 1h14a1 1 0 001-1v-6a2 2 0 010-4z" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
-                                        <span className="text-xs font-semibold tabular-nums">
+                                        {/* Amount - right */}
+                                        <span className="text-xs font-bold tabular-nums">
                                             {quickAmount >= 1000 ? '1K' : quickAmount}
                                         </span>
                                     </button>
