@@ -115,7 +115,7 @@ export default function CashTransfer({ tellers, transfers, currentBalance, lates
 
                 <div className="px-4 pt-4 space-y-4">
 
-                    {/* ── TRANSFER CASH ── */
+                    {/* ── TRANSFER CASH ── */}
                     <div className="bg-[#1a1a1a] border border-gray-800 overflow-hidden" style={{ borderRadius: '8px' }}>
                         <div className="px-4 py-3 border-b border-gray-800 bg-[#222222]">
                             <h2 className="text-sm font-bold tracking-widest text-gray-300 uppercase">Transfer Cash</h2>
