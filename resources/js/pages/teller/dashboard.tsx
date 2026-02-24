@@ -397,31 +397,83 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
         return 'bg-blue-600 hover:bg-blue-700';
     };
 
+    // Rooster SVG silhouette component
+    const RoosterSilhouette = ({ mirrored = false }: { mirrored?: boolean }) => (
+        <svg
+            viewBox="0 0 110 140"
+            fill="white"
+            className="absolute bottom-0 opacity-[0.13] w-full h-[88%] pointer-events-none"
+            style={{ transform: mirrored ? 'scaleX(-1)' : 'none', transformOrigin: 'center' }}
+            preserveAspectRatio="xMidYMax meet"
+        >
+            {/* Tail feathers */}
+            <path d="M18,72 C8,52 9,28 18,12 C15,35 15,58 22,78 Z" />
+            <path d="M12,82 C2,60 2,34 12,16 C9,42 10,66 18,88 Z" />
+            <path d="M24,65 C15,47 16,26 24,10 C21,30 21,52 26,70 Z" />
+            {/* Body */}
+            <ellipse cx="68" cy="108" rx="34" ry="26" />
+            {/* Neck connecting head to body */}
+            <path d="M52,82 C49,70 54,56 62,48 L68,66 C62,74 56,82 52,82 Z" />
+            {/* Head */}
+            <circle cx="78" cy="44" r="18" />
+            {/* Beak */}
+            <polygon points="91,40 108,44 91,50" />
+            {/* Comb on top */}
+            <path d="M68,27 C70,16 76,18 74,28 C78,16 85,20 81,30 C86,18 93,23 88,34" strokeWidth="0" />
+            {/* Wattle under beak */}
+            <ellipse cx="86" cy="58" rx="6" ry="9" />
+            {/* Wing highlight */}
+            <path d="M36,100 C48,84 68,82 80,96 C64,88 46,90 36,100 Z" opacity="0.5" />
+            {/* Leg left */}
+            <rect x="56" y="130" width="7" height="20" rx="3" />
+            {/* Leg right */}
+            <rect x="72" y="130" width="7" height="20" rx="3" />
+            {/* Feet left */}
+            <path d="M50,148 L42,152 M50,148 L50,154 M50,148 L58,152" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
+            {/* Feet right */}
+            <path d="M66,148 L58,152 M66,148 L66,154 M66,148 L74,152" stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" />
+        </svg>
+    );
+
     return (
         <TellerLayout currentPage="dashboard">
             <Head title="Teller - Sabing2m" />
 
-            <div className="min-h-screen bg-[#1a1a1a]">
+            {/* Full screen dynamic gradient background */}
+            <div
+                className="min-h-screen transition-all duration-500"
+                style={{
+                    background: betSide === 'meron'
+                        ? 'linear-gradient(to top, #7f0000 0%, #3a0000 35%, #111111 70%)'
+                        : betSide === 'wala'
+                            ? 'linear-gradient(to top, #00007a 0%, #000035 35%, #111111 70%)'
+                            : betSide === 'draw'
+                                ? 'linear-gradient(to top, #004d00 0%, #001a00 35%, #111111 70%)'
+                                : 'linear-gradient(to bottom, #1a1a1a, #0d0d0d)',
+                }}
+            >
                 {/* Main Layout - Responsive: Mobile (single column) / Tablet (two columns) */}
                 <div className="flex flex-col lg:flex-row">
-                    
+
                     {/* LEFT PANEL - Betting Interface */}
                     <div className="flex-1 lg:max-w-md mx-auto w-full">
-                        
+
                         {/* Header with Balance */}
-                        <div className="bg-[#1a1a1a] px-4 py-2 border-b border-gray-700">
+                        <div className="px-4 py-2 border-b border-gray-800/60 bg-black/30 backdrop-blur-sm">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <h1 className="text-lg font-bold text-orange-500">Dashboard</h1>
+                                    <h1 className="text-lg font-bold text-orange-400 tracking-wide">Dashboard</h1>
                                     <div className="text-xs text-gray-400">{auth?.user?.name || 'Teller User'}</div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-xs text-gray-400">Cash Balance</div>
-                                    <div className="text-lg font-bold text-green-400 transition-all duration-300">₱{liveBalance.toLocaleString()}</div>
+                                    <div className="text-[10px] text-gray-500 uppercase tracking-widest">Cash Balance</div>
+                                    <div className="text-xl font-black text-green-400 transition-all duration-300 tabular-nums">
+                                        ₱{liveBalance.toLocaleString()}
+                                    </div>
                                     {/* Printer Status Indicator */}
-                                    <div className="flex items-center justify-end gap-1 mt-1">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${isPrinterConnected ? 'bg-green-400' : 'bg-gray-500'}`}></div>
-                                        <span className={`text-[10px] ${isPrinterConnected ? 'text-green-400' : 'text-gray-500'}`}>
+                                    <div className="flex items-center justify-end gap-1 mt-0.5">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${isPrinterConnected ? 'bg-green-400' : 'bg-gray-600'}`}></div>
+                                        <span className={`text-[10px] ${isPrinterConnected ? 'text-green-400' : 'text-gray-600'}`}>
                                             {isPrinterConnected ? 'Printer OK' : 'No Printer'}
                                         </span>
                                     </div>
@@ -431,14 +483,17 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
                         {/* Bet Status Indicator */}
                         {selectedFight && (
-                            <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border-b border-purple-500/30 py-1">
+                            <div className="bg-black/40 border-b border-gray-800/50 py-1.5">
                                 <div className="px-4 flex justify-between items-center">
-                                    <div className="text-xs">
-                                        <span className="text-gray-300">Fight #{selectedFight.fight_number}</span>
+                                    <div className="text-xs text-gray-400">
+                                        Fight #{selectedFight.fight_number}
+                                        {selectedFight.event_name && (
+                                            <span className="text-gray-600 ml-2">· {selectedFight.event_name}</span>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></span>
-                                        <span className={`text-xs font-bold ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'text-green-400' : 'text-red-400'}`}>
+                                        <span className={`w-2 h-2 rounded-full ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></span>
+                                        <span className={`text-xs font-bold tracking-wider ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'text-green-400' : 'text-red-400'}`}>
                                             {selectedFight.status === 'open' ? 'BETTING OPEN' : selectedFight.status === 'lastcall' ? 'LAST CALL' : 'BETTING CLOSED'}
                                         </span>
                                     </div>
@@ -446,202 +501,260 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             </div>
                         )}
 
-                        {/* Main Betting Interface - background tint based on selected side */}
-                        <div
-                            className="p-3 transition-colors duration-300"
-                            style={{
-                                backgroundColor: betSide === 'meron'
-                                    ? 'rgba(250, 2, 2, 0.4)'
-                                    : betSide === 'wala'
-                                        ? 'rgba(10, 72, 243, 0.5)'
-                                        : 'transparent'
-                            }}
-                        >
-                            {/* Fight Number Badge - Hexagonal Style (overlapping into buttons) */}
-                            <div className="flex justify-center relative z-10 -mb-32">
-                                <div 
-                                    className="w-20 h-24 bg-gradient-to-b from-yellow-400 via-yellow-500 to-orange-500 flex flex-col items-center justify-center shadow-lg"
-                                    style={{
-                                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                                    }}
-                                >
-                                    <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider">FIGHT</span>
-                                    <span className="text-2xl font-black text-red-900">
-                                        {selectedFight?.fight_number || '--'}
-                                    </span>
-                                </div>
-                            </div>
+                        {/* Main Betting Interface */}
+                        <div className="px-3 pt-4 pb-4">
 
-                            {/* MERON & WALA Buttons - always rendered, disabled when no fight */}
-                            <div 
-                                className="grid grid-cols-2 gap-0 mb-4 pt-14"
-                                style={{ opacity: !selectedFight || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall') ? 0.6 : 1 }}
+                            {/* ── FIGHTER CARDS ROW ── */}
+                            <div
+                                className="grid mb-0"
+                                style={{ gridTemplateColumns: '1fr 72px 1fr', gap: 0 }}
                             >
-                                {/* MERON Button */}
+                                {/* ── MERON CARD ── */}
                                 <button
                                     onClick={() => selectedFight && currentFightData?.meron_betting_open && setBetSide('meron')}
                                     disabled={!selectedFight || !currentFightData?.meron_betting_open}
-                                    className={`relative py-6 px-4 transition-all border-2 ${
-                                        betSide === 'meron'
-                                            ? 'bg-red-500 border-yellow-400 shadow-lg shadow-yellow-400/50 brightness-125'
-                                            : 'bg-red-600 border-red-700'
-                                    } ${!selectedFight || !currentFightData?.meron_betting_open ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110 active:brightness-125'}`}
-                                    style={{ borderRadius: '8px 0 0 8px' }}
+                                    className={`relative overflow-hidden flex flex-col justify-between p-3 min-h-[148px] transition-all duration-200
+                                        ${betSide === 'meron'
+                                            ? 'ring-2 ring-yellow-400 ring-inset brightness-110'
+                                            : ''}
+                                        ${!selectedFight || !currentFightData?.meron_betting_open
+                                            ? 'cursor-not-allowed opacity-60'
+                                            : 'active:brightness-125'}
+                                    `}
+                                    style={{
+                                        borderRadius: '14px 0 0 14px',
+                                        background: 'linear-gradient(160deg, #c0392b 0%, #7b0d0d 100%)',
+                                    }}
                                 >
-                                    <div className="text-white text-2xl font-black tracking-wider mb-1">MERON</div>
-                                    <div className="text-white/80 text-xs uppercase tracking-widest mb-0.5">ODDS</div>
-                                    <div className="text-white text-2xl font-bold">
-                                        {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '---'}
+                                    {/* Rooster silhouette bg */}
+                                    <RoosterSilhouette mirrored={false} />
+
+                                    {/* Content */}
+                                    <div className="relative z-10 text-left">
+                                        <div className="text-white text-2xl font-black tracking-widest drop-shadow-lg">MERON</div>
                                     </div>
-                                    <div className="text-white/60 text-xs mt-1">
-                                        ₱{(liveBetTotals?.meron_total ?? 0).toLocaleString()}
+                                    <div className="relative z-10 text-center mt-auto">
+                                        <div className="text-white/70 text-[10px] uppercase tracking-widest font-semibold">ODDS</div>
+                                        <div className="text-white text-3xl font-black tabular-nums drop-shadow-md">
+                                            {currentFightData?.meron_odds ? Number(currentFightData.meron_odds).toFixed(2) : '--'}
+                                        </div>
+                                        <div className="mt-2 inline-block bg-black/40 rounded-full px-3 py-0.5 text-white/80 text-[11px] font-semibold tabular-nums">
+                                            {(liveBetTotals?.meron_total ?? 0).toLocaleString()}
+                                        </div>
                                     </div>
+
+                                    {/* Closed overlay */}
                                     {selectedFight && !currentFightData?.meron_betting_open && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-l-lg">
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20" style={{ borderRadius: '14px 0 0 14px' }}>
                                             <span className="text-white text-sm font-bold">🔒 CLOSED</span>
                                         </div>
                                     )}
+
+                                    {/* Selected glow bottom */}
+                                    {betSide === 'meron' && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400 z-20"></div>
+                                    )}
                                 </button>
 
-                                {/* WALA Button */}
+                                {/* ── CENTER: Fight badge + Draw ── */}
+                                <div className="flex flex-col items-center" style={{ zIndex: 10 }}>
+                                    {/* Hexagon Fight Badge */}
+                                    <div
+                                        className="w-[68px] h-[78px] bg-gradient-to-b from-yellow-300 via-yellow-500 to-orange-500 flex flex-col items-center justify-center shadow-lg shadow-yellow-900/60 flex-shrink-0"
+                                        style={{
+                                            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                                            marginTop: '0px',
+                                        }}
+                                    >
+                                        <span className="text-[9px] font-black text-red-900 uppercase tracking-widest leading-none mt-1">FIGHT</span>
+                                        <span className="text-[22px] font-black text-red-900 leading-none">
+                                            {selectedFight?.fight_number || '--'}
+                                        </span>
+                                    </div>
+
+                                    {/* Draw button below badge */}
+                                    <button
+                                        onClick={() => selectedFight && currentFightData?.draw_betting_open && setBetSide('draw')}
+                                        disabled={!selectedFight || !currentFightData?.draw_betting_open}
+                                        className={`relative w-full flex-1 flex flex-col items-center justify-center transition-all duration-200
+                                            ${betSide === 'draw' ? 'ring-2 ring-inset ring-yellow-400' : ''}
+                                            ${!selectedFight || !currentFightData?.draw_betting_open ? 'cursor-not-allowed opacity-60' : 'active:brightness-125'}
+                                        `}
+                                        style={{
+                                            background: 'linear-gradient(180deg, #145214 0%, #0a2e0a 100%)',
+                                            minHeight: '70px',
+                                        }}
+                                    >
+                                        <div className="text-green-300 text-[11px] font-black tracking-wider">DRAW</div>
+                                        <div className="text-white/60 text-[9px] uppercase tracking-widest">ODDS</div>
+                                        <div className="text-green-200 text-base font-black tabular-nums">
+                                            {currentFightData?.draw_odds ? Number(currentFightData.draw_odds).toFixed(2) : '--'}
+                                        </div>
+                                        <div className="mt-1 bg-black/40 rounded-full px-2 py-0.5 text-white/70 text-[9px] font-semibold tabular-nums">
+                                            {(liveBetTotals?.draw_total ?? 0).toLocaleString()}
+                                        </div>
+                                        {betSide === 'draw' && (
+                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400"></div>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {/* ── WALA CARD ── */}
                                 <button
                                     onClick={() => selectedFight && currentFightData?.wala_betting_open && setBetSide('wala')}
                                     disabled={!selectedFight || !currentFightData?.wala_betting_open}
-                                    className={`relative py-6 px-4 transition-all border-2 ${
-                                        betSide === 'wala'
-                                            ? 'bg-blue-500 border-yellow-400 shadow-lg shadow-yellow-400/50 brightness-125'
-                                            : 'bg-blue-600 border-blue-700'
-                                    } ${!selectedFight || !currentFightData?.wala_betting_open ? 'opacity-50 cursor-not-allowed' : 'hover:brightness-110 active:brightness-125'}`}
-                                    style={{ borderRadius: '0 8px 8px 0' }}
+                                    className={`relative overflow-hidden flex flex-col justify-between p-3 min-h-[148px] transition-all duration-200
+                                        ${betSide === 'wala'
+                                            ? 'ring-2 ring-yellow-400 ring-inset brightness-110'
+                                            : ''}
+                                        ${!selectedFight || !currentFightData?.wala_betting_open
+                                            ? 'cursor-not-allowed opacity-60'
+                                            : 'active:brightness-125'}
+                                    `}
+                                    style={{
+                                        borderRadius: '0 14px 14px 0',
+                                        background: 'linear-gradient(160deg, #1565c0 0%, #0a2a6e 100%)',
+                                    }}
                                 >
-                                    <div className="text-white text-2xl font-black tracking-wider mb-1">WALA</div>
-                                    <div className="text-white/80 text-xs uppercase tracking-widest mb-0.5">ODDS</div>
-                                    <div className="text-white text-2xl font-bold">
-                                        {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '---'}
+                                    {/* Rooster silhouette bg (mirrored) */}
+                                    <RoosterSilhouette mirrored={true} />
+
+                                    {/* Content */}
+                                    <div className="relative z-10 text-right">
+                                        <div className="text-white text-2xl font-black tracking-widest drop-shadow-lg">WALA</div>
                                     </div>
-                                    <div className="text-white/60 text-xs mt-1">
-                                        ₱{(liveBetTotals?.wala_total ?? 0).toLocaleString()}
+                                    <div className="relative z-10 text-center mt-auto">
+                                        <div className="text-white/70 text-[10px] uppercase tracking-widest font-semibold">ODDS</div>
+                                        <div className="text-white text-3xl font-black tabular-nums drop-shadow-md">
+                                            {currentFightData?.wala_odds ? Number(currentFightData.wala_odds).toFixed(2) : '--'}
+                                        </div>
+                                        <div className="mt-2 inline-block bg-black/40 rounded-full px-3 py-0.5 text-white/80 text-[11px] font-semibold tabular-nums">
+                                            {(liveBetTotals?.wala_total ?? 0).toLocaleString()}
+                                        </div>
                                     </div>
+
+                                    {/* Closed overlay */}
                                     {selectedFight && !currentFightData?.wala_betting_open && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-r-lg">
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20" style={{ borderRadius: '0 14px 14px 0' }}>
                                             <span className="text-white text-sm font-bold">🔒 CLOSED</span>
                                         </div>
+                                    )}
+
+                                    {/* Selected glow bottom */}
+                                    {betSide === 'wala' && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-400 z-20"></div>
                                     )}
                                 </button>
                             </div>
 
-                            {/* Amount Input with +/- Buttons */}
-                            <div className="flex items-center gap-2 mb-4">
+                            {/* ── MIN / MAX / TOTAL ROW ── */}
+                            <div className="flex justify-between items-center px-1 py-2 mb-2">
+                                <div className="text-gray-400 text-xs">
+                                    <span>Min: <span className="text-white font-semibold">20</span></span>
+                                    <span className="mx-3">Max: <span className="text-white font-semibold">5,000</span></span>
+                                </div>
+                                <div className="bg-gray-800/80 border border-gray-700 rounded-full px-4 py-1 text-xs text-gray-400 flex gap-1.5 tabular-nums">
+                                    Total <span className="text-white font-bold">{parseInt(amount) || 0}</span>
+                                </div>
+                            </div>
+
+                            {/* ── AMOUNT INPUT with RED +/- ── */}
+                            <div className="flex items-center gap-2 mb-3">
                                 <button
                                     onClick={handleDecrement}
-                                    className="w-12 h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white text-2xl font-bold rounded-lg border border-gray-600 flex items-center justify-center"
+                                    className="w-14 h-14 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-3xl font-black rounded-xl shadow-md shadow-red-900/50 flex items-center justify-center transition-colors flex-shrink-0"
                                 >
                                     −
                                 </button>
-                                <div className="flex-1 bg-white rounded-lg py-3 px-4">
-                                    <div className="text-black text-3xl font-bold text-center tracking-wider">
+                                <div className="flex-1 bg-white rounded-xl py-3 px-3 shadow-inner">
+                                    <div className="text-black text-4xl font-black text-center tracking-widest tabular-nums">
                                         {amount}
                                     </div>
                                 </div>
                                 <button
                                     onClick={handleIncrement}
-                                    className="w-12 h-12 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white text-2xl font-bold rounded-lg border border-gray-600 flex items-center justify-center"
+                                    className="w-14 h-14 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-3xl font-black rounded-xl shadow-md shadow-red-900/50 flex items-center justify-center transition-colors flex-shrink-0"
                                 >
                                     +
                                 </button>
                             </div>
 
-                            {/* Number Pad */}
-                            <div className="grid grid-cols-3 gap-1.5 mb-4">
-                                {/* Row 1: 7, 8, 9 */}
-                                {[7, 8, 9].map((num) => (
+                            {/* ── NUMBER PAD ── */}
+                            <div className="grid grid-cols-3 gap-2 mb-3">
+                                {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
                                     <button
                                         key={num}
                                         onClick={() => handleNumberClick(num.toString())}
-                                        className="bg-[#f5f5f5] hover:bg-[#e0e0e0] text-black rounded-lg py-4 text-2xl font-bold border border-gray-300 transition-colors"
+                                        className="bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 text-black rounded-2xl py-4 text-2xl font-bold shadow-md transition-all"
                                     >
                                         {num}
                                     </button>
                                 ))}
-                                {/* Row 2: 4, 5, 6 */}
-                                {[4, 5, 6].map((num) => (
-                                    <button
-                                        key={num}
-                                        onClick={() => handleNumberClick(num.toString())}
-                                        className="bg-[#f5f5f5] hover:bg-[#e0e0e0] text-black rounded-lg py-4 text-2xl font-bold border border-gray-300 transition-colors"
-                                    >
-                                        {num}
-                                    </button>
-                                ))}
-                                {/* Row 3: 1, 2, 3 */}
-                                {[1, 2, 3].map((num) => (
-                                    <button
-                                        key={num}
-                                        onClick={() => handleNumberClick(num.toString())}
-                                        className="bg-[#f5f5f5] hover:bg-[#e0e0e0] text-black rounded-lg py-4 text-2xl font-bold border border-gray-300 transition-colors"
-                                    >
-                                        {num}
-                                    </button>
-                                ))}
-                                {/* Row 4: ., 0, CLEAR */}
-                                <button 
-                                    className="bg-[#f5f5f5] text-gray-400 rounded-lg py-4 text-2xl font-bold border border-gray-300 cursor-not-allowed"
+                                {/* Row 4: . / 0 / CLEAR */}
+                                <button
+                                    className="bg-white text-gray-400 rounded-2xl py-4 text-2xl font-bold shadow-md cursor-not-allowed"
                                     disabled
                                 >
                                     .
                                 </button>
                                 <button
                                     onClick={() => handleNumberClick('0')}
-                                    className="bg-[#f5f5f5] hover:bg-[#e0e0e0] text-black rounded-lg py-4 text-2xl font-bold border border-gray-300 transition-colors"
+                                    className="bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 text-black rounded-2xl py-4 text-2xl font-bold shadow-md transition-all"
                                 >
                                     0
                                 </button>
                                 <button
                                     onClick={handleClear}
-                                    className="bg-[#f5f5f5] hover:bg-[#e0e0e0] text-black rounded-lg py-4 text-sm font-bold border border-gray-300 transition-colors"
+                                    className="bg-white hover:bg-gray-100 active:bg-gray-200 active:scale-95 text-black rounded-2xl py-4 text-sm font-bold shadow-md transition-all tracking-wide"
                                 >
                                     CLEAR
                                 </button>
                             </div>
 
-                            {/* Quick Amount Buttons */}
-                            <div className="grid grid-cols-4 gap-2 mb-4">
-                                {[100, 200, 500, 1000].map((quickAmount) => (
+                            {/* ── QUICK AMOUNTS — 5 buttons (50, 100, 200, 500, 1000) ── */}
+                            <div className="grid grid-cols-5 gap-1.5 mb-3">
+                                {[50, 100, 200, 500, 1000].map((quickAmount) => (
                                     <button
                                         key={quickAmount}
                                         onClick={() => handleQuickAmount(quickAmount)}
-                                        className="bg-[#2a2a2a] hover:bg-[#3a3a3a] text-white rounded-lg py-2.5 px-1 text-sm font-semibold border border-gray-600 flex items-center justify-center gap-1 transition-colors"
+                                        className="bg-[#1c1c2e] hover:bg-[#2a2a40] active:scale-95 border border-gray-700/60 text-white rounded-xl py-2.5 px-1 flex flex-col items-center gap-0.5 transition-all shadow-md"
                                     >
-                                        <span className="text-yellow-500">₱</span>
-                                        <span>{quickAmount.toLocaleString()}</span>
+                                        {/* Ticket icon */}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-4 h-4 text-yellow-400">
+                                            <path d="M15 5H9a2 2 0 00-2 2v10a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2z" />
+                                            <path d="M9 10h6M9 14h4" strokeLinecap="round" />
+                                        </svg>
+                                        <span className="text-[11px] font-bold leading-none tabular-nums">
+                                            {quickAmount >= 1000 ? `${quickAmount / 1000}K` : quickAmount}
+                                        </span>
                                     </button>
                                 ))}
                             </div>
 
-                            {/* Submit Button */}
+                            {/* ── SUBMIT BUTTON ── */}
                             <button
                                 onClick={handleSubmit}
                                 disabled={!betSide || !selectedFight || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')}
-                                className={`w-full py-4 rounded-lg text-xl font-black mb-3 transition-all uppercase tracking-wider ${
+                                className={`w-full py-5 rounded-2xl text-2xl font-black mb-3 uppercase tracking-[0.15em] transition-all shadow-lg ${
                                     betSide && selectedFight && (selectedFight.status === 'open' || selectedFight.status === 'lastcall')
-                                        ? 'bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-500 hover:from-orange-600 hover:via-yellow-600 hover:to-orange-600 text-white shadow-lg'
-                                        : 'bg-gray-700 cursor-not-allowed text-gray-400'
+                                        ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 active:scale-[0.99] text-white shadow-red-900/60'
+                                        : 'bg-gray-800 cursor-not-allowed text-gray-500'
                                 }`}
                             >
-                                {!selectedFight 
-                                    ? 'NO FIGHT' 
+                                {!selectedFight
+                                    ? 'NO FIGHT'
                                     : (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')
                                         ? 'BETTING CLOSED'
                                         : 'SUBMIT'
                                 }
                             </button>
 
-                            {/* View Summary Button */}
+                            {/* ── VIEW SUMMARY BUTTON ── */}
                             <button
                                 onClick={() => setShowSummary(true)}
-                                className="w-full bg-[#2a3544] hover:bg-[#3a4554] py-3.5 rounded-lg font-bold text-base flex items-center justify-center gap-2 text-white transition-colors"
+                                className="w-full bg-[#1e2d3d] hover:bg-[#2a3d52] active:bg-[#162330] py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2 text-white transition-all border border-gray-700/50 shadow-md"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                                 </svg>
                                 VIEW SUMMARY
@@ -650,13 +763,13 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                     </div>
 
                     {/* RIGHT PANEL - Bet Summary (Tablet/Desktop only) */}
-                    <div className="hidden lg:block w-96 bg-[#1a1a1a] border-l border-gray-800 min-h-screen">
+                    <div className="hidden lg:block w-96 bg-[#111111] border-l border-gray-800/60 min-h-screen">
                         <div className="p-4">
                             {/* Header */}
-                            <h2 className="text-xl font-bold text-white mb-4">BET SUMMARY</h2>
-                            
+                            <h2 className="text-xl font-bold text-white mb-4 tracking-wider">BET SUMMARY</h2>
+
                             {/* Event Name */}
-                            <div className="bg-[#2a2a2a] rounded-lg p-3 mb-4">
+                            <div className="bg-[#1e1e1e] rounded-xl p-3 mb-4 border border-gray-800/50">
                                 <div className="text-white font-semibold text-center">
                                     {selectedFight?.event_name || 'No Event'}
                                 </div>
@@ -666,19 +779,21 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             {betSide && (
                                 <div className="space-y-3 mb-4">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-400 text-sm">SIDE</span>
-                                        <span className={`px-3 py-1 rounded text-sm font-bold ${
-                                            betSide === 'meron' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'
+                                        <span className="text-gray-500 text-sm">SIDE</span>
+                                        <span className={`px-3 py-1 rounded-lg text-sm font-bold ${
+                                            betSide === 'meron' ? 'bg-red-700 text-white' :
+                                            betSide === 'draw' ? 'bg-green-700 text-white' :
+                                            'bg-blue-700 text-white'
                                         }`}>
                                             {betSide.toUpperCase()}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-400 text-sm">AMOUNT</span>
-                                        <span className="text-white font-bold">P {parseInt(amount || '0').toLocaleString()}</span>
+                                        <span className="text-gray-500 text-sm">AMOUNT</span>
+                                        <span className="text-white font-bold tabular-nums">₱{parseInt(amount || '0').toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-400 text-sm">FIGHT NUMBER</span>
+                                        <span className="text-gray-500 text-sm">FIGHT NUMBER</span>
                                         <span className="text-white font-bold">{selectedFight?.fight_number || '--'}</span>
                                     </div>
                                 </div>
@@ -686,7 +801,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
 
                             {/* Location/Venue */}
                             {selectedFight?.venue && (
-                                <div className="text-gray-500 text-xs text-center mb-4">
+                                <div className="text-gray-600 text-xs text-center mb-4">
                                     {selectedFight.venue}
                                 </div>
                             )}
@@ -695,20 +810,20 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             <div className="flex gap-2 mb-4">
                                 <button
                                     onClick={() => setSummaryTab('current')}
-                                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors ${
-                                        summaryTab === 'current' 
-                                            ? 'bg-[#3a3a3a] text-white' 
-                                            : 'bg-transparent text-gray-500 hover:text-gray-300'
+                                    className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold transition-colors ${
+                                        summaryTab === 'current'
+                                            ? 'bg-[#2a2a2a] text-white'
+                                            : 'bg-transparent text-gray-600 hover:text-gray-300'
                                     }`}
                                 >
                                     Current Bets
                                 </button>
                                 <button
                                     onClick={() => setSummaryTab('today')}
-                                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-colors ${
-                                        summaryTab === 'today' 
-                                            ? 'bg-[#3a3a3a] text-white' 
-                                            : 'bg-transparent text-gray-500 hover:text-gray-300'
+                                    className={`flex-1 py-2 px-4 rounded-xl text-sm font-semibold transition-colors ${
+                                        summaryTab === 'today'
+                                            ? 'bg-[#2a2a2a] text-white'
+                                            : 'bg-transparent text-gray-600 hover:text-gray-300'
                                     }`}
                                 >
                                     Today's Report
@@ -716,26 +831,28 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             </div>
 
                             {/* Bets List */}
-                            <div className="border-t border-gray-700 pt-4">
-                                <div className="flex justify-between text-xs text-gray-500 mb-3 px-2">
+                            <div className="border-t border-gray-800 pt-4">
+                                <div className="flex justify-between text-xs text-gray-600 mb-3 px-2">
                                     <span>Item</span>
                                     <span>Bet Amount</span>
                                 </div>
-                                
+
                                 {summaryTab === 'current' ? (
                                     recentBets.length > 0 ? (
                                         <div className="space-y-2 max-h-64 overflow-y-auto">
                                             {recentBets.map((bet) => (
-                                                <div key={bet.id} className="flex justify-between items-center bg-[#2a2a2a] rounded-lg p-3">
+                                                <div key={bet.id} className="flex justify-between items-center bg-[#1e1e1e] rounded-xl p-3 border border-gray-800/40">
                                                     <div className="flex items-center gap-2">
                                                         <span className={`w-2 h-2 rounded-full ${
-                                                            bet.side === 'meron' ? 'bg-red-500' : 'bg-blue-500'
+                                                            bet.side === 'meron' ? 'bg-red-500' :
+                                                            bet.side === 'draw' ? 'bg-green-500' :
+                                                            'bg-blue-500'
                                                         }`}></span>
                                                         <span className="text-white text-sm">
                                                             Fight #{bet.fight_number} - {bet.side.toUpperCase()}
                                                         </span>
                                                     </div>
-                                                    <span className="text-white font-bold text-sm">
+                                                    <span className="text-white font-bold text-sm tabular-nums">
                                                         ₱{bet.amount.toLocaleString()}
                                                     </span>
                                                 </div>
@@ -744,27 +861,27 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     ) : (
                                         <div className="text-center py-8">
                                             <div className="text-orange-400 text-4xl mb-2">🐓</div>
-                                            <div className="text-gray-500 text-sm">Current Bets Will Show Here</div>
+                                            <div className="text-gray-600 text-sm">Current Bets Will Show Here</div>
                                         </div>
                                     )
                                 ) : (
                                     <div className="space-y-3">
-                                        <div className="flex justify-between items-center bg-[#2a2a2a] rounded-lg p-3">
-                                            <span className="text-gray-400 text-sm">Total Bets</span>
+                                        <div className="flex justify-between items-center bg-[#1e1e1e] rounded-xl p-3 border border-gray-800/40">
+                                            <span className="text-gray-500 text-sm">Total Bets</span>
                                             <span className="text-white font-bold">{summary?.total_bets || 0}</span>
                                         </div>
-                                        <div className="flex justify-between items-center bg-[#2a2a2a] rounded-lg p-3">
-                                            <span className="text-gray-400 text-sm">Total Amount</span>
-                                            <span className="text-yellow-400 font-bold">
+                                        <div className="flex justify-between items-center bg-[#1e1e1e] rounded-xl p-3 border border-gray-800/40">
+                                            <span className="text-gray-500 text-sm">Total Amount</span>
+                                            <span className="text-yellow-400 font-bold tabular-nums">
                                                 ₱{(summary?.total_bet_amount || 0).toLocaleString()}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between items-center bg-[#2a2a2a] rounded-lg p-3">
-                                            <span className="text-gray-400 text-sm">Meron</span>
+                                        <div className="flex justify-between items-center bg-[#1e1e1e] rounded-xl p-3 border border-gray-800/40">
+                                            <span className="text-gray-500 text-sm">Meron</span>
                                             <span className="text-red-400 font-bold">{summary?.meron_bets || 0}</span>
                                         </div>
-                                        <div className="flex justify-between items-center bg-[#2a2a2a] rounded-lg p-3">
-                                            <span className="text-gray-400 text-sm">Wala</span>
+                                        <div className="flex justify-between items-center bg-[#1e1e1e] rounded-xl p-3 border border-gray-800/40">
+                                            <span className="text-gray-500 text-sm">Wala</span>
                                             <span className="text-blue-400 font-bold">{summary?.wala_bets || 0}</span>
                                         </div>
                                     </div>
@@ -772,14 +889,14 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             </div>
 
                             {/* Balance Info */}
-                            <div className="mt-6 pt-4 border-t border-gray-700">
+                            <div className="mt-6 pt-4 border-t border-gray-800">
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="text-gray-400 text-sm">Cash Balance</span>
-                                    <span className="text-green-400 font-bold text-lg">₱{liveBalance.toLocaleString()}</span>
+                                    <span className="text-gray-500 text-sm">Cash Balance</span>
+                                    <span className="text-green-400 font-bold text-lg tabular-nums">₱{liveBalance.toLocaleString()}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <div className={`w-2 h-2 rounded-full ${isPrinterConnected ? 'bg-green-400' : 'bg-gray-500'}`}></div>
-                                    <span className={`text-xs ${isPrinterConnected ? 'text-green-400' : 'text-gray-500'}`}>
+                                    <div className={`w-2 h-2 rounded-full ${isPrinterConnected ? 'bg-green-400' : 'bg-gray-600'}`}></div>
+                                    <span className={`text-xs ${isPrinterConnected ? 'text-green-400' : 'text-gray-600'}`}>
                                         {isPrinterConnected ? 'Printer Connected' : 'No Printer'}
                                     </span>
                                 </div>
