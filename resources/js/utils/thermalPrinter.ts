@@ -1,9 +1,36 @@
 import { BleClient, BleDevice } from '@capacitor-community/bluetooth-le';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 
 // ESC/POS Commands for thermal printers
 const ESC = '\x1B';
-const GS = '\x1D';
+const GS  = '\x1D';
+
+/** Native plugin interface for built-in POS thermal printers (e.g. Urovo i9100) */
+interface UrovoPrinterPlugin {
+    isSupported(): Promise<{ supported: boolean; manufacturer: string; model: string; devicePath: string }>;
+    printRaw(options: { data: string }): Promise<{ success: boolean; method: string; devicePath: string }>;
+}
+
+const UrovoPrinter = registerPlugin<UrovoPrinterPlugin>('UrovoPrinter');
+
+/**
+ * Try to print ESC/POS bytes via the native UrovoPrinterPlugin (built-in POS printer).
+ * Returns true on success, false if not supported or failed.
+ */
+async function printViaNativePlugin(commands: string): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) return false;
+    try {
+        // base64-encode the raw ESC/POS bytes
+        const bytes = new TextEncoder().encode(commands);
+        const base64 = btoa(String.fromCharCode(...Array.from(bytes)));
+        const result = await UrovoPrinter.printRaw({ data: base64 });
+        console.log(`[NativePrinter] Printed via ${result.method} at ${result.devicePath}`);
+        return true;
+    } catch (err) {
+        console.warn('[NativePrinter] printRaw failed:', err);
+        return false;
+    }
+}
 
 export class ThermalPrinter {
     private device: BleDevice | null = null;
@@ -11,11 +38,25 @@ export class ThermalPrinter {
     private printerService: string | null = null;
     private printerCharacteristic: string | null = null;
     private connectionListeners: Array<(connected: boolean) => void> = [];
+    private nativePosAvailable = false; // true when Urovo/POS built-in printer is found
 
     async initialize() {
         if (!this.isWeb) {
+            // Check if device has a built-in POS printer (Urovo i9100, etc.)
+            try {
+                const info = await UrovoPrinter.isSupported();
+                if (info.supported) {
+                    this.nativePosAvailable = true;
+                    console.log(`✅ [NativePrinter] Built-in POS printer detected on ${info.model} at ${info.devicePath}`);
+                    this.notifyConnectionChange(true);
+                    return; // No need to init BLE
+                }
+            } catch (e) {
+                console.warn('[NativePrinter] Could not check native printer:', e);
+            }
+
             await BleClient.initialize();
-            // Try to restore previous connection
+            // Try to restore previous BLE connection
             await this.restoreConnection();
         }
     }
@@ -172,6 +213,8 @@ export class ThermalPrinter {
     }
 
     isConnected(): boolean {
+        // Native POS built-in printer counts as connected
+        if (this.nativePosAvailable) return true;
         return this.device !== null && this.printerService !== null && this.printerCharacteristic !== null;
     }
 
@@ -181,7 +224,8 @@ export class ThermalPrinter {
      * is present. Safe to fire-and-forget — it never throws.
      */
     async autoDetect(): Promise<void> {
-        if (this.isWeb || this.isConnected()) return;
+        // If native POS printer is already available, nothing to do
+        if (this.isWeb || this.nativePosAvailable || this.isConnected()) return;
 
         try {
             console.log('🔍 [AutoDetect] Scanning all BLE devices (5s)...');
@@ -230,8 +274,13 @@ export class ThermalPrinter {
     }
 
     private async write(data: string) {
+        // 1. Try built-in POS printer (Urovo i9100, etc.) first — no BLE pairing needed
+        const printedViaNative = await printViaNativePlugin(data);
+        if (printedViaNative) return;
+
+        // 2. Fall back to BLE if we have a connected external printer
         if (!this.device || this.isWeb) {
-            throw new Error('Printer not connected');
+            throw new Error('Printer not connected. No built-in POS printer found and no BLE printer paired.');
         }
 
         if (!this.printerService || !this.printerCharacteristic) {
@@ -240,12 +289,10 @@ export class ThermalPrinter {
 
         const encoder = new TextEncoder();
         const bytes = encoder.encode(data);
-        
-        // Convert to DataView
         const dataView = new DataView(bytes.buffer);
-        
+
         try {
-            console.log('Writing to printer:', {
+            console.log('Writing to BLE printer:', {
                 service: this.printerService,
                 characteristic: this.printerCharacteristic,
                 dataLength: bytes.length
