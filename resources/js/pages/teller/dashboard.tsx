@@ -68,7 +68,12 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
         requestCameraPermission();
 
         thermalPrinter.initialize().then(() => {
-            setIsPrinterConnected(thermalPrinter.isConnected());
+            const connected = thermalPrinter.isConnected();
+            setIsPrinterConnected(connected);
+            // If no saved device was restored, silently auto-scan and connect
+            if (!connected) {
+                thermalPrinter.autoDetect().catch(() => {/* silent */});
+            }
         });
 
         // Listen for connection changes
@@ -589,11 +594,17 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 </div>
                             </div>
 
-                            {/* ── AMOUNT INPUT with BLUE +/- ── */}
+                            {/* ── AMOUNT INPUT with dynamic +/- color ── */}
                             <div className="flex items-center gap-0 mb-3">
                                 <button
                                     onClick={handleDecrement}
-                                    className="w-14 h-14 bg-[#1565c0] hover:bg-[#1976d2] active:bg-[#0d47a1] text-white text-3xl font-black flex items-center justify-center transition-colors flex-shrink-0"
+                                    className={`w-14 h-14 text-white text-3xl font-black flex items-center justify-center transition-colors flex-shrink-0 ${
+                                        betSide === 'meron'
+                                            ? 'bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c]'
+                                            : betSide === 'wala'
+                                                ? 'bg-[#1565c0] hover:bg-[#1976d2] active:bg-[#0d47a1]'
+                                                : 'bg-[#374151] hover:bg-[#4b5563] active:bg-[#1f2937]'
+                                    }`}
                                     style={{ borderRadius: '6px 0 0 6px' }}
                                 >
                                     −
@@ -605,7 +616,13 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                 </div>
                                 <button
                                     onClick={handleIncrement}
-                                    className="w-14 h-14 bg-[#1565c0] hover:bg-[#1976d2] active:bg-[#0d47a1] text-white text-3xl font-black flex items-center justify-center transition-colors flex-shrink-0"
+                                    className={`w-14 h-14 text-white text-3xl font-black flex items-center justify-center transition-colors flex-shrink-0 ${
+                                        betSide === 'meron'
+                                            ? 'bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c]'
+                                            : betSide === 'wala'
+                                                ? 'bg-[#1565c0] hover:bg-[#1976d2] active:bg-[#0d47a1]'
+                                                : 'bg-[#374151] hover:bg-[#4b5563] active:bg-[#1f2937]'
+                                    }`}
                                     style={{ borderRadius: '0 6px 6px 0' }}
                                 >
                                     +
