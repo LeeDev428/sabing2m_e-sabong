@@ -190,6 +190,50 @@ export class ThermalPrinter {
         return this.device !== null && this.printerService !== null && this.printerCharacteristic !== null;
     }
 
+    /**
+     * Auto-detect: silently scan for a short period and connect to the first
+     * printer found. Intended to be called on app startup when no saved device
+     * is present. Safe to fire-and-forget — it never throws.
+     */
+    async autoDetect(): Promise<void> {
+        if (this.isWeb || this.isConnected()) return;
+
+        try {
+            console.log('🔍 [AutoDetect] Scanning for printers (3s)...');
+            const found: import('@capacitor-community/bluetooth-le').BleDevice[] = [];
+
+            await BleClient.requestLEScan({}, (result) => {
+                const name = (result.device.name ?? '').toLowerCase();
+                const isPrinter =
+                    name.includes('pt') || name.includes('printer') ||
+                    name.includes('thermal') || name.includes('pos') ||
+                    name.includes('rpp') || name.includes('xp') ||
+                    name.includes('t58') || name.includes('mtp') ||
+                    name.includes('bt') || name.includes('58mm') ||
+                    name.includes('80mm');
+                if (isPrinter && !found.find(d => d.deviceId === result.device.deviceId)) {
+                    found.push(result.device);
+                    console.log('🖨️ [AutoDetect] Printer candidate:', result.device.name);
+                }
+            });
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            await BleClient.stopLEScan();
+
+            if (found.length === 0) {
+                console.log('⚠️ [AutoDetect] No printers found during auto-scan.');
+                return;
+            }
+
+            const target = found[0];
+            console.log(`🔗 [AutoDetect] Auto-connecting to ${target.name}...`);
+            await this.connect(target.deviceId, target.name ?? undefined);
+            console.log('✅ [AutoDetect] Connected to', target.name);
+        } catch (err) {
+            console.warn('⚠️ [AutoDetect] Silent failure:', err);
+        }
+    }
+
     getConnectedDevice(): BleDevice | null {
         return this.device;
     }
