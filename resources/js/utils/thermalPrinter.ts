@@ -71,29 +71,14 @@ export class ThermalPrinter {
         console.log('🔍 Starting BLE scan for thermal printers...');
         
         await BleClient.requestLEScan(
-            {
-                // Scan for all devices (PT-210, PT0-CA95, and others)
-                // namePrefix: 'PT', // Removed filter to find all devices
-            },
+            {},
             (result) => {
-                // Filter for printer-like devices by name
-                const name = result.device.name?.toLowerCase() || '';
-                console.log(`📡 Found BLE device: ${result.device.name} (${result.device.deviceId})`);
-                
-                const isPrinter = name.includes('pt') || 
-                                 name.includes('printer') || 
-                                 name.includes('thermal') ||
-                                 name.includes('pos') ||
-                                 name.includes('rpp') ||
-                                 name.includes('xp') ||    // XP series (XP-MTP2)
-                                 name.includes('t58') ||   // T58 model
-                                 name.includes('mtp') ||   // Mobile Thermal Printer
-                                 name.includes('bt') ||    // Bluetooth printers
-                                 name.includes('58mm') ||  // 58mm thermal printers
-                                 name.includes('80mm');    // 80mm thermal printers
-                
-                if (isPrinter && !devices.find(d => d.deviceId === result.device.deviceId)) {
-                    console.log(`✅ Detected thermal printer: ${result.device.name}`);
+                // Accept ALL BLE devices that have a name — the writable-characteristic
+                // discovery step is the real printer filter, not the device name.
+                const name = result.device.name || '';
+                console.log(`📡 Found BLE device: ${name} (${result.device.deviceId})`);
+
+                if (name && !devices.find(d => d.deviceId === result.device.deviceId)) {
                     devices.push(result.device);
                 }
             }
@@ -103,7 +88,7 @@ export class ThermalPrinter {
         await new Promise(resolve => setTimeout(resolve, 5000));
         await BleClient.stopLEScan();
 
-        console.log(`🔍 Scan complete. Found ${devices.length} printer(s):`, devices.map(d => d.name));
+        console.log(`🔍 Scan complete. Found ${devices.length} device(s):`, devices.map(d => d.name));
         return devices;
     }
 
@@ -199,36 +184,42 @@ export class ThermalPrinter {
         if (this.isWeb || this.isConnected()) return;
 
         try {
-            console.log('🔍 [AutoDetect] Scanning for printers (3s)...');
+            console.log('🔍 [AutoDetect] Scanning all BLE devices (5s)...');
             const found: import('@capacitor-community/bluetooth-le').BleDevice[] = [];
 
+            // Accept ALL named BLE devices — no name filter.
+            // We try connecting to each one; discoverPrinterCharacteristics
+            // confirms it's actually a printer (has a writable characteristic).
             await BleClient.requestLEScan({}, (result) => {
-                const name = (result.device.name ?? '').toLowerCase();
-                const isPrinter =
-                    name.includes('pt') || name.includes('printer') ||
-                    name.includes('thermal') || name.includes('pos') ||
-                    name.includes('rpp') || name.includes('xp') ||
-                    name.includes('t58') || name.includes('mtp') ||
-                    name.includes('bt') || name.includes('58mm') ||
-                    name.includes('80mm');
-                if (isPrinter && !found.find(d => d.deviceId === result.device.deviceId)) {
+                const name = result.device.name || '';
+                if (name && !found.find(d => d.deviceId === result.device.deviceId)) {
                     found.push(result.device);
-                    console.log('🖨️ [AutoDetect] Printer candidate:', result.device.name);
+                    console.log('📡 [AutoDetect] Device found:', name, result.device.deviceId);
                 }
             });
 
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 5000));
             await BleClient.stopLEScan();
 
             if (found.length === 0) {
-                console.log('⚠️ [AutoDetect] No printers found during auto-scan.');
+                console.log('⚠️ [AutoDetect] No BLE devices found during auto-scan.');
                 return;
             }
 
-            const target = found[0];
-            console.log(`🔗 [AutoDetect] Auto-connecting to ${target.name}...`);
-            await this.connect(target.deviceId, target.name ?? undefined);
-            console.log('✅ [AutoDetect] Connected to', target.name);
+            console.log(`🔗 [AutoDetect] Trying ${found.length} device(s)...`);
+
+            // Try each device until one successfully connects as a printer
+            for (const device of found) {
+                console.log(`🔗 [AutoDetect] Trying: ${device.name} (${device.deviceId})`);
+                const success = await this.connect(device.deviceId, device.name ?? undefined);
+                if (success) {
+                    console.log('✅ [AutoDetect] Connected to printer:', device.name);
+                    return;
+                }
+                console.log(`↩️ [AutoDetect] ${device.name} has no printer characteristics, skipping.`);
+            }
+
+            console.log('⚠️ [AutoDetect] No compatible printer found among scanned devices.');
         } catch (err) {
             console.warn('⚠️ [AutoDetect] Silent failure:', err);
         }
