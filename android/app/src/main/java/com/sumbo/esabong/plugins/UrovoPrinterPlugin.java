@@ -1,6 +1,7 @@
 package com.sumbo.esabong.plugins;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.getcapacitor.JSObject;
@@ -8,6 +9,10 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -272,30 +277,39 @@ public class UrovoPrinterPlugin extends Plugin {
         Method printPage  = pmCls.getMethod("printPage", int.class);
         Method close      = pmCls.getMethod("close");
 
-        // Resolve drawBarcode — non-fatal if absent or wrong signature on this firmware.
+        // Resolve drawBitmap for ZXing-generated QR codes
+        Method drawBitmapMethod = null;
+        try {
+            drawBitmapMethod = pmCls.getMethod("drawBitmap", Bitmap.class, int.class, int.class);
+        } catch (NoSuchMethodException e) {
+            Log.w(TAG, "drawBitmap() not found");
+        }
+
+        // Resolve drawBarcode as fallback for QR
         Method drawBarcode = null;
         try {
             drawBarcode = pmCls.getMethod("drawBarcode",
                     String.class, int.class, int.class, int.class, int.class, int.class, int.class);
         } catch (NoSuchMethodException e) {
-            Log.w(TAG, "drawBarcode() not found — QR lines will be skipped");
+            Log.w(TAG, "drawBarcode() not found");
         }
 
-        final int TOP_MARGIN    = 5;
-        final int BOTTOM_MARGIN = 20;
-        final int QR_SIZE       = 160; // reduced for reliability
+        final int TOP_MARGIN    = 10;
+        final int BOTTOM_MARGIN = 30;
+        final int QR_SIZE       = 200;
+        final int LINE_GAP      = 6; // extra space between text lines
 
-        // ── PASS 1: pre-calculate exact page height so we waste no paper ────────
+        // ── PASS 1: pre-calculate exact page height ─────────────────────────────
         int totalHeight = TOP_MARGIN;
         for (int i = 0; i < lines.length(); i++) {
             JSONObject lo = lines.getJSONObject(i);
             if ("qr".equals(lo.optString("type", "text"))) {
-                totalHeight += QR_SIZE + 8;
+                totalHeight += QR_SIZE + 10; // QR + gap below
                 continue;
             }
             String sz = lo.optString("size", "normal");
-            int fs = "large".equals(sz) ? 40 : "small".equals(sz) ? 20 : 26;
-            totalHeight += fs + 4;
+            int fs = "large".equals(sz) ? 34 : "small".equals(sz) ? 18 : 24;
+            totalHeight += fs + LINE_GAP;
         }
         totalHeight += BOTTOM_MARGIN;
 
@@ -315,34 +329,50 @@ public class UrovoPrinterPlugin extends Plugin {
             if ("qr".equals(lineType)) {
                 String qrData = lineObj.optString("qrData", "");
                 if (!qrData.isEmpty()) {
-                    if (drawBarcode != null) {
+                    boolean qrDrawn = false;
+                    int qrX = (PAGE_WIDTH - QR_SIZE) / 2;
+
+                    // Strategy 1: ZXing bitmap via drawBitmap
+                    if (!qrDrawn && drawBitmapMethod != null) {
                         try {
-                            int qrX = (PAGE_WIDTH - QR_SIZE) / 2; // centred
-                            // type 31 = QR Code 2005 in Urovo/UBX SDK, rotation 0
-                            drawBarcode.invoke(pm, qrData, qrX, y, QR_SIZE, QR_SIZE, 31, 0);
-                            y += QR_SIZE + 8;
-                            Log.d(TAG, "QR barcode drawn at y=" + (y - QR_SIZE - 8));
-                        } catch (Exception qrEx) {
-                            // drawBarcode exists but threw — print ticket ID as small text instead
-                            Log.w(TAG, "drawBarcode() threw (" + qrEx.getMessage() + ") — printing ticket ID as text fallback");
-                            try {
-                                int lineH = 24;
-                                drawTextEx.invoke(pm, qrData, 0, y, PAGE_WIDTH, lineH, "", 20, 1, 0, 0);
-                                y += lineH;
-                            } catch (Exception fb) {
-                                Log.w(TAG, "QR text fallback also failed: " + fb.getMessage());
+                            Bitmap qrBmp = generateQrBitmap(qrData, QR_SIZE);
+                            if (qrBmp != null) {
+                                drawBitmapMethod.invoke(pm, qrBmp, qrX, y);
+                                qrDrawn = true;
+                                Log.d(TAG, "QR drawn via ZXing bitmap at y=" + y);
                             }
-                        }
-                    } else {
-                        // No drawBarcode — print ticket ID as small centred text
-                        try {
-                            int lineH = 24;
-                            drawTextEx.invoke(pm, qrData, 0, y, PAGE_WIDTH, lineH, "", 20, 1, 0, 0);
-                            y += lineH;
-                        } catch (Exception fb) {
-                            Log.w(TAG, "QR text fallback failed: " + fb.getMessage());
+                        } catch (Exception ex) {
+                            Log.w(TAG, "ZXing bitmap QR failed: " + ex.getMessage());
                         }
                     }
+
+                    // Strategy 2: drawBarcode — try types 28, 31, 4
+                    if (!qrDrawn && drawBarcode != null) {
+                        int[] qrTypes = {28, 31, 4};
+                        for (int qt : qrTypes) {
+                            try {
+                                drawBarcode.invoke(pm, qrData, qrX, y, QR_SIZE, QR_SIZE, qt, 0);
+                                qrDrawn = true;
+                                Log.d(TAG, "QR drawn via drawBarcode type " + qt + " at y=" + y);
+                                break;
+                            } catch (Exception ex) {
+                                Log.w(TAG, "drawBarcode type " + qt + " failed: " + ex.getMessage());
+                            }
+                        }
+                    }
+
+                    // Strategy 3: Print ticket ID as text fallback
+                    if (!qrDrawn) {
+                        try {
+                            int lineH = 28;
+                            drawTextEx.invoke(pm, qrData, 0, y, PAGE_WIDTH, lineH, "", 22, 1, 0, 0);
+                            Log.w(TAG, "QR fallback: printed ticket ID as text");
+                        } catch (Exception ex) {
+                            Log.w(TAG, "QR text fallback also failed: " + ex.getMessage());
+                        }
+                    }
+
+                    y += QR_SIZE + 10;
                 }
                 continue;
             }
@@ -353,23 +383,45 @@ public class UrovoPrinterPlugin extends Plugin {
             boolean bold  = lineObj.optBoolean("bold", false);
             String alignS = lineObj.optString("align", "left");
 
-            int fontSize = "large".equals(sizeS) ? 40 : "small".equals(sizeS) ? 20 : 26;
+            int fontSize = "large".equals(sizeS) ? 34 : "small".equals(sizeS) ? 18 : 24;
             int alignInt = "center".equals(alignS) ? 1 : "right".equals(alignS) ? 2 : 0;
-            int lineH    = fontSize + 4;
+            int lineH    = fontSize + LINE_GAP;
 
             try {
                 drawTextEx.invoke(pm, text, 0, y, PAGE_WIDTH, lineH, "", fontSize, alignInt, bold ? 1 : 0, 0);
             } catch (Exception textEx) {
                 Log.w(TAG, "drawTextEx failed for '" + text + "': " + textEx.getMessage());
             }
-            y += lineH; // always advance y so subsequent lines don't overlap
+            y += lineH;
         }
 
-        paperFeed.invoke(pm, 10); // just enough to clear below the last line
+        paperFeed.invoke(pm, 16);
         printPage.invoke(pm, 1);
         close.invoke(pm);
 
         Log.i(TAG, "✅ Printed via android.device.PrinterManager — content: " + y + "px, page: " + totalHeight + "px");
+    }
+
+    /**
+     * Generate a QR code Bitmap using ZXing.
+     */
+    private Bitmap generateQrBitmap(String data, int size) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            java.util.Map<EncodeHintType, Object> hints = new java.util.EnumMap<>(EncodeHintType.class);
+            hints.put(EncodeHintType.MARGIN, 1);
+            BitMatrix matrix = writer.encode(data, BarcodeFormat.QR_CODE, size, size, hints);
+            Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    bmp.setPixel(x, y, matrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
+                }
+            }
+            return bmp;
+        } catch (Exception e) {
+            Log.e(TAG, "generateQrBitmap failed: " + e.getMessage());
+            return null;
+        }
     }
 
     /** Returns the first existing serial device path, or null. */
