@@ -404,32 +404,41 @@ export class ThermalPrinter {
         const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-        // SDK path: Urovo i9100 layout API
-        if (this.nativePosAvailable) {
-            const lines: PrintLine[] = [
-                // Header
-                { text: eventName, size: 'normal', bold: true, align: 'center' },
-                // QR Code
-                { type: 'qr', qrData: ticketData.ticket_id, text: '', size: 'normal', bold: false, align: 'center' },
-                // Details
-                { text: `Fight#: ${ticketData.fight_number}`,              size: 'normal', bold: false, align: 'left' },
-                ...(tellerName ? [{ text: `Teller: ${tellerName}`,         size: 'normal' as const, bold: false, align: 'left' as const }] : []),
-                { text: `Receipt: ${ticketData.ticket_id}`,                size: 'normal', bold: false, align: 'left' },
-                { text: `Date: ${dateStr}`,                                size: 'normal', bold: false, align: 'left' },
-                { text: `Time: ${timeStr}`,                                size: 'normal', bold: false, align: 'left' },
-                { text: '================================',                 size: 'small',  bold: false, align: 'center' },
-                // Bet amount (large + bold)
-                { text: `${sideDisplay} - P${ticketData.amount.toLocaleString()}`, size: 'large', bold: true, align: 'center' },
-                { text: '................................',                 size: 'small',  bold: false, align: 'center' },
-                { text: 'OFFICIAL BETTING RECEIPT',                        size: 'normal', bold: false, align: 'center' },
-            ];
-            console.log('[ThermalPrinter] Sending to SDK print path...');
-            const ok = await printViaSdkLines(lines);
-            if (ok) {
-                console.log('[ThermalPrinter] ✅ SDK print completed');
-                return;
-            }
-            console.warn('[ThermalPrinter] SDK print failed, falling through to ESC/POS path');
+        // Always attempt the SDK path first (Urovo i9100 built-in printer).
+        // We do NOT gate this on nativePosAvailable — that flag can be false if
+        // initialize() wasn't awaited or if isSupported() threw silently.
+        // printViaSdkLines() returns false quickly when the SDK is absent.
+        const sdkLines: PrintLine[] = [
+            // Header
+            { text: eventName, size: 'normal', bold: true, align: 'center' },
+            // QR Code
+            { type: 'qr', qrData: ticketData.ticket_id, text: '', size: 'normal', bold: false, align: 'center' },
+            // Details
+            { text: `Fight#: ${ticketData.fight_number}`,              size: 'normal', bold: false, align: 'left' },
+            ...(tellerName ? [{ text: `Teller: ${tellerName}`,         size: 'normal' as const, bold: false, align: 'left' as const }] : []),
+            { text: `Receipt: ${ticketData.ticket_id}`,                size: 'normal', bold: false, align: 'left' },
+            { text: `Date: ${dateStr}`,                                size: 'normal', bold: false, align: 'left' },
+            { text: `Time: ${timeStr}`,                                size: 'normal', bold: false, align: 'left' },
+            { text: '================================',                 size: 'small',  bold: false, align: 'center' },
+            // Bet amount (large + bold)
+            { text: `${sideDisplay} - P${ticketData.amount.toLocaleString()}`, size: 'large', bold: true, align: 'center' },
+            { text: '................................',                 size: 'small',  bold: false, align: 'center' },
+            { text: 'OFFICIAL BETTING RECEIPT',                        size: 'normal', bold: false, align: 'center' },
+        ];
+        console.log('[ThermalPrinter] Trying SDK print path (unconditional)...');
+        const sdkOk = await printViaSdkLines(sdkLines);
+        if (sdkOk) {
+            console.log('[ThermalPrinter] ✅ SDK print completed');
+            return;
+        }
+        console.warn('[ThermalPrinter] SDK path unavailable, falling back to ESC/POS BLE path...');
+
+        // ESC/POS path — BLE thermal printer only.
+        // If there is no BLE device connected we must NOT call write() — on Urovo
+        // devices write() routes through printRaw() which renders ESC/POS control
+        // bytes as garbage text.  Throw so the caller can show a proper error.
+        if (!this.device) {
+            throw new Error('Printer not available: built-in SDK print failed and no BLE printer is connected.');
         }
 
         // ESC/POS path — BLE thermal printer
