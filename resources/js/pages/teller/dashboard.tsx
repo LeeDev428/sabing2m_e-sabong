@@ -248,6 +248,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 amount: ticketData.amount,
                 odds: ticketData.odds,
                 potential_payout: ticketData.potential_payout,
+                event_name: ticketData.event_name,
+                teller_name: auth?.user?.name,
             });
             
             console.log('✅✅✅ PRINT COMPLETED SUCCESSFULLY! ✅✅✅');
@@ -359,6 +361,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                         amount: ticketData.amount,
                         odds: ticketData.odds,
                         potential_payout: ticketData.potential_payout,
+                        event_name: ticketData.event_name,
+                        teller_name: auth?.user?.name,
                     });
                     showToast('Receipt printed to thermal printer!', 'success', 3000);
                     return;
