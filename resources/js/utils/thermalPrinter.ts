@@ -218,6 +218,10 @@ export class ThermalPrinter {
         return this.device !== null && this.printerService !== null && this.printerCharacteristic !== null;
     }
 
+    isBuiltInPrinter(): boolean {
+        return this.nativePosAvailable;
+    }
+
     /**
      * Auto-detect: silently scan for a short period and connect to the first
      * printer found. Intended to be called on app startup when no saved device
