@@ -272,70 +272,104 @@ public class UrovoPrinterPlugin extends Plugin {
         Method printPage  = pmCls.getMethod("printPage", int.class);
         Method close      = pmCls.getMethod("close");
 
-        // Resolve drawBarcode once — used for QR lines. Not fatal if absent.
+        // Resolve drawBarcode — non-fatal if absent or wrong signature on this firmware.
         Method drawBarcode = null;
         try {
             drawBarcode = pmCls.getMethod("drawBarcode",
                     String.class, int.class, int.class, int.class, int.class, int.class, int.class);
         } catch (NoSuchMethodException e) {
-            Log.w(TAG, "drawBarcode() not available on this device — QR lines will be skipped");
+            Log.w(TAG, "drawBarcode() not found — QR lines will be skipped");
         }
 
+        final int TOP_MARGIN    = 5;
+        final int BOTTOM_MARGIN = 20;
+        final int QR_SIZE       = 160; // reduced for reliability
+
+        // ── PASS 1: pre-calculate exact page height so we waste no paper ────────
+        int totalHeight = TOP_MARGIN;
+        for (int i = 0; i < lines.length(); i++) {
+            JSONObject lo = lines.getJSONObject(i);
+            if ("qr".equals(lo.optString("type", "text"))) {
+                totalHeight += QR_SIZE + 8;
+                continue;
+            }
+            String sz = lo.optString("size", "normal");
+            int fs = "large".equals(sz) ? 40 : "small".equals(sz) ? 20 : 26;
+            totalHeight += fs + 4;
+        }
+        totalHeight += BOTTOM_MARGIN;
+
+        // ── PASS 2: open → draw → print ─────────────────────────────────────────
         int openResult = (int) open.invoke(pm);
         Log.d(TAG, "PrinterManager.open() = " + openResult);
 
-        setupPage.invoke(pm, PAGE_WIDTH, 1200);
+        setupPage.invoke(pm, PAGE_WIDTH, totalHeight);
         clearPage.invoke(pm);
 
-        int y = 5; // small top margin
+        int y = TOP_MARGIN;
 
         for (int i = 0; i < lines.length(); i++) {
             JSONObject lineObj = lines.getJSONObject(i);
             String lineType = lineObj.optString("type", "text");
 
             if ("qr".equals(lineType)) {
-                // QR code — drawn as a 2D barcode centred on the page
                 String qrData = lineObj.optString("qrData", "");
-                if (!qrData.isEmpty() && drawBarcode != null) {
-                    int qrSize = 180; // square, pixels
-                    int qrX    = (PAGE_WIDTH - qrSize) / 2;
-                    // Barcode type 31 = QR Code in Urovo/UBX SDK. Rotation 0 = normal.
-                    drawBarcode.invoke(pm, qrData, qrX, y, qrSize, qrSize, 31, 0);
-                    y += qrSize + 6;
+                if (!qrData.isEmpty()) {
+                    if (drawBarcode != null) {
+                        try {
+                            int qrX = (PAGE_WIDTH - QR_SIZE) / 2; // centred
+                            // type 31 = QR Code 2005 in Urovo/UBX SDK, rotation 0
+                            drawBarcode.invoke(pm, qrData, qrX, y, QR_SIZE, QR_SIZE, 31, 0);
+                            y += QR_SIZE + 8;
+                            Log.d(TAG, "QR barcode drawn at y=" + (y - QR_SIZE - 8));
+                        } catch (Exception qrEx) {
+                            // drawBarcode exists but threw — print ticket ID as small text instead
+                            Log.w(TAG, "drawBarcode() threw (" + qrEx.getMessage() + ") — printing ticket ID as text fallback");
+                            try {
+                                int lineH = 24;
+                                drawTextEx.invoke(pm, qrData, 0, y, PAGE_WIDTH, lineH, "", 20, 1, 0, 0);
+                                y += lineH;
+                            } catch (Exception fb) {
+                                Log.w(TAG, "QR text fallback also failed: " + fb.getMessage());
+                            }
+                        }
+                    } else {
+                        // No drawBarcode — print ticket ID as small centred text
+                        try {
+                            int lineH = 24;
+                            drawTextEx.invoke(pm, qrData, 0, y, PAGE_WIDTH, lineH, "", 20, 1, 0, 0);
+                            y += lineH;
+                        } catch (Exception fb) {
+                            Log.w(TAG, "QR text fallback failed: " + fb.getMessage());
+                        }
+                    }
                 }
                 continue;
             }
 
-            // ── text line ──
+            // ── text line ────────────────────────────────────────────────────────
             String text   = lineObj.optString("text", "");
             String sizeS  = lineObj.optString("size", "normal");
             boolean bold  = lineObj.optBoolean("bold", false);
             String alignS = lineObj.optString("align", "left");
 
-            int fontSize;
-            switch (sizeS) {
-                case "large":  fontSize = 40; break;
-                case "small":  fontSize = 20; break;
-                default:       fontSize = 26; break; // "normal"
-            }
+            int fontSize = "large".equals(sizeS) ? 40 : "small".equals(sizeS) ? 20 : 26;
+            int alignInt = "center".equals(alignS) ? 1 : "right".equals(alignS) ? 2 : 0;
+            int lineH    = fontSize + 4;
 
-            int alignInt;
-            switch (alignS) {
-                case "center": alignInt = 1; break;
-                case "right":  alignInt = 2; break;
-                default:       alignInt = 0; break; // "left"
+            try {
+                drawTextEx.invoke(pm, text, 0, y, PAGE_WIDTH, lineH, "", fontSize, alignInt, bold ? 1 : 0, 0);
+            } catch (Exception textEx) {
+                Log.w(TAG, "drawTextEx failed for '" + text + "': " + textEx.getMessage());
             }
-
-            int lineH = fontSize + 4; // tighter line spacing vs the old +8
-            drawTextEx.invoke(pm, text, 0, y, PAGE_WIDTH, lineH, "", fontSize, alignInt, bold ? 1 : 0, 0);
-            y += lineH;
+            y += lineH; // always advance y so subsequent lines don't overlap
         }
 
-        paperFeed.invoke(pm, 20); // advance paper just enough to clear the cutter
-        printPage.invoke(pm, 1);  // print 1 copy
+        paperFeed.invoke(pm, 10); // just enough to clear below the last line
+        printPage.invoke(pm, 1);
         close.invoke(pm);
 
-        Log.i(TAG, "✅ Printed via android.device.PrinterManager — total height: " + y + "px");
+        Log.i(TAG, "✅ Printed via android.device.PrinterManager — content: " + y + "px, page: " + totalHeight + "px");
     }
 
     /** Returns the first existing serial device path, or null. */
