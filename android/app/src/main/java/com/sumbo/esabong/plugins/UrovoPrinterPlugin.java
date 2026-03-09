@@ -272,16 +272,41 @@ public class UrovoPrinterPlugin extends Plugin {
         Method printPage  = pmCls.getMethod("printPage", int.class);
         Method close      = pmCls.getMethod("close");
 
+        // Resolve drawBarcode once — used for QR lines. Not fatal if absent.
+        Method drawBarcode = null;
+        try {
+            drawBarcode = pmCls.getMethod("drawBarcode",
+                    String.class, int.class, int.class, int.class, int.class, int.class, int.class);
+        } catch (NoSuchMethodException e) {
+            Log.w(TAG, "drawBarcode() not available on this device — QR lines will be skipped");
+        }
+
         int openResult = (int) open.invoke(pm);
         Log.d(TAG, "PrinterManager.open() = " + openResult);
 
         setupPage.invoke(pm, PAGE_WIDTH, 1200);
         clearPage.invoke(pm);
 
-        int y = 10;
+        int y = 5; // small top margin
 
         for (int i = 0; i < lines.length(); i++) {
             JSONObject lineObj = lines.getJSONObject(i);
+            String lineType = lineObj.optString("type", "text");
+
+            if ("qr".equals(lineType)) {
+                // QR code — drawn as a 2D barcode centred on the page
+                String qrData = lineObj.optString("qrData", "");
+                if (!qrData.isEmpty() && drawBarcode != null) {
+                    int qrSize = 180; // square, pixels
+                    int qrX    = (PAGE_WIDTH - qrSize) / 2;
+                    // Barcode type 31 = QR Code in Urovo/UBX SDK. Rotation 0 = normal.
+                    drawBarcode.invoke(pm, qrData, qrX, y, qrSize, qrSize, 31, 0);
+                    y += qrSize + 6;
+                }
+                continue;
+            }
+
+            // ── text line ──
             String text   = lineObj.optString("text", "");
             String sizeS  = lineObj.optString("size", "normal");
             boolean bold  = lineObj.optBoolean("bold", false);
@@ -301,12 +326,12 @@ public class UrovoPrinterPlugin extends Plugin {
                 default:       alignInt = 0; break; // "left"
             }
 
-            int lineH = fontSize + 8;
+            int lineH = fontSize + 4; // tighter line spacing vs the old +8
             drawTextEx.invoke(pm, text, 0, y, PAGE_WIDTH, lineH, "", fontSize, alignInt, bold ? 1 : 0, 0);
             y += lineH;
         }
 
-        paperFeed.invoke(pm, 40); // advance paper so last line clears the cutter
+        paperFeed.invoke(pm, 20); // advance paper just enough to clear the cutter
         printPage.invoke(pm, 1);  // print 1 copy
         close.invoke(pm);
 
