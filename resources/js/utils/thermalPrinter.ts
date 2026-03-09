@@ -7,8 +7,18 @@ const GS  = '\x1D';
 
 /** Native plugin interface for built-in POS thermal printers (e.g. Urovo i9100) */
 interface UrovoPrinterPlugin {
-    isSupported(): Promise<{ supported: boolean; manufacturer: string; model: string; devicePath: string }>;
+    isSupported(): Promise<{ supported: boolean; manufacturer: string; model: string; devicePath: string; method: string }>;
     printRaw(options: { data: string }): Promise<{ success: boolean; method: string; devicePath: string }>;
+    /** Structured layout print — each line carries its own size/alignment/bold. */
+    printText(options: { lines: string }): Promise<{ success: boolean }>;
+}
+
+/** A single printable line for the Urovo i9100 SDK layout API. */
+interface PrintLine {
+    text: string;
+    size: 'small' | 'normal' | 'large';
+    bold: boolean;
+    align: 'left' | 'center' | 'right';
 }
 
 const UrovoPrinter = registerPlugin<UrovoPrinterPlugin>('UrovoPrinter');
@@ -28,6 +38,22 @@ async function printViaNativePlugin(commands: string): Promise<boolean> {
         return true;
     } catch (err) {
         console.warn('[NativePrinter] printRaw failed:', err);
+        return false;
+    }
+}
+
+/**
+ * Print an array of structured lines via android.device.PrinterManager (Urovo i9100 SDK).
+ * Returns true on success, false if the plugin call fails.
+ */
+async function printViaSdkLines(lines: PrintLine[]): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) return false;
+    try {
+        await UrovoPrinter.printText({ lines: JSON.stringify(lines) });
+        console.log('[NativePrinter] ✅ Printed via android.device.PrinterManager SDK');
+        return true;
+    } catch (err) {
+        console.warn('[NativePrinter] printText failed:', err);
         return false;
     }
 }
@@ -317,6 +343,25 @@ export class ThermalPrinter {
     }
 
     async printTest() {
+        // SDK path: Urovo i9100 layout API
+        if (this.nativePosAvailable) {
+            const lines: PrintLine[] = [
+                { text: '================================', size: 'small',  bold: false, align: 'center' },
+                { text: 'Sabing2m Test Receipt',          size: 'normal', bold: true,  align: 'center' },
+                { text: '================================', size: 'small',  bold: false, align: 'center' },
+                { text: `Date: ${new Date().toLocaleDateString()}`,  size: 'normal', bold: false, align: 'left' },
+                { text: `Time: ${new Date().toLocaleTimeString()}`,  size: 'normal', bold: false, align: 'left' },
+                { text: '================================', size: 'small',  bold: false, align: 'center' },
+                { text: 'Built-in Printer: OK',           size: 'normal', bold: false, align: 'left' },
+                { text: 'Printer Status: Connected',      size: 'normal', bold: false, align: 'left' },
+                { text: '================================', size: 'small',  bold: false, align: 'center' },
+                { text: '', size: 'normal', bold: false, align: 'left' },
+            ];
+            const ok = await printViaSdkLines(lines);
+            if (ok) return;
+        }
+
+        // ESC/POS path: BLE printer
         const commands = [
             `${ESC}@`, // Initialize
             `${ESC}a${String.fromCharCode(1)}`, // Center align
@@ -347,20 +392,45 @@ export class ThermalPrinter {
         event_name?: string;
     }) {
         console.log('[ThermalPrinter] printTicket() called with data:', ticketData);
-        
+
         const sideDisplay = ticketData.side.toUpperCase();
-        const eventName = ticketData.event_name || 'SABONG EVENT';
-        
-        console.log('[ThermalPrinter] Building ESC/POS commands with QR code...');
-        console.log('[ThermalPrinter] Event name to print:', eventName);
+        const eventName   = ticketData.event_name || 'SABONG EVENT';
+        const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+        const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+        // SDK path: Urovo i9100 layout API
+        if (this.nativePosAvailable) {
+            const lines: PrintLine[] = [
+                { text: eventName,                                         size: 'normal', bold: true,  align: 'center' },
+                { text: '================================',                 size: 'small',  bold: false, align: 'center' },
+                { text: `Fight: #${ticketData.fight_number}`,              size: 'normal', bold: false, align: 'left'   },
+                { text: `Receipt: ${ticketData.ticket_id}`,                size: 'normal', bold: false, align: 'left'   },
+                { text: `Date: ${dateStr}`,                                size: 'normal', bold: false, align: 'left'   },
+                { text: `Time: ${timeStr}`,                                size: 'normal', bold: false, align: 'left'   },
+                { text: '================================',                 size: 'small',  bold: false, align: 'center' },
+                { text: `${sideDisplay} - P${ticketData.amount.toLocaleString()}`, size: 'large', bold: true, align: 'center' },
+                { text: '================================',                 size: 'small',  bold: false, align: 'center' },
+                { text: 'OFFICIAL BETTING RECEIPT',                        size: 'normal', bold: false, align: 'center' },
+                { text: '',                                                 size: 'normal', bold: false, align: 'left'   },
+            ];
+            console.log('[ThermalPrinter] Sending to SDK print path...');
+            const ok = await printViaSdkLines(lines);
+            if (ok) {
+                console.log('[ThermalPrinter] ✅ SDK print completed');
+                return;
+            }
+            console.warn('[ThermalPrinter] SDK print failed, falling through to ESC/POS path');
+        }
+
+        console.log('[ThermalPrinter] Building ESC/POS commands...');
         const commands = [
             `${ESC}@`, // Initialize
-            
+
             // Event Title (centered, smaller)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${eventName}\n`,
             '--------------------------------\n',
-            
+
             // Print QR Code (size 2 - smaller)
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `${GS}(k${String.fromCharCode(4)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(65)}${String.fromCharCode(50)}${String.fromCharCode(0)}`, // QR Model 2
@@ -369,11 +439,11 @@ export class ThermalPrinter {
             `${GS}(k${String.fromCharCode(ticketData.ticket_id.length + 3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(80)}${String.fromCharCode(48)}${ticketData.ticket_id}`, // QR Data
             `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(81)}${String.fromCharCode(48)}`, // Print QR
             '\n',
-            
+
             // Receipt details (compact format)
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `#${ticketData.fight_number} | ${ticketData.ticket_id}\n`,
-            `${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })} ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}\n`,
+            `${dateStr} ${timeStr}\n`,
             '--------------------------------\n',
             // Bet Info (BIGGER)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
@@ -388,15 +458,8 @@ export class ThermalPrinter {
         ].join('');
 
         console.log('[ThermalPrinter] Commands built, length:', commands.length);
-        console.log('[ThermalPrinter] Calling write()...');
-        
-        try {
-            await this.write(commands);
-            console.log('[ThermalPrinter] ✅ write() completed successfully');
-        } catch (error) {
-            console.error('[ThermalPrinter] ❌ write() failed:', error);
-            throw error;
-        }
+        await this.write(commands);
+        console.log('[ThermalPrinter] ✅ write() completed');
     }
 
     async printPayoutReceipt(payoutData: {
@@ -411,36 +474,70 @@ export class ThermalPrinter {
         event_name?: string;
     }) {
         console.log('[ThermalPrinter] printPayoutReceipt() called with data:', payoutData);
-        
+
         const sideDisplay = payoutData.side.toUpperCase();
-        const eventName = payoutData.event_name || 'SABONG EVENT';
-        
+        const eventName   = payoutData.event_name || 'SABONG EVENT';
+        const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+        const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+        // SDK path: Urovo i9100 layout API
+        if (this.nativePosAvailable) {
+            const lines: PrintLine[] = [
+                { text: eventName,                                                    size: 'normal', bold: true,  align: 'center' },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: 'PAYOUT RECEIPT',                                             size: 'normal', bold: true,  align: 'center' },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `Fight#: ${payoutData.fight_number}`,                         size: 'normal', bold: false, align: 'left'   },
+                { text: `Bet By: ${payoutData.bet_by}`,                               size: 'normal', bold: false, align: 'left'   },
+                { text: `Claimed By: ${payoutData.claimed_by}`,                       size: 'normal', bold: false, align: 'left'   },
+                { text: `Receipt: ${payoutData.ticket_id}`,                           size: 'normal', bold: false, align: 'left'   },
+                { text: `Date: ${dateStr}`,                                           size: 'normal', bold: false, align: 'left'   },
+                { text: `Time: ${timeStr}`,                                           size: 'normal', bold: false, align: 'left'   },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `Side: ${sideDisplay}`,                                       size: 'normal', bold: false, align: 'left'   },
+                { text: `Bet Amount: P${payoutData.bet_amount.toLocaleString()}`,     size: 'normal', bold: false, align: 'left'   },
+                { text: `Odds: ${payoutData.odds}x`,                                  size: 'normal', bold: false, align: 'left'   },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `PAYOUT: P${payoutData.payout_amount.toLocaleString()}`,      size: 'large',  bold: true,  align: 'center' },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: 'WINNER - CLAIM RECEIPT',                                     size: 'normal', bold: false, align: 'center' },
+                { text: '',                                                            size: 'normal', bold: false, align: 'left'   },
+            ];
+            console.log('[ThermalPrinter] Sending payout to SDK print path...');
+            const ok = await printViaSdkLines(lines);
+            if (ok) {
+                console.log('[ThermalPrinter] ✅ SDK payout print completed');
+                return;
+            }
+            console.warn('[ThermalPrinter] SDK print failed, falling through to ESC/POS path');
+        }
+
         console.log('[ThermalPrinter] Building payout receipt ESC/POS commands...');
         const commands = [
             `${ESC}@`, // Initialize
-            
+
             // Event Title (centered, BOLD)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${ESC}!${String.fromCharCode(16)}`, // Double width only
             `${eventName}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal font
             '================================\n',
-            
+
             // Receipt Type
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${ESC}!${String.fromCharCode(8)}`, // Bold
             'PAYOUT RECEIPT\n',
             `${ESC}!${String.fromCharCode(0)}`, // Normal
             '================================\n',
-            
+
             // Receipt details
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `Fight#: ${payoutData.fight_number}\n`,
             `Bet By: ${payoutData.bet_by}\n`,
             `Claimed By: ${payoutData.claimed_by}\n`,
             `Receipt: ${payoutData.ticket_id}\n`,
-            `Date: ${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}\n`,
-            `Time: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}\n`,
+            `Date: ${dateStr}\n`,
+            `Time: ${timeStr}\n`,
             '================================\n',
             '\n',
             // Bet Info
@@ -465,15 +562,8 @@ export class ThermalPrinter {
         ].join('');
 
         console.log('[ThermalPrinter] Commands built, length:', commands.length);
-        console.log('[ThermalPrinter] Calling write()...');
-        
-        try {
-            await this.write(commands);
-            console.log('[ThermalPrinter] ✅ Payout receipt printed successfully');
-        } catch (error) {
-            console.error('[ThermalPrinter] ❌ Payout receipt print failed:', error);
-            throw error;
-        }
+        await this.write(commands);
+        console.log('[ThermalPrinter] ✅ Payout receipt printed successfully');
     }
 
     async printRefundReceipt(refundData: {
@@ -488,22 +578,56 @@ export class ThermalPrinter {
         refund_reason?: string;
     }) {
         console.log('[ThermalPrinter] printRefundReceipt() called with data:', refundData);
-        
+
         const sideDisplay = refundData.side.toUpperCase();
-        const eventName = refundData.event_name || 'SABONG EVENT';
-        const reason = refundData.refund_reason || 'DRAW';
-        
+        const eventName   = refundData.event_name || 'SABONG EVENT';
+        const reason      = refundData.refund_reason || 'DRAW';
+        const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+        const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+        // SDK path: Urovo i9100 layout API
+        if (this.nativePosAvailable) {
+            const lines: PrintLine[] = [
+                { text: eventName,                                                    size: 'normal', bold: true,  align: 'center' },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: 'REFUND RECEIPT',                                             size: 'normal', bold: true,  align: 'center' },
+                { text: `Reason: ${reason}`,                                          size: 'normal', bold: false, align: 'center' },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `Fight#: ${refundData.fight_number}`,                         size: 'normal', bold: false, align: 'left'   },
+                { text: `Bet By: ${refundData.bet_by}`,                               size: 'normal', bold: false, align: 'left'   },
+                { text: `Refunded By: ${refundData.claimed_by}`,                      size: 'normal', bold: false, align: 'left'   },
+                { text: `Receipt: ${refundData.ticket_id}`,                           size: 'normal', bold: false, align: 'left'   },
+                { text: `Date: ${dateStr}`,                                           size: 'normal', bold: false, align: 'left'   },
+                { text: `Time: ${timeStr}`,                                           size: 'normal', bold: false, align: 'left'   },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `Side: ${sideDisplay}`,                                       size: 'normal', bold: false, align: 'left'   },
+                { text: `Bet Amount: P${refundData.bet_amount.toLocaleString()}`,     size: 'normal', bold: false, align: 'left'   },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `REFUND: P${refundData.refund_amount.toLocaleString()}`,      size: 'large',  bold: true,  align: 'center' },
+                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `${reason} - REFUND RECEIPT`,                                 size: 'normal', bold: false, align: 'center' },
+                { text: '',                                                            size: 'normal', bold: false, align: 'left'   },
+            ];
+            console.log('[ThermalPrinter] Sending refund to SDK print path...');
+            const ok = await printViaSdkLines(lines);
+            if (ok) {
+                console.log('[ThermalPrinter] ✅ SDK refund print completed');
+                return;
+            }
+            console.warn('[ThermalPrinter] SDK print failed, falling through to ESC/POS path');
+        }
+
         console.log('[ThermalPrinter] Building refund receipt ESC/POS commands...');
         const commands = [
             `${ESC}@`, // Initialize
-            
+
             // Event Title (centered, BOLD)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${ESC}!${String.fromCharCode(16)}`, // Double width only
             `${eventName}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal font
             '================================\n',
-            
+
             // Receipt Type
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${ESC}!${String.fromCharCode(8)}`, // Bold
@@ -511,15 +635,15 @@ export class ThermalPrinter {
             `${ESC}!${String.fromCharCode(0)}`, // Normal
             `Reason: ${reason}\n`,
             '================================\n',
-            
+
             // Receipt details
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `Fight#: ${refundData.fight_number}\n`,
             `Bet By: ${refundData.bet_by}\n`,
             `Refunded By: ${refundData.claimed_by}\n`,
             `Receipt: ${refundData.ticket_id}\n`,
-            `Date: ${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}\n`,
-            `Time: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}\n`,
+            `Date: ${dateStr}\n`,
+            `Time: ${timeStr}\n`,
             '================================\n',
             '\n',
             // Bet Info
@@ -543,16 +667,10 @@ export class ThermalPrinter {
         ].join('');
 
         console.log('[ThermalPrinter] Commands built, length:', commands.length);
-        console.log('[ThermalPrinter] Calling write()...');
-        
-        try {
-            await this.write(commands);
-            console.log('[ThermalPrinter] ✅ Refund receipt printed successfully');
-        } catch (error) {
-            console.error('[ThermalPrinter] ❌ Refund receipt print failed:', error);
-            throw error;
-        }
+        await this.write(commands);
+        console.log('[ThermalPrinter] ✅ Refund receipt printed successfully');
     }
 }
 
 export const thermalPrinter = new ThermalPrinter();
+
