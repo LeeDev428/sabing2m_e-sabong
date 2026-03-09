@@ -6,33 +6,40 @@ import { BleDevice } from '@capacitor-community/bluetooth-le';
 
 export default function PrinterSettings() {
     const [isConnected, setIsConnected] = useState(false);
+    const [isBuiltIn, setIsBuiltIn] = useState(false); // true = Urovo/POS built-in printer found
     const [printer, setPrinter] = useState<BleDevice | null>(null);
-    const [status, setStatus] = useState('Not connected');
+    const [status, setStatus] = useState('Initializing...');
     const [autoSaveDevice, setAutoSaveDevice] = useState(true);
     const [availableDevices, setAvailableDevices] = useState<BleDevice[]>([]);
     const [isScanning, setIsScanning] = useState(false);
 
     useEffect(() => {
-        // Initialize Bluetooth
+        // Initialize printer — detects built-in POS printer first, then BLE
         thermalPrinter.initialize().then(() => {
-            // Check connection status
+            const builtIn = thermalPrinter.isBuiltInPrinter();
+            setIsBuiltIn(builtIn);
+
+            if (builtIn) {
+                setIsConnected(true);
+                setStatus('Built-in printer ready');
+                return;
+            }
+
+            // BLE fallback
             const device = thermalPrinter.getConnectedDevice();
             if (device) {
                 setPrinter(device);
                 setIsConnected(true);
-                setStatus(`Connected to ${device.name || 'Thermal Printer'}`);
+                setStatus(`Connected to ${device.name || 'Bluetooth Printer'}`);
             } else {
-                const savedPrinterId = localStorage.getItem('thermal_printer_id');
-                if (savedPrinterId) {
-                    setStatus('Reconnecting to printer...');
-                }
+                const savedId = localStorage.getItem('thermal_printer_id');
+                setStatus(savedId ? 'Reconnecting to Bluetooth printer...' : 'No printer connected');
             }
         });
 
-        // Listen for connection changes
         const handleConnectionChange = (connected: boolean) => {
             setIsConnected(connected);
-            if (!connected) {
+            if (!connected && !thermalPrinter.isBuiltInPrinter()) {
                 setPrinter(null);
                 setStatus('Printer disconnected');
             }
