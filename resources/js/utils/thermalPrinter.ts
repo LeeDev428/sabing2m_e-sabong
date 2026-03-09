@@ -19,6 +19,10 @@ interface PrintLine {
     size: 'small' | 'normal' | 'large';
     bold: boolean;
     align: 'left' | 'center' | 'right';
+    /** Set to 'qr' to draw a QR barcode instead of text. Requires qrData. */
+    type?: 'text' | 'qr';
+    /** Data string encoded into the QR code (used when type='qr'). */
+    qrData?: string;
 }
 
 const UrovoPrinter = registerPlugin<UrovoPrinterPlugin>('UrovoPrinter');
@@ -390,28 +394,34 @@ export class ThermalPrinter {
         odds: number;
         potential_payout: number;
         event_name?: string;
+        teller_name?: string;
     }) {
         console.log('[ThermalPrinter] printTicket() called with data:', ticketData);
 
         const sideDisplay = ticketData.side.toUpperCase();
         const eventName   = ticketData.event_name || 'SABONG EVENT';
+        const tellerName  = ticketData.teller_name || '';
         const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         // SDK path: Urovo i9100 layout API
         if (this.nativePosAvailable) {
             const lines: PrintLine[] = [
-                { text: eventName,                                         size: 'normal', bold: true,  align: 'center' },
+                // Header
+                { text: eventName, size: 'normal', bold: true, align: 'center' },
+                // QR Code
+                { type: 'qr', qrData: ticketData.ticket_id, text: '', size: 'normal', bold: false, align: 'center' },
+                // Details
+                { text: `Fight#: ${ticketData.fight_number}`,              size: 'normal', bold: false, align: 'left' },
+                ...(tellerName ? [{ text: `Teller: ${tellerName}`,         size: 'normal' as const, bold: false, align: 'left' as const }] : []),
+                { text: `Receipt: ${ticketData.ticket_id}`,                size: 'normal', bold: false, align: 'left' },
+                { text: `Date: ${dateStr}`,                                size: 'normal', bold: false, align: 'left' },
+                { text: `Time: ${timeStr}`,                                size: 'normal', bold: false, align: 'left' },
                 { text: '================================',                 size: 'small',  bold: false, align: 'center' },
-                { text: `Fight: #${ticketData.fight_number}`,              size: 'normal', bold: false, align: 'left'   },
-                { text: `Receipt: ${ticketData.ticket_id}`,                size: 'normal', bold: false, align: 'left'   },
-                { text: `Date: ${dateStr}`,                                size: 'normal', bold: false, align: 'left'   },
-                { text: `Time: ${timeStr}`,                                size: 'normal', bold: false, align: 'left'   },
-                { text: '================================',                 size: 'small',  bold: false, align: 'center' },
+                // Bet amount (large + bold)
                 { text: `${sideDisplay} - P${ticketData.amount.toLocaleString()}`, size: 'large', bold: true, align: 'center' },
-                { text: '================================',                 size: 'small',  bold: false, align: 'center' },
+                { text: '................................',                 size: 'small',  bold: false, align: 'center' },
                 { text: 'OFFICIAL BETTING RECEIPT',                        size: 'normal', bold: false, align: 'center' },
-                { text: '',                                                 size: 'normal', bold: false, align: 'left'   },
             ];
             console.log('[ThermalPrinter] Sending to SDK print path...');
             const ok = await printViaSdkLines(lines);
@@ -422,39 +432,43 @@ export class ThermalPrinter {
             console.warn('[ThermalPrinter] SDK print failed, falling through to ESC/POS path');
         }
 
+        // ESC/POS path — BLE thermal printer
         console.log('[ThermalPrinter] Building ESC/POS commands...');
         const commands = [
             `${ESC}@`, // Initialize
 
-            // Event Title (centered, smaller)
-            `${ESC}a${String.fromCharCode(1)}`, // Center align
+            // Event Title (centered)
+            `${ESC}a${String.fromCharCode(1)}`,
             `${eventName}\n`,
-            '--------------------------------\n',
 
-            // Print QR Code (size 2 - smaller)
-            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            // QR Code (centred, size 3)
+            `${ESC}a${String.fromCharCode(1)}`,
             `${GS}(k${String.fromCharCode(4)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(65)}${String.fromCharCode(50)}${String.fromCharCode(0)}`, // QR Model 2
-            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(67)}${String.fromCharCode(2)}`, // QR Size: 2 (smaller)
-            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(69)}${String.fromCharCode(48)}`, // QR Error correction: L
-            `${GS}(k${String.fromCharCode(ticketData.ticket_id.length + 3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(80)}${String.fromCharCode(48)}${ticketData.ticket_id}`, // QR Data
+            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(67)}${String.fromCharCode(3)}`, // QR Size 3
+            `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(69)}${String.fromCharCode(48)}`, // Error correction L
+            `${GS}(k${String.fromCharCode(ticketData.ticket_id.length + 3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(80)}${String.fromCharCode(48)}${ticketData.ticket_id}`, // QR data
             `${GS}(k${String.fromCharCode(3)}${String.fromCharCode(0)}${String.fromCharCode(49)}${String.fromCharCode(81)}${String.fromCharCode(48)}`, // Print QR
             '\n',
 
-            // Receipt details (compact format)
-            `${ESC}a${String.fromCharCode(0)}`, // Left align
-            `#${ticketData.fight_number} | ${ticketData.ticket_id}\n`,
-            `${dateStr} ${timeStr}\n`,
-            '--------------------------------\n',
-            // Bet Info (BIGGER)
-            `${ESC}a${String.fromCharCode(1)}`, // Center align
-            `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
+            // Receipt details — left aligned, each field on its own line
+            `${ESC}a${String.fromCharCode(0)}`,
+            `Fight#: ${ticketData.fight_number}\n`,
+            tellerName ? `Teller: ${tellerName}\n` : '',
+            `Receipt: ${ticketData.ticket_id}\n`,
+            `Date: ${dateStr}\n`,
+            `Time: ${timeStr}\n`,
+            '================================\n',
+
+            // Bet amount (double width+height, bold, centred)
+            `${ESC}a${String.fromCharCode(1)}`,
+            `${ESC}!${String.fromCharCode(48)}`,
             `${sideDisplay} - P${ticketData.amount.toLocaleString()}\n`,
-            `${ESC}!${String.fromCharCode(0)}`, // Normal
-            '--------------------------------\n',
-            `${ESC}a${String.fromCharCode(1)}`, // Center align
-            'OFFICIAL RECEIPT\n',
-            '\n',
-            `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
+            `${ESC}!${String.fromCharCode(0)}`,
+
+            '................................\n',
+            `${ESC}a${String.fromCharCode(1)}`,
+            'OFFICIAL BETTING RECEIPT\n',
+            `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut
         ].join('');
 
         console.log('[ThermalPrinter] Commands built, length:', commands.length);
