@@ -495,20 +495,52 @@ public class UrovoPrinterPlugin extends Plugin {
     /**
      * Strip ESC/POS control sequences from a byte array, leaving only printable ASCII + newlines.
      * Used as a last-resort when printRaw() is called on a device whose SDK only accepts layout API.
+     *
+     * ESC/POS command lengths (bytes INCLUDING the ESC/GS prefix byte):
+     *   ESC @          → 2  (initialize)
+     *   ESC a n        → 3  (justify)
+     *   ESC ! n        → 3  (char mode)
+     *   ESC E n        → 3  (bold)
+     *   ESC d n        → 3  (feed n lines)
+     *   GS V n         → 3  (cut)
+     *   GS ( k pL pH … → 3 + pL + (pH*256) variable-length QR commands
      */
     private String stripEscPos(byte[] data) {
         StringBuilder sb = new StringBuilder();
         int i = 0;
         while (i < data.length) {
-            byte b = data[i];
-            if (b == 0x1B || b == 0x1D) {
-                // ESC or GS — skip this byte and the next 1–2 bytes (command bytes)
-                // Heuristic: skip exactly 2 more bytes for the most common commands.
-                i += 3;
+            int b = data[i] & 0xFF;
+            if (b == 0x1B) { // ESC
+                if (i + 1 < data.length) {
+                    int cmd = data[i + 1] & 0xFF;
+                    if (cmd == 0x40) { i += 2; continue; }          // ESC @  (2 bytes)
+                    if (cmd == 0x61 || cmd == 0x21 || cmd == 0x45
+                     || cmd == 0x64 || cmd == 0x4D) {               // ESC a/!/E/d/M (3 bytes)
+                        i += 3; continue;
+                    }
+                }
+                i += 2; // fallback: skip ESC + 1 unknown
+                continue;
+            }
+            if (b == 0x1D) { // GS
+                if (i + 1 < data.length) {
+                    int cmd = data[i + 1] & 0xFF;
+                    if (cmd == 0x56) { i += 3; continue; }           // GS V n (cut, 3 bytes)
+                    if (cmd == 0x28) {                                // GS ( — variable length
+                        // GS ( k pL pH ...  → total = 2 (GS () + 2 (pL,pH) + pL + pH*256
+                        if (i + 3 < data.length) {
+                            int pL = data[i + 2] & 0xFF;
+                            int pH = data[i + 3] & 0xFF;
+                            i += 2 + 2 + pL + pH * 256;
+                            continue;
+                        }
+                    }
+                }
+                i += 2; // fallback
                 continue;
             }
             if (b == 0x0A) { sb.append('\n'); i++; continue; } // LF
-            if (b == 0x0D) { i++; continue; }                  // CR (ignore standalone CR)
+            if (b == 0x0D) { i++; continue; }                  // CR (ignore)
             if (b >= 0x20 && b < 0x7F) { sb.append((char) b); } // printable ASCII
             i++;
         }
