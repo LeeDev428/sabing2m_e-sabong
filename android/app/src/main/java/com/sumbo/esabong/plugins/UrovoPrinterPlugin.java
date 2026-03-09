@@ -9,6 +9,9 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
@@ -62,7 +65,19 @@ public class UrovoPrinterPlugin extends Plugin {
 
     @PluginMethod
     public void isSupported(PluginCall call) {
-        // 1. Try Urovo SDK via reflection
+        // 1. Check android.device.PrinterManager (Urovo i9100 / UBX platform)
+        if (isAndroidDevicePrinterAvailable()) {
+            JSObject result = new JSObject();
+            result.put("supported",    true);
+            result.put("manufacturer", android.os.Build.MANUFACTURER);
+            result.put("model",        android.os.Build.MODEL);
+            result.put("devicePath",   "android.device.PrinterManager");
+            result.put("method",       "sdk");
+            call.resolve(result);
+            return;
+        }
+
+        // 2. Check legacy Urovo SDK class names via reflection
         if (isUrovoSdkAvailable()) {
             JSObject result = new JSObject();
             result.put("supported",    true);
@@ -106,7 +121,33 @@ public class UrovoPrinterPlugin extends Plugin {
             return;
         }
 
-        // 1. Try Urovo SDK (reflection)
+        // 1. Try android.device.PrinterManager SDK (Urovo i9100)
+        if (isAndroidDevicePrinterAvailable()) {
+            // Strip ESC/POS control bytes and print readable text via SDK
+            String plainText = stripEscPos(data);
+            try {
+                JSONArray lines = new JSONArray();
+                for (String line : plainText.split("\n")) {
+                    JSONObject obj = new JSONObject();
+                    obj.put("text", line.trim());
+                    obj.put("size", "normal");
+                    obj.put("bold", false);
+                    obj.put("align", "left");
+                    lines.put(obj);
+                }
+                printViaAndroidDevice(lines);
+                JSObject result = new JSObject();
+                result.put("success",    true);
+                result.put("method",     "sdk");
+                result.put("devicePath", "android.device.PrinterManager");
+                call.resolve(result);
+                return;
+            } catch (Exception e) {
+                Log.w(TAG, "⚠️ android.device.PrinterManager printRaw fallback failed: " + e.getMessage());
+            }
+        }
+
+        // 2. Try legacy Urovo SDK (reflection)
         if (printViaUrovoSdk(data)) {
             JSObject result = new JSObject();
             result.put("success",    true);
@@ -137,10 +178,142 @@ public class UrovoPrinterPlugin extends Plugin {
     }
 
     // -------------------------------------------------------------------------
+    // printText  — structured layout printing via android.device.PrinterManager
+    // -------------------------------------------------------------------------
+
+    /**
+     * Print an array of styled text lines using android.device.PrinterManager
+     * (the layout-based SDK present on Urovo i9100 and similar UBX devices).
+     *
+     * Expects call param "lines" = JSON string of Array<{
+     *   text: string,
+     *   size: "small" | "normal" | "large",
+     *   bold: boolean,
+     *   align: "left" | "center" | "right"
+     * }>
+     *
+     * drawTextEx signature (from dexdump of com.ubx.platform.jar):
+     *   drawTextEx(String text, int x, int y, int width, int height,
+     *              String fontName, int fontSize, int align, int bold, int italic) → int
+     *   align: 0=left, 1=center, 2=right
+     *   bold/italic: 0=off, 1=on
+     */
+    @PluginMethod
+    public void printText(PluginCall call) {
+        String linesJson = call.getString("lines", "[]");
+
+        try {
+            JSONArray lines = new JSONArray(linesJson);
+
+            if (isAndroidDevicePrinterAvailable()) {
+                printViaAndroidDevice(lines);
+                JSObject result = new JSObject();
+                result.put("success", true);
+                call.resolve(result);
+                return;
+            }
+
+            // Fallback: strip formatting, write plain text to serial device
+            String path = findWritableSerialPath();
+            if (path != null) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < lines.length(); i++) {
+                    sb.append(lines.getJSONObject(i).optString("text", "")).append("\n");
+                }
+                sb.append("\n\n\n");
+                if (printViaSerial(path, sb.toString().getBytes("UTF-8"))) {
+                    JSObject result = new JSObject();
+                    result.put("success", true);
+                    call.resolve(result);
+                    return;
+                }
+            }
+
+            call.reject("Built-in printer not found on "
+                    + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
+
+        } catch (Exception e) {
+            Log.e(TAG, "printText failed: " + e.getMessage(), e);
+            call.reject("Print error: " + e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
 
-    /** Returns the first existing & writable serial device path, or null. */
+    private static final int PAGE_WIDTH = 384; // print head width in dots (48mm @ 8dpi)
+
+    /** Returns true when android.device.PrinterManager is on the bootclasspath (Urovo i9100). */
+    private boolean isAndroidDevicePrinterAvailable() {
+        try {
+            Class.forName("android.device.PrinterManager");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Draw lines and print one copy using android.device.PrinterManager via reflection.
+     * This is the page-layout API on UBX/Urovo devices — it does NOT accept raw ESC/POS bytes.
+     */
+    private void printViaAndroidDevice(JSONArray lines) throws Exception {
+        Class<?> pmCls = Class.forName("android.device.PrinterManager");
+        Object pm = pmCls.newInstance();
+
+        Method open       = pmCls.getMethod("open");
+        Method setupPage  = pmCls.getMethod("setupPage", int.class, int.class);
+        Method clearPage  = pmCls.getMethod("clearPage");
+        Method drawTextEx = pmCls.getMethod("drawTextEx",
+                String.class, int.class, int.class, int.class, int.class,
+                String.class, int.class, int.class, int.class, int.class);
+        Method paperFeed  = pmCls.getMethod("paperFeed", int.class);
+        Method printPage  = pmCls.getMethod("printPage", int.class);
+        Method close      = pmCls.getMethod("close");
+
+        int openResult = (int) open.invoke(pm);
+        Log.d(TAG, "PrinterManager.open() = " + openResult);
+
+        setupPage.invoke(pm, PAGE_WIDTH, 1200);
+        clearPage.invoke(pm);
+
+        int y = 10;
+
+        for (int i = 0; i < lines.length(); i++) {
+            JSONObject lineObj = lines.getJSONObject(i);
+            String text   = lineObj.optString("text", "");
+            String sizeS  = lineObj.optString("size", "normal");
+            boolean bold  = lineObj.optBoolean("bold", false);
+            String alignS = lineObj.optString("align", "left");
+
+            int fontSize;
+            switch (sizeS) {
+                case "large":  fontSize = 40; break;
+                case "small":  fontSize = 20; break;
+                default:       fontSize = 26; break; // "normal"
+            }
+
+            int alignInt;
+            switch (alignS) {
+                case "center": alignInt = 1; break;
+                case "right":  alignInt = 2; break;
+                default:       alignInt = 0; break; // "left"
+            }
+
+            int lineH = fontSize + 8;
+            drawTextEx.invoke(pm, text, 0, y, PAGE_WIDTH, lineH, "", fontSize, alignInt, bold ? 1 : 0, 0);
+            y += lineH;
+        }
+
+        paperFeed.invoke(pm, 40); // advance paper so last line clears the cutter
+        printPage.invoke(pm, 1);  // print 1 copy
+        close.invoke(pm);
+
+        Log.i(TAG, "✅ Printed via android.device.PrinterManager — total height: " + y + "px");
+    }
+
+    /** Returns the first existing serial device path, or null. */
     private String findWritableSerialPath() {
         for (String path : SERIAL_PATHS) {
             File f = new File(path);
@@ -292,5 +465,28 @@ public class UrovoPrinterPlugin extends Plugin {
         }
 
         return false;
+    }
+
+    /**
+     * Strip ESC/POS control sequences from a byte array, leaving only printable ASCII + newlines.
+     * Used as a last-resort when printRaw() is called on a device whose SDK only accepts layout API.
+     */
+    private String stripEscPos(byte[] data) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < data.length) {
+            byte b = data[i];
+            if (b == 0x1B || b == 0x1D) {
+                // ESC or GS — skip this byte and the next 1–2 bytes (command bytes)
+                // Heuristic: skip exactly 2 more bytes for the most common commands.
+                i += 3;
+                continue;
+            }
+            if (b == 0x0A) { sb.append('\n'); i++; continue; } // LF
+            if (b == 0x0D) { i++; continue; }                  // CR (ignore standalone CR)
+            if (b >= 0x20 && b < 0x7F) { sb.append((char) b); } // printable ASCII
+            i++;
+        }
+        return sb.toString();
     }
 }
