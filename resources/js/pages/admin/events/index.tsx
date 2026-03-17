@@ -30,6 +30,7 @@ export default function EventsIndex({ events }: Props) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const activeEvent = events.data.find((event) => event.status === 'active') || null;
     const [formData, setFormData] = useState({
         name: '',
         event_date: new Date().toISOString().split('T')[0],
@@ -59,6 +60,12 @@ export default function EventsIndex({ events }: Props) {
     };
 
     const handleConfirmCreate = () => {
+        if (activeEvent) {
+            setShowConfirmDialog(false);
+            alert('Please end the current active event before creating a new one.');
+            return;
+        }
+
         // Create new event after confirmation
         router.post('/admin/events', {
             name: formData.name,
@@ -104,6 +111,14 @@ export default function EventsIndex({ events }: Props) {
         resetForm();
     };
 
+    const handleEndEvent = (event: Event) => {
+        if (!confirm(`End event "${event.name}"?`)) {
+            return;
+        }
+
+        router.post(`/admin/events/${event.id}/end`);
+    };
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -123,12 +138,24 @@ export default function EventsIndex({ events }: Props) {
                         <p className="text-gray-400">Create and manage events with revolving funds</p>
                     </div>
                     <button
-                        onClick={() => setShowCreateModal(true)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+                        onClick={() => {
+                            if (activeEvent) {
+                                alert('Please end the current active event before creating a new one.');
+                                return;
+                            }
+                            setShowCreateModal(true);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-400 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+                        disabled={!!activeEvent}
                     >
                         <span>📅</span> Create New Event
                     </button>
                 </div>
+                {activeEvent && (
+                    <p className="mt-3 text-yellow-400 text-sm">
+                        Active event: {activeEvent.name}. End it first before creating a new event.
+                    </p>
+                )}
             </div>
 
             {/* Events List */}
@@ -180,12 +207,20 @@ export default function EventsIndex({ events }: Props) {
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                     {event.status === 'active' ? (
-                                        <button
-                                            onClick={() => handleEdit(event)}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                                        >
-                                            Edit
-                                        </button>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={() => handleEdit(event)}
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleEndEvent(event)}
+                                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                            >
+                                                End Event
+                                            </button>
+                                        </div>
                                     ) : (
                                         <button
                                             onClick={() => {
@@ -333,7 +368,7 @@ export default function EventsIndex({ events }: Props) {
                             <div className="text-6xl mb-4">⚠️</div>
                             <h2 className="text-2xl font-bold text-white mb-4">Confirm Event Creation</h2>
                             <p className="text-gray-300 text-lg mb-2">
-                                Creating a new event will close/end the previous event.
+                                Creating a new event starts a fresh event record.
                             </p>
                             <p className="text-yellow-400 text-sm">
                                 Are you sure you want to proceed?
