@@ -24,4 +24,8 @@ export default defineConfig({
     esbuild: {
         jsx: 'automatic',
     },
+    build: {
+        // Keep previous hashed chunks so clients with cached old entry files don't 404 on dynamic imports.
+        emptyOutDir: false,
+    },
 });
