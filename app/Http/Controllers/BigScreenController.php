@@ -33,17 +33,17 @@ class BigScreenController extends Controller
                 // Get final bet totals
                 $meronTotal = Bet::where('fight_id', $fight->id)
                     ->where('side', 'meron')
-                    ->where('status', 'active')
+                    ->where('status', '!=', 'voided')
                     ->sum('amount');
 
                 $walaTotal = Bet::where('fight_id', $fight->id)
                     ->where('side', 'wala')
-                    ->where('status', 'active')
+                    ->where('status', '!=', 'voided')
                     ->sum('amount');
 
                 $drawTotal = Bet::where('fight_id', $fight->id)
                     ->where('side', 'draw')
-                    ->where('status', 'active')
+                    ->where('status', '!=', 'voided')
                     ->sum('amount');
 
                 $totalPot = $meronTotal + $walaTotal + $drawTotal;
@@ -52,18 +52,20 @@ class BigScreenController extends Controller
 
                 $meronCount = Bet::where('fight_id', $fight->id)
                     ->where('side', 'meron')
-                    ->where('status', 'active')
+                    ->where('status', '!=', 'voided')
                     ->count();
 
                 $walaCount = Bet::where('fight_id', $fight->id)
                     ->where('side', 'wala')
-                    ->where('status', 'active')
+                    ->where('status', '!=', 'voided')
                     ->count();
 
                 $drawCount = Bet::where('fight_id', $fight->id)
                     ->where('side', 'draw')
-                    ->where('status', 'active')
+                    ->where('status', '!=', 'voided')
                     ->count();
+
+                $isOpenLike = in_array($fight->status, ['open', 'lastcall']);
 
                 // Show declared fight for 30 seconds after result
                 return response()->json([
@@ -74,9 +76,9 @@ class BigScreenController extends Controller
                         'wala_fighter' => $fight->wala_fighter,
                         'status' => 'declared',
                         'result' => $fight->result,
-                        'meron_odds' => $fight->meron_odds,
-                        'wala_odds' => $fight->wala_odds,
-                        'draw_odds' => $fight->draw_odds,
+                        'meron_odds' => $meronTotal > 0 ? $fight->meron_odds : null,
+                        'wala_odds' => $walaTotal > 0 ? $fight->wala_odds : null,
+                        'draw_odds' => $drawTotal > 0 ? $fight->draw_odds : null,
                         'meron_total' => (float) $meronTotal,
                         'wala_total' => (float) $walaTotal,
                         'draw_total' => (float) $drawTotal,
@@ -86,9 +88,9 @@ class BigScreenController extends Controller
                         'meron_count' => $meronCount,
                         'wala_count' => $walaCount,
                         'draw_count' => $drawCount,
-                        'meron_betting_open' => $fight->meron_betting_open,
-                        'wala_betting_open' => $fight->wala_betting_open,
-                        'draw_betting_open' => $fight->draw_betting_open,
+                        'meron_betting_open' => $isOpenLike ? (bool) $fight->meron_betting_open : false,
+                        'wala_betting_open' => $isOpenLike ? (bool) $fight->wala_betting_open : false,
+                        'draw_betting_open' => false,
                         'notes' => $fight->notes,
                         'venue' => $fight->venue,
                         'event_name' => $fight->event_name,
@@ -141,6 +143,8 @@ class BigScreenController extends Controller
             ->where('status', 'active')
             ->count();
 
+        $isOpenLike = in_array($fight->status, ['open', 'lastcall']);
+
         return response()->json([
             'fight' => [
                 'id' => $fight->id,
@@ -149,9 +153,9 @@ class BigScreenController extends Controller
                 'wala_fighter' => $fight->wala_fighter,
                 'status' => $fight->status,
                 'result' => $fight->result,
-                'meron_odds' => $fight->meron_odds,
-                'wala_odds' => $fight->wala_odds,
-                'draw_odds' => $fight->draw_odds,
+                'meron_odds' => $meronTotal > 0 ? $fight->meron_odds : null,
+                'wala_odds' => $walaTotal > 0 ? $fight->wala_odds : null,
+                'draw_odds' => $drawTotal > 0 ? $fight->draw_odds : null,
                 'meron_total' => (float) $meronTotal,
                 'wala_total' => (float) $walaTotal,
                 'draw_total' => (float) $drawTotal,
@@ -161,9 +165,9 @@ class BigScreenController extends Controller
                 'meron_count' => $meronCount,
                 'wala_count' => $walaCount,
                 'draw_count' => $drawCount,
-                'meron_betting_open' => $fight->meron_betting_open,
-                'wala_betting_open' => $fight->wala_betting_open,
-                'draw_betting_open' => $fight->draw_betting_open,
+                'meron_betting_open' => $isOpenLike ? (bool) $fight->meron_betting_open : false,
+                'wala_betting_open' => $isOpenLike ? (bool) $fight->wala_betting_open : false,
+                'draw_betting_open' => false,
                 'notes' => $fight->notes,
                 'venue' => $fight->venue,
                 'event_name' => $fight->event_name,
