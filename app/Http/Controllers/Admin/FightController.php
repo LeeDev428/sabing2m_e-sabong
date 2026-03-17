@@ -556,6 +556,12 @@ class FightController extends Controller
     {
         $query = Fight::with(['creator', 'declarator']);
 
+        $events = Fight::select('event_name')
+            ->whereNotNull('event_name')
+            ->distinct()
+            ->orderBy('event_name')
+            ->pluck('event_name');
+
         // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
@@ -576,20 +582,17 @@ class FightController extends Controller
             $query->where('result', $request->result);
         }
 
-        // Date filters
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+        // Event filter
+        if ($request->filled('event')) {
+            $query->where('event_name', $request->event);
         }
 
         $fights = $query->latest()->paginate(20)->withQueryString();
 
         return Inertia::render('admin/history', [
             'fights' => $fights,
-            'filters' => $request->only(['search', 'status', 'result', 'date_from', 'date_to']),
+            'events' => $events,
+            'filters' => $request->only(['search', 'status', 'result', 'event']),
         ]);
     }
 
