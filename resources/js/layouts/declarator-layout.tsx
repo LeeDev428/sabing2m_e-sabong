@@ -98,6 +98,15 @@ export default function DeclaratorLayout({ children, title }: DeclaratorLayoutPr
                     </button>
                     <button
                         onClick={() => {
+                            window.open('/bigscreen', '_blank', 'noopener,noreferrer');
+                            setSidebarOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-green-300"
+                    >
+                        📺 Big Screen
+                    </button>
+                    <button
+                        onClick={() => {
                             router.visit('/declarator/cash-transfer');
                             setSidebarOpen(false);
                         }}
