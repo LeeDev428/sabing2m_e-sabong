@@ -28,7 +28,7 @@ class BetController extends Controller
         $validated = $request->validate([
             'fight_id' => 'required|exists:fights,id',
             'side' => 'required|in:meron,wala,draw',
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:100',
         ]);
 
         $fight = Fight::findOrFail($validated['fight_id']);
