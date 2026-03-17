@@ -403,6 +403,7 @@ export class ThermalPrinter {
         const tellerName  = ticketData.teller_name || '';
         const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const dateTimeStr = `${dateStr} ${timeStr}`;
 
         // Always attempt the SDK path first (Urovo i9100 built-in printer).
         // We do NOT gate this on nativePosAvailable — that flag can be false if
@@ -417,12 +418,11 @@ export class ThermalPrinter {
             { text: `Fight#: ${ticketData.fight_number}`,              size: 'normal', bold: false, align: 'left' },
             ...(tellerName ? [{ text: `Teller: ${tellerName}`,         size: 'normal' as const, bold: false, align: 'left' as const }] : []),
             { text: `Receipt: ${ticketData.ticket_id}`,                size: 'normal', bold: false, align: 'left' },
-            { text: `Date: ${dateStr}`,                                size: 'normal', bold: false, align: 'left' },
-            { text: `Time: ${timeStr}`,                                size: 'normal', bold: false, align: 'left' },
-            { text: '================================',                 size: 'small',  bold: false, align: 'center' },
-            // Bet amount (large + bold)
+            { text: `Date/Time: ${dateTimeStr}`,                       size: 'normal', bold: false, align: 'left' },
+            { text: `Bet Amount: P${ticketData.amount.toLocaleString()}`, size: 'normal', bold: false, align: 'left' },
+            { text: `Bet Result: ${sideDisplay}`,                       size: 'normal', bold: false, align: 'left' },
+            { text: '--------------------------------',                 size: 'small',  bold: false, align: 'center' },
             { text: `${sideDisplay} - P${ticketData.amount.toLocaleString()}`, size: 'large', bold: true, align: 'center' },
-            { text: '................................',                 size: 'small',  bold: false, align: 'center' },
             { text: 'OFFICIAL BETTING RECEIPT',                        size: 'normal', bold: false, align: 'center' },
         ];
         console.log('[ThermalPrinter] Trying SDK print path (unconditional)...');
@@ -464,17 +464,16 @@ export class ThermalPrinter {
             `Fight#: ${ticketData.fight_number}\n`,
             tellerName ? `Teller: ${tellerName}\n` : '',
             `Receipt: ${ticketData.ticket_id}\n`,
-            `Date: ${dateStr}\n`,
-            `Time: ${timeStr}\n`,
-            '================================\n',
+            `Date/Time: ${dateTimeStr}\n`,
+            `Bet Amount: P${ticketData.amount.toLocaleString()}\n`,
+            `Bet Result: ${sideDisplay}\n`,
+            '--------------------------------\n',
 
             // Bet amount (double width+height, bold, centred)
             `${ESC}a${String.fromCharCode(1)}`,
             `${ESC}!${String.fromCharCode(48)}`,
             `${sideDisplay} - P${ticketData.amount.toLocaleString()}\n`,
             `${ESC}!${String.fromCharCode(0)}`,
-
-            '................................\n',
             `${ESC}a${String.fromCharCode(1)}`,
             'OFFICIAL BETTING RECEIPT\n',
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut
@@ -502,29 +501,21 @@ export class ThermalPrinter {
         const eventName   = payoutData.event_name || 'SABONG EVENT';
         const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const dateTimeStr = `${dateStr} ${timeStr}`;
 
         // SDK path: Urovo i9100 layout API
         if (this.nativePosAvailable) {
             const lines: PrintLine[] = [
                 { text: eventName,                                                    size: 'normal', bold: true,  align: 'center' },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
                 { text: 'PAYOUT RECEIPT',                                             size: 'normal', bold: true,  align: 'center' },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
                 { text: `Fight#: ${payoutData.fight_number}`,                         size: 'normal', bold: false, align: 'left'   },
-                { text: `Bet By: ${payoutData.bet_by}`,                               size: 'normal', bold: false, align: 'left'   },
                 { text: `Claimed By: ${payoutData.claimed_by}`,                       size: 'normal', bold: false, align: 'left'   },
                 { text: `Receipt: ${payoutData.ticket_id}`,                           size: 'normal', bold: false, align: 'left'   },
-                { text: `Date: ${dateStr}`,                                           size: 'normal', bold: false, align: 'left'   },
-                { text: `Time: ${timeStr}`,                                           size: 'normal', bold: false, align: 'left'   },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `Date/Time: ${dateTimeStr}`,                                  size: 'normal', bold: false, align: 'left'   },
                 { text: `Side: ${sideDisplay}`,                                       size: 'normal', bold: false, align: 'left'   },
-                { text: `Bet Amount: P${payoutData.bet_amount.toLocaleString()}`,     size: 'normal', bold: false, align: 'left'   },
-                { text: `Odds: ${payoutData.odds}x`,                                  size: 'normal', bold: false, align: 'left'   },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
-                { text: `PAYOUT: P${payoutData.payout_amount.toLocaleString()}`,      size: 'large',  bold: true,  align: 'center' },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
-                { text: 'WINNER - CLAIM RECEIPT',                                     size: 'normal', bold: false, align: 'center' },
-                { text: '',                                                            size: 'normal', bold: false, align: 'left'   },
+                { text: '--------------------------------',                            size: 'small',  bold: false, align: 'center' },
+                { text: `CLAIM AMOUNT: P${payoutData.payout_amount.toLocaleString()}`, size: 'large',  bold: true,  align: 'center' },
+                { text: 'OFFICIAL BETTING RECEIPT',                                   size: 'normal', bold: false, align: 'center' },
             ];
             console.log('[ThermalPrinter] Sending payout to SDK print path...');
             const ok = await printViaSdkLines(lines);
@@ -544,43 +535,29 @@ export class ThermalPrinter {
             `${ESC}!${String.fromCharCode(16)}`, // Double width only
             `${eventName}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal font
-            '================================\n',
 
             // Receipt Type
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${ESC}!${String.fromCharCode(8)}`, // Bold
             'PAYOUT RECEIPT\n',
             `${ESC}!${String.fromCharCode(0)}`, // Normal
-            '================================\n',
 
             // Receipt details
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `Fight#: ${payoutData.fight_number}\n`,
-            `Bet By: ${payoutData.bet_by}\n`,
             `Claimed By: ${payoutData.claimed_by}\n`,
             `Receipt: ${payoutData.ticket_id}\n`,
-            `Date: ${dateStr}\n`,
-            `Time: ${timeStr}\n`,
-            '================================\n',
-            '\n',
-            // Bet Info
-            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            `Date/Time: ${dateTimeStr}\n`,
             `Side: ${sideDisplay}\n`,
-            `Bet Amount: P${payoutData.bet_amount.toLocaleString()}\n`,
-            `Odds: ${payoutData.odds}x\n`,
-            '================================\n',
-            '\n',
+            '--------------------------------\n',
+
             // Payout Amount (BIGGER)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
-            `PAYOUT: P${payoutData.payout_amount.toLocaleString()}\n`,
+            `CLAIM AMOUNT: P${payoutData.payout_amount.toLocaleString()}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal
-            '\n',
-            '================================\n',
-            '\n',
             `${ESC}a${String.fromCharCode(1)}`, // Center align
-            'WINNER - CLAIM RECEIPT\n',
-            '\n',
+            'OFFICIAL BETTING RECEIPT\n',
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
         ].join('');
 
@@ -607,29 +584,22 @@ export class ThermalPrinter {
         const reason      = refundData.refund_reason || 'DRAW';
         const dateStr = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        const dateTimeStr = `${dateStr} ${timeStr}`;
 
         // SDK path: Urovo i9100 layout API
         if (this.nativePosAvailable) {
             const lines: PrintLine[] = [
                 { text: eventName,                                                    size: 'normal', bold: true,  align: 'center' },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
                 { text: 'REFUND RECEIPT',                                             size: 'normal', bold: true,  align: 'center' },
                 { text: `Reason: ${reason}`,                                          size: 'normal', bold: false, align: 'center' },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
                 { text: `Fight#: ${refundData.fight_number}`,                         size: 'normal', bold: false, align: 'left'   },
-                { text: `Bet By: ${refundData.bet_by}`,                               size: 'normal', bold: false, align: 'left'   },
                 { text: `Refunded By: ${refundData.claimed_by}`,                      size: 'normal', bold: false, align: 'left'   },
                 { text: `Receipt: ${refundData.ticket_id}`,                           size: 'normal', bold: false, align: 'left'   },
-                { text: `Date: ${dateStr}`,                                           size: 'normal', bold: false, align: 'left'   },
-                { text: `Time: ${timeStr}`,                                           size: 'normal', bold: false, align: 'left'   },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: `Date/Time: ${dateTimeStr}`,                                  size: 'normal', bold: false, align: 'left'   },
                 { text: `Side: ${sideDisplay}`,                                       size: 'normal', bold: false, align: 'left'   },
-                { text: `Bet Amount: P${refundData.bet_amount.toLocaleString()}`,     size: 'normal', bold: false, align: 'left'   },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
+                { text: '--------------------------------',                            size: 'small',  bold: false, align: 'center' },
                 { text: `REFUND: P${refundData.refund_amount.toLocaleString()}`,      size: 'large',  bold: true,  align: 'center' },
-                { text: '================================',                            size: 'small',  bold: false, align: 'center' },
-                { text: `${reason} - REFUND RECEIPT`,                                 size: 'normal', bold: false, align: 'center' },
-                { text: '',                                                            size: 'normal', bold: false, align: 'left'   },
+                { text: 'OFFICIAL BETTING RECEIPT',                                   size: 'normal', bold: false, align: 'center' },
             ];
             console.log('[ThermalPrinter] Sending refund to SDK print path...');
             const ok = await printViaSdkLines(lines);
@@ -649,7 +619,6 @@ export class ThermalPrinter {
             `${ESC}!${String.fromCharCode(16)}`, // Double width only
             `${eventName}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal font
-            '================================\n',
 
             // Receipt Type
             `${ESC}a${String.fromCharCode(1)}`, // Center align
@@ -657,35 +626,23 @@ export class ThermalPrinter {
             'REFUND RECEIPT\n',
             `${ESC}!${String.fromCharCode(0)}`, // Normal
             `Reason: ${reason}\n`,
-            '================================\n',
 
             // Receipt details
             `${ESC}a${String.fromCharCode(0)}`, // Left align
             `Fight#: ${refundData.fight_number}\n`,
-            `Bet By: ${refundData.bet_by}\n`,
             `Refunded By: ${refundData.claimed_by}\n`,
             `Receipt: ${refundData.ticket_id}\n`,
-            `Date: ${dateStr}\n`,
-            `Time: ${timeStr}\n`,
-            '================================\n',
-            '\n',
-            // Bet Info
-            `${ESC}a${String.fromCharCode(0)}`, // Left align
+            `Date/Time: ${dateTimeStr}\n`,
             `Side: ${sideDisplay}\n`,
-            `Bet Amount: P${refundData.bet_amount.toLocaleString()}\n`,
-            '================================\n',
-            '\n',
+            '--------------------------------\n',
+
             // Refund Amount (BIGGER)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
             `REFUND: P${refundData.refund_amount.toLocaleString()}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal
-            '\n',
-            '================================\n',
-            '\n',
             `${ESC}a${String.fromCharCode(1)}`, // Center align
-            `${reason} - REFUND RECEIPT\n`,
-            '\n',
+            'OFFICIAL BETTING RECEIPT\n',
             `${GS}V${String.fromCharCode(65)}${String.fromCharCode(0)}`, // Cut paper
         ].join('');
 
