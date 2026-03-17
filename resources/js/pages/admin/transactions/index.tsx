@@ -56,8 +56,7 @@ interface Props {
         event?: string;
         type?: string;
         status?: string;
-        date_from?: string;
-        date_to?: string;
+        winnings_status?: string;
         teller_id?: number;
         search?: string;
     };
@@ -68,9 +67,8 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
     const [eventFilter, setEventFilter] = useState(filters.event || '');
     const [typeFilter, setTypeFilter] = useState(filters.type || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
+    const [winningsStatusFilter, setWinningsStatusFilter] = useState(filters.winnings_status || '');
     const [tellerFilter, setTellerFilter] = useState(filters.teller_id?.toString() || '');
-    const [dateFrom, setDateFrom] = useState(filters.date_from || '');
-    const [dateTo, setDateTo] = useState(filters.date_to || '');
 
     const applyFilters = () => {
         router.get('/admin/transactions', {
@@ -78,9 +76,8 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
             event: eventFilter,
             type: typeFilter,
             status: statusFilter,
+            winnings_status: winningsStatusFilter,
             teller_id: tellerFilter,
-            date_from: dateFrom,
-            date_to: dateTo,
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -92,9 +89,8 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
         setEventFilter('');
         setTypeFilter('');
         setStatusFilter('');
+        setWinningsStatusFilter('');
         setTellerFilter('');
-        setDateFrom('');
-        setDateTo('');
         router.get('/admin/transactions', {}, {
             preserveState: true,
             preserveScroll: true,
@@ -123,6 +119,10 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
                 return 'bg-red-600 text-white';
             case 'refunded':
                 return 'bg-gray-600 text-white';
+            case 'claimed':
+                return 'bg-indigo-600 text-white';
+            case 'refund_claimed':
+                return 'bg-cyan-600 text-white';
             default:
                 return 'bg-gray-600 text-white';
         }
@@ -209,6 +209,20 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
                             <option value="won">Won</option>
                             <option value="lost">Lost</option>
                             <option value="refunded">Refunded</option>
+                            <option value="claimed">Claimed</option>
+                            <option value="refund_claimed">Refund Claimed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Winnings</label>
+                        <select
+                            value={winningsStatusFilter}
+                            onChange={(e) => setWinningsStatusFilter(e.target.value)}
+                            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg"
+                        >
+                            <option value="">All</option>
+                            <option value="claimed">Claimed</option>
+                            <option value="unclaimed">Unclaimed</option>
                         </select>
                     </div>
                     <div>
@@ -223,24 +237,6 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
                                 <option key={teller.id} value={teller.id}>{teller.name}</option>
                             ))}
                         </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Date From</label>
-                        <input
-                            type="date"
-                            value={dateFrom}
-                            onChange={(e) => setDateFrom(e.target.value)}
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Date To</label>
-                        <input
-                            type="date"
-                            value={dateTo}
-                            onChange={(e) => setDateTo(e.target.value)}
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg"
-                        />
                     </div>
                 </div>
                 <div className="flex gap-3">
