@@ -9,7 +9,6 @@ interface DeclaratorDashboardProps {
 
 export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboardProps) {
     const [showResultModal, setShowResultModal] = useState(false);
-    const [showNextFightModal, setShowNextFightModal] = useState(false);
     const [selectedFight, setSelectedFight] = useState<Fight | null>(null);
     const [result, setResult] = useState<'meron' | 'wala' | 'draw' | 'cancelled' | null>(null);
 
@@ -26,8 +25,8 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
     const currentEventFights = currentEventName
         ? fights.filter(f => f.event_name === currentEventName)
         : fights;
-    const pendingFights = currentEventFights.filter(f => f.status === 'betting_closed' || f.status === 'closed');
-    const declaredToday = currentEventFights.filter(f => f.declared_by).length;
+    const pendingFights = currentEventFights.filter(f => f.status === 'closed');
+    const declaredToday = currentEventFights.filter(f => f.status === 'result_declared').length;
 
     const getStatusBadgeClass = (status?: string) => {
         switch ((status || '').toLowerCase()) {
@@ -69,12 +68,6 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                         <p className="text-xs text-blue-300 mt-1">Current Event: {currentEventName}</p>
                     )}
                 </div>
-                {/* <button
-                    onClick={() => setShowNextFightModal(true)}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold flex items-center gap-2"
-                >
-                    ➕ Next Fight
-                </button> */}
             </div>
 
                 {/* Stats Grid */}
@@ -187,9 +180,9 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                                                 {fight.meron_fighter} vs {fight.wala_fighter}
                                             </div>
                                         </div>
-                                        {fight.declared_at && (
+                                        {fight.result_declared_at && (
                                             <div className="text-xs text-gray-500">
-                                                {new Date(fight.declared_at).toLocaleString()}
+                                                {new Date(fight.result_declared_at).toLocaleString()}
                                             </div>
                                         )}
                                     </div>
@@ -284,101 +277,6 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                                         setShowResultModal(false);
                                         setSelectedFight(null);
                                         setResult(null);
-                                    }}
-                                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Next Fight Modal */}
-            {showNextFightModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-                    <div className="bg-gray-800 rounded-lg max-w-2xl w-full">
-                        <div className="p-6 border-b border-gray-700">
-                            <h2 className="text-2xl font-bold">Create Next Fight</h2>
-                            <p className="text-sm text-gray-400 mt-1">
-                                Event settings will be auto-populated from the previous fight
-                            </p>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Event Name</label>
-                                <input
-                                    type="text"
-                                    value={eventName}
-                                    onChange={(e) => setEventName(e.target.value)}
-                                    placeholder="Enter event name"
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-yellow-500"
-                                />
-                                {eventName && lastEventName && eventName !== lastEventName && (
-                                    <div className="mt-2 p-3 bg-yellow-900/30 border border-yellow-600 rounded-lg">
-                                        <p className="text-yellow-400 text-sm font-semibold flex items-center gap-2">
-                                            <span>⚠️</span>
-                                            <span>New Event Detected - Fight will start at #1</span>
-                                        </p>
-                                        <p className="text-yellow-400/80 text-xs mt-1">
-                                            Previous event: "{lastEventName}"
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Meron Fighter</label>
-                                <input
-                                    type="text"
-                                    value={meronFighter}
-                                    onChange={(e) => setMeronFighter(e.target.value)}
-                                    placeholder="Enter Meron fighter name"
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-red-500"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Wala Fighter</label>
-                                <input
-                                    type="text"
-                                    value={walaFighter}
-                                    onChange={(e) => setWalaFighter(e.target.value)}
-                                    placeholder="Enter Wala fighter name"
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
-                                />
-                            </div>
-
-                            <div className="bg-gray-700 rounded-lg p-4 text-sm text-gray-300">
-                                <p className="font-semibold mb-2">📋 Auto-populated settings:</p>
-                                <ul className="list-disc list-inside space-y-1">
-                                    <li>Fight number (auto-incremented)</li>
-                                    <li>Venue, Event name, Event date</li>
-                                    <li>Commission percentage, Match type</li>
-                                    <li>Revolving funds, Teller assignments</li>
-                                    <li>Special conditions (if any)</li>
-                                </ul>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={handleCreateNextFight}
-                                    disabled={!meronFighter || !walaFighter}
-                                    className={`flex-1 py-4 rounded-lg font-bold text-lg ${
-                                        meronFighter && walaFighter
-                                            ? 'bg-blue-600 hover:bg-blue-700'
-                                            : 'bg-gray-600 cursor-not-allowed'
-                                    }`}
-                                >
-                                    ➕ Create Fight
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowNextFightModal(false);
-                                        setMeronFighter('');
-                                        setWalaFighter('');
                                     }}
                                     className="px-6 py-4 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold"
                                 >
