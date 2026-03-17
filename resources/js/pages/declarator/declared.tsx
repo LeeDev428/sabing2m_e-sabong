@@ -563,42 +563,43 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex flex-col gap-3 min-w-[160px]">
-                                    {/* Always show Change Status button */}
-                                    <button
-                                        onClick={() => handleChangeStatus(fight)}
-                                        className="px-4 py-2.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-medium whitespace-nowrap"
-                                    >
-                                        Change Status
-                                    </button>
-                                    
-                                    {/* Edit Fight button */}
-                                    <button
-                                        onClick={() => router.visit(`/declarator/fights/${fight.id}/edit`)}
-                                        className="px-4 py-2.5 bg-blue-700 hover:bg-blue-600 rounded-lg text-sm font-medium whitespace-nowrap"
-                                    >
-                                        ✏️ Edit Fight
-                                    </button>
-                                    
-                                    {/* Show Declare Result button when closed and no result */}
-                                    {fight.status === 'closed' && !fight.result && (
-                                        <button
-                                            onClick={() => handleDeclareResult(fight)}
-                                            className="px-4 py-2.5 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm font-medium whitespace-nowrap"
-                                        >
-                                            🏆 Declare Result
-                                        </button>
-                                    )}
-                                    
-                                    {/* Show Change Result button when result exists */}
-                                    {fight.result && (
-                                        <button
-                                            onClick={() => handleChangeResult(fight)}
-                                            className="px-4 py-2.5 bg-yellow-700 hover:bg-yellow-600 rounded-lg text-sm font-medium whitespace-nowrap"
-                                        >
-                                            Change Result
-                                        </button>
-                                    )}
+                                <div className="min-w-[180px]">
+                                    <details className="group bg-gray-700 rounded-lg border border-gray-600">
+                                        <summary className="list-none cursor-pointer px-4 py-2.5 text-sm font-semibold flex items-center justify-between">
+                                            Actions
+                                            <span className="text-xs text-gray-300 group-open:rotate-180 transition-transform">▼</span>
+                                        </summary>
+                                        <div className="px-3 pb-3 space-y-2 border-t border-gray-600">
+                                            <button
+                                                onClick={() => handleChangeStatus(fight)}
+                                                className="w-full px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm font-medium text-left"
+                                            >
+                                                Change Status
+                                            </button>
+                                            <button
+                                                onClick={() => router.visit(`/declarator/fights/${fight.id}/edit`)}
+                                                className="w-full px-3 py-2 bg-blue-700 hover:bg-blue-600 rounded text-sm font-medium text-left"
+                                            >
+                                                Edit Fight
+                                            </button>
+                                            {fight.status === 'closed' && !fight.result && (
+                                                <button
+                                                    onClick={() => handleDeclareResult(fight)}
+                                                    className="w-full px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-sm font-medium text-left"
+                                                >
+                                                    Declare Result
+                                                </button>
+                                            )}
+                                            {fight.result && (
+                                                <button
+                                                    onClick={() => handleChangeResult(fight)}
+                                                    className="w-full px-3 py-2 bg-yellow-700 hover:bg-yellow-600 rounded text-sm font-medium text-left"
+                                                >
+                                                    Change Result
+                                                </button>
+                                            )}
+                                        </div>
+                                    </details>
                                 </div>
                             </div>
                             </div>
