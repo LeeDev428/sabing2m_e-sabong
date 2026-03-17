@@ -23,21 +23,20 @@ interface PaginatedFights {
 
 interface HistoryProps {
     fights: PaginatedFights;
+    events: string[];
     filters: {
         search?: string;
         status?: string;
-        date_from?: string;
-        date_to?: string;
         result?: string;
+        event?: string;
     };
 }
 
-export default function History({ fights, filters }: HistoryProps) {
+export default function History({ fights, filters, events }: HistoryProps) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
     const [resultFilter, setResultFilter] = useState(filters.result || '');
-    const [dateFrom, setDateFrom] = useState(filters.date_from || '');
-    const [dateTo, setDateTo] = useState(filters.date_to || '');
+    const [eventFilter, setEventFilter] = useState(filters.event || '');
     
     // Change Result Modal State
     const [showChangeModal, setShowChangeModal] = useState(false);
@@ -78,8 +77,7 @@ export default function History({ fights, filters }: HistoryProps) {
             search: searchTerm,
             status: statusFilter,
             result: resultFilter,
-            date_from: dateFrom,
-            date_to: dateTo,
+            event: eventFilter || undefined,
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -90,8 +88,7 @@ export default function History({ fights, filters }: HistoryProps) {
         setSearchTerm('');
         setStatusFilter('');
         setResultFilter('');
-        setDateFrom('');
-        setDateTo('');
+        setEventFilter('');
         router.get('/admin/history', {}, {
             preserveState: true,
             preserveScroll: true,
@@ -134,7 +131,7 @@ export default function History({ fights, filters }: HistoryProps) {
                 {/* Filters */}
                 <div className="bg-gray-800 rounded-lg p-6 mb-6">
                     <h3 className="text-lg font-bold mb-4">Filters</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">Search</label>
                             <input
@@ -176,22 +173,17 @@ export default function History({ fights, filters }: HistoryProps) {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Date From</label>
-                            <input
-                                type="date"
-                                value={dateFrom}
-                                onChange={(e) => setDateFrom(e.target.value)}
+                            <label className="block text-sm font-medium mb-2">Event</label>
+                            <select
+                                value={eventFilter}
+                                onChange={(e) => setEventFilter(e.target.value)}
                                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Date To</label>
-                            <input
-                                type="date"
-                                value={dateTo}
-                                onChange={(e) => setDateTo(e.target.value)}
-                                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
+                            >
+                                <option value="">All Events</option>
+                                {events.map((event) => (
+                                    <option key={event} value={event}>{event}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                     <div className="flex gap-3">
