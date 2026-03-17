@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import TellerLayout from '@/layouts/teller-layout';
 import { useState, useEffect, useRef } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { showToast } from '@/components/toast';
 import { PermissionManager } from '@/utils/permissionManager';
 import { thermalPrinter } from '@/utils/thermalPrinter';
@@ -168,10 +168,9 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
             await html5QrCode.start(
                 { facingMode: "environment" },
                 {
-                    fps: 20,
-                    qrbox: { width: 220, height: 220 },
+                    fps: 30,
+                    qrbox: { width: 180, height: 180 },
                     disableFlip: true,
-                    formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
                 },
                 (decodedText) => {
                     // QR Code scanned successfully
