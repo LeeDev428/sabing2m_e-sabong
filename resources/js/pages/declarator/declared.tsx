@@ -70,7 +70,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
     // Real-time polling using Inertia router.reload() - preserves state and works with button actions
     useEffect(() => {
         const interval = setInterval(() => {
-            router.reload({ only: ['declared_fights', 'tellers'], preserveScroll: true, preserveState: true });
+            router.reload({ only: ['declared_fights', 'tellers'] });
         }, 3000);
 
         return () => clearInterval(interval);
@@ -221,8 +221,8 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
         // If changing teller_id, auto-populate their current balance for this fight
         if (field === 'teller_id' && value) {
             const fight = declared_fights?.find(f => f.id === fightId);
-            const existingAssignment = fight?.teller_cash_assignments?.find(
-                (a: any) => a.teller_id === parseInt(value)
+            const existingAssignment = fight?.teller_assignments?.find(
+                (a: any) => a.teller.id === parseInt(value)
             );
             newAssignments[index] = { 
                 ...newAssignments[index], 
