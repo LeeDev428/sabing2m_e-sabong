@@ -86,7 +86,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                 <div className="bg-black/30 rounded-xl p-4 border-2 border-white/20">
                     <div className="text-sm text-white/70 uppercase tracking-wider mb-1">Payout</div>
                     <div className="text-6xl font-black text-yellow-300 drop-shadow-lg">
-                        {Number(odds).toFixed(2)}
+                        {totalBets > 0 ? Number(odds).toFixed(2) : '---'}
                     </div>
                 </div>
             </div>
