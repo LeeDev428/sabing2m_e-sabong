@@ -5,6 +5,8 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
+        "cap:use:prod": "powershell -Command \"Copy-Item -Force capacitor.config.production.ts capacitor.config.ts\"",
+        "android:build:prod": "npm run cap:use:prod && vite build && npx cap sync android && cd android && gradlew.bat assembleDebug && cd ..",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
