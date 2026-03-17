@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import TellerLayout from '@/layouts/teller-layout';
 import { useState, useEffect, useRef } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { showToast } from '@/components/toast';
 import { PermissionManager } from '@/utils/permissionManager';
 import { thermalPrinter } from '@/utils/thermalPrinter';
@@ -168,8 +168,10 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
             await html5QrCode.start(
                 { facingMode: "environment" },
                 {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
+                    fps: 20,
+                    qrbox: { width: 220, height: 220 },
+                    disableFlip: true,
+                    formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
                 },
                 (decodedText) => {
                     // QR Code scanned successfully
@@ -313,14 +315,9 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                                 <span className="text-white font-semibold text-xs">{(claimData as any).ticket_id || 'N/A'}</span>
                             </div>
                             
-                            {/* Date and Time */}
                             <div className="flex justify-between items-center">
-                                <span className="text-gray-400">Date:</span>
-                                <span className="text-white font-semibold">{new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-400">Time:</span>
-                                <span className="text-white font-semibold">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
+                                <span className="text-gray-400">Date/Time:</span>
+                                <span className="text-white font-semibold">{new Date().toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
                             </div>
                             
                             {/* Divider */}
@@ -409,14 +406,9 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                                 <span className="text-orange-400 font-bold">{claimData.refund_reason || 'DRAW'}</span>
                             </div>
                             
-                            {/* Date and Time */}
                             <div className="flex justify-between items-center">
-                                <span className="text-gray-400">Date:</span>
-                                <span className="text-white font-semibold">{new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-400">Time:</span>
-                                <span className="text-white font-semibold">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
+                                <span className="text-gray-400">Date/Time:</span>
+                                <span className="text-white font-semibold">{new Date().toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}</span>
                             </div>
                             
                             {/* Divider */}
