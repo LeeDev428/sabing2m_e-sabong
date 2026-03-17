@@ -27,7 +27,7 @@ interface TellerDashboardProps {
 }
 
 export default function TellerDashboard({ fights = [], summary, tellerBalance = 0, auth }: TellerDashboardProps) {
-    const [amount, setAmount] = useState('50');
+    const [amount, setAmount] = useState('');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | null>(null);
     const [showSummary, setShowSummary] = useState(false);
@@ -185,8 +185,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     }, [selectedFight]);
 
     const handleNumberClick = (num: string) => {
-        // Start fresh if amount is 0, otherwise append
-        if (amount === '0') {
+        // Start fresh if amount is empty/0, otherwise append
+        if (!amount || amount === '0') {
             setAmount(num);
         } else {
             setAmount(amount + num);
@@ -194,7 +194,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     };
 
     const handleClear = () => {
-        setAmount('0');
+        setAmount('');
     };
 
     const handleQuickAmount = (quickAmount: number) => {
@@ -338,7 +338,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 } else {
                     console.error('❌ NO TICKET DATA from server!');
                 }
-                setAmount('50');
+                setAmount('');
                 setBetSide(null);
             },
             onError: (errors) => {
@@ -398,6 +398,21 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     };
 
     const currentFight = selectedFight;
+
+    const getFightStatusMeta = (status?: string) => {
+        switch ((status || '').toLowerCase()) {
+            case 'standby':
+                return { dot: 'bg-yellow-400', text: 'text-yellow-400', label: 'STANDBY' };
+            case 'open':
+                return { dot: 'bg-green-400 animate-pulse', text: 'text-green-400', label: 'BETTING OPEN' };
+            case 'lastcall':
+                return { dot: 'bg-orange-400 animate-pulse', text: 'text-orange-400', label: 'LAST CALL' };
+            case 'closed':
+                return { dot: 'bg-red-500', text: 'text-red-400', label: 'BETTING CLOSED' };
+            default:
+                return { dot: 'bg-gray-500', text: 'text-gray-400', label: 'NO ACTIVE FIGHT' };
+        }
+    };
 
     const getSubmitButtonClass = () => {
         if (!betSide) return 'bg-gray-600 cursor-not-allowed';
@@ -472,9 +487,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></span>
-                                        <span className={`text-xs font-bold tracking-wider ${(selectedFight.status === 'open' || selectedFight.status === 'lastcall') ? 'text-green-400' : 'text-red-400'}`}>
-                                            {selectedFight.status === 'open' ? 'BETTING OPEN' : selectedFight.status === 'lastcall' ? 'LAST CALL' : 'BETTING CLOSED'}
+                                        <span className={`w-2 h-2 rounded-full ${getFightStatusMeta(selectedFight.status).dot}`}></span>
+                                        <span className={`text-xs font-bold tracking-wider ${getFightStatusMeta(selectedFight.status).text}`}>
+                                            {getFightStatusMeta(selectedFight.status).label}
                                         </span>
                                     </div>
                                 </div>
@@ -614,9 +629,15 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     −
                                 </button>
                                 <div className="flex-1 bg-white py-3 px-3 border-y-2 border-gray-200">
-                                    <div className="text-black text-4xl font-bold text-center tabular-nums">
-                                        {amount}
-                                    </div>
+                                    {amount ? (
+                                        <div className="text-black text-4xl font-bold text-center tabular-nums">
+                                            {amount}
+                                        </div>
+                                    ) : (
+                                        <div className="text-gray-400 text-sm font-semibold text-center uppercase tracking-wide pt-2">
+                                            Enter amount
+                                        </div>
+                                    )}
                                 </div>
                                 <button
                                     onClick={handleIncrement}
@@ -996,25 +1017,23 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     </div>
                                     <div className="flex gap-1">
                                         <span className="font-bold">Teller:</span>
-                                        <span>Teller</span>
+                                        <span>{auth?.user?.name || 'Teller'}</span>
                                     </div>
                                     <div className="flex gap-1">
                                         <span className="font-bold">Receipt:</span>
                                         <span className="font-mono text-[10px]">{ticketData.ticket_id.substring(0, 13)}</span>
                                     </div>
                                     <div className="flex gap-1">
-                                        <span className="font-bold">Date:</span>
-                                        <span>{new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <span className="font-bold">Time:</span>
-                                        <span>{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                        <span className="font-bold">Date/Time:</span>
+                                        <span>{new Date().toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Bet Info - BELOW, CENTERED */}
                             <div className="border-t-2 border-dashed border-gray-800 pt-2 mb-2 text-center">
+                                <div className="text-xs text-gray-700 mb-0.5">Bet Amount: ₱{ticketData.amount.toLocaleString()}</div>
+                                <div className="text-xs text-gray-700 mb-1">Bet Result: {ticketData.side.toUpperCase()}</div>
                                 <div className={`text-2xl font-bold mb-0.5 ${
                                     ticketData.side === 'meron' ? 'text-red-600' : 
                                     ticketData.side === 'wala' ? 'text-blue-600' : 
