@@ -156,10 +156,17 @@ class EventController extends Controller
 
         DB::beginTransaction();
         try {
+            $activeEvent = Event::where('status', 'active')->first();
+
             // Check if event already exists
             $event = Event::where('name', $validated['name'])
                 ->where('event_date', $validated['event_date'])
                 ->first();
+
+            if ($activeEvent && (!$event || $activeEvent->id !== $event->id)) {
+                return redirect()->back()
+                    ->withErrors(['error' => 'Please end the current active event before creating a new one.']);
+            }
 
             if ($event) {
                 // Update existing event
@@ -169,9 +176,6 @@ class EventController extends Controller
                     'status' => 'active',
                 ]);
             } else {
-                // Set all other events to completed
-                Event::where('status', 'active')->update(['status' => 'completed']);
-                
                 // Create new event as active
                 $event = Event::create([
                     ...$validated,
@@ -201,6 +205,19 @@ class EventController extends Controller
             \Log::error('Failed to create event: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Failed to create event: ' . $e->getMessage()]);
         }
+    }
+
+    public function end(Event $event)
+    {
+        if ($event->status !== 'active') {
+            return redirect()->back()->withErrors(['error' => 'Only active events can be ended.']);
+        }
+
+        $event->update([
+            'status' => 'completed',
+        ]);
+
+        return redirect()->back()->with('success', 'Event ended successfully. You can now create a new event.');
     }
 
     public function update(Request $request, Event $event)
