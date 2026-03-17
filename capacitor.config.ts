@@ -1,6 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-// Production APK — points to the live Hostinger deployment
+// PRODUCTION CONFIGURATION
+// Use this for building the production APK
 const SERVER_URL = 'https://sabing2m.com';
 
 const config: CapacitorConfig = {
@@ -10,15 +11,16 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     url: SERVER_URL,
-    cleartext: false
+    cleartext: false // HTTPS - no cleartext allowed
   },
   android: {
     buildOptions: {
-      keystorePath: undefined,
-      keystorePassword: undefined,
-      keystoreAlias: undefined,
-      keystoreAliasPassword: undefined,
-      releaseType: 'APK'
+      signingConfig: 'release'
+    }
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 0
     }
   }
 };
