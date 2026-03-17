@@ -324,6 +324,10 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                             
                             {/* Side and Amount - BIG */}
                             <div className="text-center py-4">
+                                <div className="text-lg text-gray-400 mb-1">CLAIM AMOUNT</div>
+                                <div className="text-4xl font-bold text-yellow-400 mb-1">
+                                    ₱{claimData.amount.toLocaleString()}
+                                </div>
                                 <div className="text-4xl font-bold text-yellow-400">
                                     {((claimData as any).side || 'N/A').toUpperCase()} - ₱{claimData.amount.toLocaleString()}
                                 </div>
