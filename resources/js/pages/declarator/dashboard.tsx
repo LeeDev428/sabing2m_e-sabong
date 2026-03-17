@@ -68,6 +68,12 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                         <p className="text-xs text-blue-300 mt-1">Current Event: {currentEventName}</p>
                     )}
                 </div>
+                <button
+                    onClick={() => window.open('/bigscreen', '_blank', 'noopener,noreferrer')}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm lg:text-base"
+                >
+                    📺 Big Screen
+                </button>
             </div>
 
                 {/* Stats Grid */}
