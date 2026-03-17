@@ -28,7 +28,7 @@ interface TellerDashboardProps {
 
 export default function TellerDashboard({ fights = [], summary, tellerBalance = 0, auth }: TellerDashboardProps) {
     const [amount, setAmount] = useState('');
-    const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open' || f.status === 'lastcall') || null);
+    const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | null>(null);
     const [showSummary, setShowSummary] = useState(false);
     const [liveOdds, setLiveOdds] = useState<Fight | null>(null);
@@ -133,7 +133,13 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                 
                 // Update selectedFight status if it changed
                 if (response.data.status !== selectedFight.status) {
-                    setSelectedFight(response.data);
+                    if (response.data.status === 'open') {
+                        setSelectedFight(response.data);
+                    } else {
+                        // For standby/lastcall/closed states, remove active fight from teller dashboard.
+                        setSelectedFight(null);
+                        setBetSide(null);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch odds:', error);
@@ -714,9 +720,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             {/* ── SUBMIT BUTTON ── */}
                             <button
                                 onClick={handleSubmit}
-                                disabled={!betSide || !selectedFight || (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')}
+                                disabled={!betSide || !selectedFight || selectedFight.status !== 'open'}
                                 className={`w-full py-3 text-lg font-black mb-3 uppercase tracking-wider transition-all border-2 ${
-                                    betSide && selectedFight && (selectedFight.status === 'open' || selectedFight.status === 'lastcall')
+                                    betSide && selectedFight && selectedFight.status === 'open'
                                         ? 'bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c] text-white border-[#ff4444]'
                                         : 'bg-gray-800 cursor-not-allowed text-gray-500 border-gray-600'
                                 }`}
@@ -724,7 +730,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             >
                                 {!selectedFight
                                     ? 'NO FIGHT'
-                                    : (selectedFight.status !== 'open' && selectedFight.status !== 'lastcall')
+                                    : (selectedFight.status !== 'open')
                                         ? 'BETTING CLOSED'
                                         : 'SUBMIT'
                                 }
