@@ -32,13 +32,15 @@ class TransactionController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter by date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
+        // Filter by winnings claim status
+        if ($request->filled('winnings_status')) {
+            if ($request->winnings_status === 'claimed') {
+                $query->whereIn('status', ['claimed', 'refund_claimed']);
+            }
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            if ($request->winnings_status === 'unclaimed') {
+                $query->where('status', 'won');
+            }
         }
 
         // Filter by teller
@@ -85,14 +87,17 @@ class TransactionController extends Controller
         if ($request->filled('status')) {
             $statsQuery->where('status', $request->status);
         }
+        if ($request->filled('winnings_status')) {
+            if ($request->winnings_status === 'claimed') {
+                $statsQuery->whereIn('status', ['claimed', 'refund_claimed']);
+            }
+
+            if ($request->winnings_status === 'unclaimed') {
+                $statsQuery->where('status', 'won');
+            }
+        }
         if ($request->filled('teller_id')) {
             $statsQuery->where('teller_id', $request->teller_id);
-        }
-        if ($request->filled('date_from')) {
-            $statsQuery->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $statsQuery->whereDate('created_at', '<=', $request->date_to);
         }
         
         $stats = [
@@ -107,7 +112,7 @@ class TransactionController extends Controller
             'tellers' => $tellers,
             'events' => $events,
             'stats' => $stats,
-            'filters' => $request->only(['event', 'type', 'status', 'date_from', 'date_to', 'teller_id', 'search']),
+            'filters' => $request->only(['event', 'type', 'status', 'winnings_status', 'teller_id', 'search']),
         ]);
     }
 }
