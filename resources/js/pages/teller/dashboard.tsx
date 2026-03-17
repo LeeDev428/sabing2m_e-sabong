@@ -27,6 +27,7 @@ interface TellerDashboardProps {
 }
 
 export default function TellerDashboard({ fights = [], summary, tellerBalance = 0, auth }: TellerDashboardProps) {
+    const MIN_BET = 100;
     const [amount, setAmount] = useState('');
     const [selectedFight, setSelectedFight] = useState<Fight | null>(fights.find(f => f.status === 'open') || null);
     const [betSide, setBetSide] = useState<'meron' | 'wala' | null>(null);
@@ -277,9 +278,14 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
     const handleSubmit = () => {
         if (!selectedFight || !betSide || !amount) return;
 
+        const betAmount = parseFloat(amount);
+        if (betAmount < MIN_BET) {
+            showToast(`Minimum bet is ₱${MIN_BET}`, 'warning', 2500);
+            return;
+        }
+
         console.log('🎯 Submitting bet...');
 
-        const betAmount = parseFloat(amount);
         const toastMessage = `Bet placed successfully! ₱${betAmount.toLocaleString()}`;
         
         router.post('/teller/bets', {
@@ -611,7 +617,7 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             {/* ── MIN / MAX / TOTAL ROW ── */}
                             <div className="flex justify-between items-center px-1 py-2 mb-2">
                                 <div className="text-gray-400 text-xs">
-                                    <span>Min: <span className="text-white font-semibold">20</span></span>
+                                    <span>Min: <span className="text-white font-semibold">{MIN_BET}</span></span>
                                     <span className="mx-3">Max: <span className="text-white font-semibold">5,000</span></span>
                                 </div>
                                 <div className="bg-gray-800/80 border border-gray-700 rounded px-4 py-1 text-xs text-gray-400 flex gap-1.5 tabular-nums">
@@ -720,9 +726,9 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                             {/* ── SUBMIT BUTTON ── */}
                             <button
                                 onClick={handleSubmit}
-                                disabled={!betSide || !selectedFight || selectedFight.status !== 'open'}
+                                disabled={!betSide || !selectedFight || selectedFight.status !== 'open' || (parseFloat(amount || '0') < MIN_BET)}
                                 className={`w-full py-3 text-lg font-black mb-3 uppercase tracking-wider transition-all border-2 ${
-                                    betSide && selectedFight && selectedFight.status === 'open'
+                                    betSide && selectedFight && selectedFight.status === 'open' && (parseFloat(amount || '0') >= MIN_BET)
                                         ? 'bg-[#c62828] hover:bg-[#d32f2f] active:bg-[#b71c1c] text-white border-[#ff4444]'
                                         : 'bg-gray-800 cursor-not-allowed text-gray-500 border-gray-600'
                                 }`}
@@ -732,6 +738,8 @@ export default function TellerDashboard({ fights = [], summary, tellerBalance = 
                                     ? 'NO FIGHT'
                                     : (selectedFight.status !== 'open')
                                         ? 'BETTING CLOSED'
+                                        : (parseFloat(amount || '0') > 0 && parseFloat(amount || '0') < MIN_BET)
+                                            ? `MIN ₱${MIN_BET}`
                                         : 'SUBMIT'
                                 }
                             </button>
