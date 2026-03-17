@@ -26,8 +26,6 @@ interface Stats {
 }
 
 interface Filters {
-    start_date: string;
-    end_date: string;
     event?: string;
 }
 
@@ -39,14 +37,10 @@ interface Props {
 }
 
 export default function CommissionReports({ fights, stats, filters, events = [] }: Props) {
-    const [startDate, setStartDate] = useState(filters.start_date);
-    const [endDate, setEndDate] = useState(filters.end_date);
     const [selectedEvent, setSelectedEvent] = useState(filters.event || '');
 
     const applyFilters = () => {
         router.get('/admin/commissions', {
-            start_date: startDate,
-            end_date: endDate,
             event: selectedEvent || undefined,
         }, {
             preserveState: true,
@@ -105,29 +99,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
             {/* Filters */}
             <div className="bg-gray-800 rounded-lg p-6 mb-6">
                 <h2 className="text-xl font-bold text-white mb-4">Filters</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-300">
-                            Start Date
-                        </label>
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-300">
-                            End Date
-                        </label>
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white"
-                        />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium mb-2 text-gray-300">
                             Event
@@ -148,7 +120,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                             onClick={applyFilters}
                             className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold"
                         >
-                            Apply Filters
+                            Apply
                         </button>
                     </div>
                 </div>
@@ -193,7 +165,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                             {fights.length === 0 ? (
                                 <tr>
                                     <td colSpan={9} className="px-6 py-12 text-center text-gray-400">
-                                        No commission data found for selected date range
+                                        No commission data found for selected filters
                                     </td>
                                 </tr>
                             ) : (
