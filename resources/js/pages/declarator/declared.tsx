@@ -63,6 +63,8 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
     const [commission, setCommission] = useState('7.5');
     const [editingFunds, setEditingFunds] = useState<number | null>(null);
     const [fundsData, setFundsData] = useState<{[key: number]: {revolving_funds: string, assignments: any[]}}>({});
+    const [statusSelections, setStatusSelections] = useState<Record<number, 'open' | 'lastcall' | 'closed'>>({});
+    const [resultSelections, setResultSelections] = useState<Record<number, '' | 'meron' | 'wala' | 'draw' | 'cancelled'>>({});
     const { data, setData, post, processing, errors } = useForm({
         new_result: '',
     });
@@ -133,6 +135,23 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                 setShowStatusModal(false);
                 setSelectedFight(null);
             },
+        });
+    };
+
+    const submitInlineStatus = (fight: Fight) => {
+        const selectedStatus = statusSelections[fight.id] || (fight.status as 'open' | 'lastcall' | 'closed');
+        if (!selectedStatus) return;
+        updateFightStatus(fight.id, selectedStatus);
+    };
+
+    const submitInlineResult = (fight: Fight) => {
+        const selectedResult = resultSelections[fight.id] || '';
+        if (!selectedResult) return;
+
+        router.post(`/declarator/declare/${fight.id}`, {
+            result: selectedResult,
+        }, {
+            preserveScroll: true,
         });
     };
 
@@ -562,44 +581,65 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                     )}
                                 </div>
 
-                                {/* Actions */}
-                                <div className="min-w-[180px]">
-                                    <details className="group bg-gray-700 rounded-lg border border-gray-600">
-                                        <summary className="list-none cursor-pointer px-4 py-2.5 text-sm font-semibold flex items-center justify-between">
-                                            Actions
-                                            <span className="text-xs text-gray-300 group-open:rotate-180 transition-transform">▼</span>
-                                        </summary>
-                                        <div className="px-3 pb-3 space-y-2 border-t border-gray-600">
-                                            <button
-                                                onClick={() => handleChangeStatus(fight)}
-                                                className="w-full px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm font-medium text-left"
+                                {/* Actions - Upper Right */}
+                                <div className="min-w-[240px] space-y-3">
+                                    <div className="bg-gray-700/70 rounded-lg p-3 border border-gray-600">
+                                        <label className="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wide">Change Status</label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={statusSelections[fight.id] || (['open', 'lastcall', 'closed'].includes(fight.status) ? fight.status : 'open')}
+                                                onChange={(e) => setStatusSelections((prev) => ({
+                                                    ...prev,
+                                                    [fight.id]: e.target.value as 'open' | 'lastcall' | 'closed',
+                                                }))}
+                                                className="flex-1 px-3 py-2 bg-gray-900 border border-gray-500 rounded text-sm font-semibold text-white"
                                             >
-                                                Change Status
-                                            </button>
+                                                <option value="open">Open</option>
+                                                <option value="lastcall">Last Call</option>
+                                                <option value="closed">Closed</option>
+                                            </select>
                                             <button
-                                                onClick={() => router.visit(`/declarator/fights/${fight.id}/edit`)}
-                                                className="w-full px-3 py-2 bg-blue-700 hover:bg-blue-600 rounded text-sm font-medium text-left"
+                                                onClick={() => submitInlineStatus(fight)}
+                                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-bold"
                                             >
-                                                Edit Fight
+                                                Update
                                             </button>
-                                            {fight.status === 'closed' && !fight.result && (
-                                                <button
-                                                    onClick={() => handleDeclareResult(fight)}
-                                                    className="w-full px-3 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-sm font-medium text-left"
-                                                >
-                                                    Declare Result
-                                                </button>
-                                            )}
-                                            {fight.result && (
-                                                <button
-                                                    onClick={() => handleChangeResult(fight)}
-                                                    className="w-full px-3 py-2 bg-yellow-700 hover:bg-yellow-600 rounded text-sm font-medium text-left"
-                                                >
-                                                    Change Result
-                                                </button>
-                                            )}
                                         </div>
-                                    </details>
+                                    </div>
+
+                                    <div className="bg-gray-700/70 rounded-lg p-3 border border-gray-600">
+                                        <label className="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wide">Declare Result</label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={resultSelections[fight.id] || ''}
+                                                onChange={(e) => setResultSelections((prev) => ({
+                                                    ...prev,
+                                                    [fight.id]: e.target.value as '' | 'meron' | 'wala' | 'draw' | 'cancelled',
+                                                }))}
+                                                className="flex-1 px-3 py-2 bg-gray-900 border border-gray-500 rounded text-sm font-semibold text-white"
+                                            >
+                                                <option value="">--</option>
+                                                <option value="meron">Meron</option>
+                                                <option value="wala">Wala</option>
+                                                <option value="draw">Draw</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </select>
+                                            <button
+                                                onClick={() => submitInlineResult(fight)}
+                                                disabled={!resultSelections[fight.id]}
+                                                className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded text-sm font-bold"
+                                            >
+                                                Set
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => router.visit(`/declarator/fights/${fight.id}/edit`)}
+                                        className="w-full px-3 py-2.5 bg-blue-700 hover:bg-blue-600 rounded text-sm font-bold text-left"
+                                    >
+                                        Edit Fight
+                                    </button>
                                 </div>
                             </div>
                             </div>
