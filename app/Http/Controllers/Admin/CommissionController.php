@@ -13,8 +13,6 @@ class CommissionController extends Controller
 {
     public function index(Request $request)
     {
-        $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
-        $endDate = $request->input('end_date', now()->toDateString());
         $eventFilter = $request->input('event');
 
         // Get events for dropdown
@@ -26,7 +24,6 @@ class CommissionController extends Controller
 
         // Get fights with commission data
         $fights = Fight::where('status', 'result_declared')
-            ->whereBetween('result_declared_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
             ->with(['declarator'])
             ->latest('result_declared_at')
@@ -68,8 +65,6 @@ class CommissionController extends Controller
             'stats' => $stats,
             'events' => $events,
             'filters' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
                 'event' => $eventFilter,
             ],
         ]);
