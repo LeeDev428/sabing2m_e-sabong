@@ -22,8 +22,24 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
         return () => clearInterval(interval);
     }, []);
 
-    const pendingFights = fights.filter(f => f.status === 'betting_closed');
-    const declaredToday = fights.filter(f => f.declared_by).length;
+    const currentEventName = fights[0]?.event_name || null;
+    const currentEventFights = currentEventName
+        ? fights.filter(f => f.event_name === currentEventName)
+        : fights;
+    const pendingFights = currentEventFights.filter(f => f.status === 'betting_closed' || f.status === 'closed');
+    const declaredToday = currentEventFights.filter(f => f.declared_by).length;
+
+    const getStatusBadgeClass = (status?: string) => {
+        switch ((status || '').toLowerCase()) {
+            case 'open': return 'bg-green-600';
+            case 'lastcall': return 'bg-yellow-600';
+            case 'closed':
+            case 'betting_closed': return 'bg-red-600';
+            case 'standby': return 'bg-gray-600';
+            case 'result_declared': return 'bg-blue-600';
+            default: return 'bg-gray-500';
+        }
+    };
 
     const handleDeclareResult = () => {
         if (!selectedFight || !result) return;
@@ -49,6 +65,9 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                 <div>
                     <h1 className="text-2xl lg:text-3xl font-bold">Declarator Dashboard</h1>
                     <p className="text-sm lg:text-base text-gray-400">Declare fight results and manage outcomes</p>
+                    {currentEventName && (
+                        <p className="text-xs text-blue-300 mt-1">Current Event: {currentEventName}</p>
+                    )}
                 </div>
                 {/* <button
                     onClick={() => setShowNextFightModal(true)}
@@ -72,8 +91,8 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                     </div>
                     <div className="bg-gray-800 rounded-lg p-4 lg:p-6 border border-gray-700">
                         <div className="text-xs lg:text-sm text-gray-400 mb-2">Total Fights</div>
-                        <div className="text-3xl lg:text-4xl font-bold">{fights.length}</div>
-                        <p className="text-xs text-gray-500 mt-2">All fight events</p>
+                        <div className="text-3xl lg:text-4xl font-bold">{currentEventFights.length}</div>
+                        <p className="text-xs text-gray-500 mt-2">Current event fights</p>
                     </div>
                 </div>
 
@@ -140,13 +159,16 @@ export default function DeclaratorDashboard({ fights = [] }: DeclaratorDashboard
                         <p className="text-sm text-gray-400">Latest declared fight results</p>
                     </div>
                     <div className="p-6">
-                        {fights.filter(f => f.result).length > 0 ? (
+                        {currentEventFights.filter(f => f.result).length > 0 ? (
                             <div className="space-y-3">
-                                {fights.filter(f => f.result).slice(0, 5).map((fight) => (
+                                {currentEventFights.filter(f => f.result).slice(0, 5).map((fight) => (
                                     <div key={fight.id} className="bg-gray-700 rounded-lg p-4 flex items-center justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-semibold">Fight #{fight.fight_number}</span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(fight.status)}`}>
+                                                    {(fight.status || '').toUpperCase()}
+                                                </span>
                                                 <span
                                                     className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                                         fight.result === 'meron'
