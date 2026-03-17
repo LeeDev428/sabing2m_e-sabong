@@ -108,6 +108,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::post('events/funds', [EventController::class, 'storeFunds'])->name('events.store-funds');
     Route::post('events', [EventController::class, 'store'])->name('events.store');
     Route::put('events/{event}', [EventController::class, 'update'])->name('events.update');
+    Route::post('events/{event}/end', [EventController::class, 'end'])->name('events.end');
     
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
