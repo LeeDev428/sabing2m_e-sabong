@@ -89,6 +89,8 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
         if (!show) return;
 
         const timers: ReturnType<typeof setTimeout>[] = [];
+        const duration = 15000;
+        const endTime = Date.now() + duration;
 
         const burst = (originX: number, originY: number, particleCount: number) => {
             confetti({
@@ -136,7 +138,44 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
             burst(0.5, 0.25, 36);
         }, 1400));
 
+        const confettiLoop = setInterval(() => {
+            if (Date.now() > endTime) {
+                clearInterval(confettiLoop);
+                return;
+            }
+
+            confetti({
+                particleCount: 14,
+                angle: 60,
+                spread: 32,
+                startVelocity: 20,
+                origin: { x: 0, y: 0.72 },
+                disableForReducedMotion: true,
+                colors: palette,
+            });
+
+            confetti({
+                particleCount: 14,
+                angle: 120,
+                spread: 32,
+                startVelocity: 20,
+                origin: { x: 1, y: 0.72 },
+                disableForReducedMotion: true,
+                colors: palette,
+            });
+
+            confetti({
+                particleCount: 10,
+                spread: 40,
+                startVelocity: 16,
+                origin: { x: 0.5, y: 0.3 },
+                disableForReducedMotion: true,
+                colors: palette,
+            });
+        }, 850);
+
         return () => {
+            clearInterval(confettiLoop);
             timers.forEach((timer) => clearTimeout(timer));
         };
     }, [palette, show]);
