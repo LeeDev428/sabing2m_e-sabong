@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { FiAward, FiZap } from 'react-icons/fi';
 
@@ -12,6 +13,7 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
     if (!show || !result || result === 'cancelled' || result === 'cancel') return null;
 
     const normalizedResult = result.toLowerCase();
+    const [phase, setPhase] = useState<'prelude' | 'reveal'>('prelude');
 
     const palette = useMemo(() => {
         if (result.toLowerCase() === 'meron') {
@@ -24,6 +26,19 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
 
         return ['#10b981', '#34d399', '#6ee7b7', '#f8fafc'];
     }, [result]);
+
+    useEffect(() => {
+        if (!show) return;
+
+        setPhase('prelude');
+        const preludeTimer = setTimeout(() => {
+            setPhase('reveal');
+        }, 950);
+
+        return () => {
+            clearTimeout(preludeTimer);
+        };
+    }, [show, result, fightNumber]);
 
     useEffect(() => {
         if (!show) return;
@@ -129,7 +144,13 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-950/88 backdrop-blur-sm flex items-center justify-center px-4 overflow-hidden">
+        <motion.div
+            className="fixed inset-0 z-50 bg-slate-950/88 backdrop-blur-sm flex items-center justify-center px-4 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+        >
             <div className="absolute inset-0 pointer-events-none">
                 <img
                     src="/silhouette/meron.png"
@@ -141,25 +162,88 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
                     alt="Wala silhouette"
                     className={`absolute right-[18%] top-1/2 -translate-y-1/2 h-40 sm:h-56 lg:h-72 w-auto object-contain overlay-silhouette-blink ${normalizedResult === 'wala' ? 'opacity-70' : 'opacity-20'}`}
                 />
+
+                <motion.div
+                    className="absolute inset-x-0 top-1/2 h-[2px] bg-gradient-to-r from-transparent via-cyan-200/80 to-transparent"
+                    initial={{ scaleX: 0.2, opacity: 0 }}
+                    animate={{ scaleX: [0.2, 1.2, 1], opacity: [0, 0.9, 0.2] }}
+                    transition={{ duration: 1.4, ease: 'easeOut' }}
+                />
+
+                <motion.div
+                    className={`absolute inset-0 ${normalizedResult === 'meron' ? 'bg-red-500/10' : normalizedResult === 'wala' ? 'bg-blue-500/10' : 'bg-emerald-500/10'}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0, 0.24, 0.08] }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                />
             </div>
 
-            <div className="relative text-center animate-fade-in z-10 bg-slate-950/35 backdrop-blur-sm rounded-3xl px-6 py-8 border border-white/10">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/10 text-cyan-100 px-4 py-2 text-xs sm:text-sm uppercase tracking-[0.25em]">
-                    <FiZap /> Result Declared
-                </div>
+            <div className="relative z-10 w-full max-w-5xl mx-auto text-center">
+                <AnimatePresence mode="wait">
+                    {phase === 'prelude' ? (
+                        <motion.div
+                            key="prelude"
+                            initial={{ opacity: 0, y: 24, scale: 0.94 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -14, scale: 0.98 }}
+                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                            className="inline-flex flex-col items-center rounded-3xl border border-cyan-300/30 bg-slate-950/50 backdrop-blur-md px-8 py-7"
+                        >
+                            <motion.div
+                                className="text-cyan-100 uppercase tracking-[0.35em] text-xs sm:text-sm"
+                                animate={{ opacity: [0.4, 1, 0.6, 1] }}
+                                transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}
+                            >
+                                Finishing Sequence
+                            </motion.div>
+                            <motion.div
+                                className="mt-3 text-3xl sm:text-5xl font-black text-white"
+                                initial={{ letterSpacing: '0.4em', opacity: 0 }}
+                                animate={{ letterSpacing: '0.08em', opacity: 1 }}
+                                transition={{ duration: 0.55, ease: 'easeOut' }}
+                            >
+                                LOCKING RESULT
+                            </motion.div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="reveal"
+                            initial={{ opacity: 0, y: 28, scale: 0.92 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -18 }}
+                            transition={{ duration: 0.45, ease: 'easeOut' }}
+                            className="inline-flex flex-col items-center rounded-3xl border border-white/10 bg-slate-950/40 backdrop-blur-sm px-6 sm:px-10 py-7 sm:py-9"
+                        >
+                            <motion.div
+                                className="inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/10 text-cyan-100 px-4 py-2 text-xs sm:text-sm uppercase tracking-[0.25em]"
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.05, duration: 0.35 }}
+                            >
+                                <FiZap /> Result Declared
+                            </motion.div>
 
-                <div className={`mt-5 text-[clamp(2rem,8vw,6rem)] font-black leading-none bg-gradient-to-r ${getResultColor(result)} bg-clip-text text-transparent`}>
-                    {result.toUpperCase()} WINS
-                </div>
+                            <motion.div
+                                className={`mt-5 text-[clamp(2rem,8vw,6rem)] font-black leading-none bg-gradient-to-r ${getResultColor(result)} bg-clip-text text-transparent`}
+                                initial={{ opacity: 0, scale: 0.86, y: 14 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ delay: 0.12, duration: 0.44, ease: 'easeOut' }}
+                            >
+                                {result.toUpperCase()} WINS
+                            </motion.div>
 
-                <div className="mt-3 text-xl sm:text-3xl text-slate-200 font-semibold inline-flex items-center gap-2">
-                    <FiAward className="text-amber-300" />
-                    Fight #{fightNumber}
-                </div>
-
-                {/* <div className="mt-6 text-sm sm:text-base uppercase tracking-[0.2em] text-slate-300">
-                    Confetti sequence active
-                </div> */}
+                            <motion.div
+                                className="mt-3 text-xl sm:text-3xl text-slate-200 font-semibold inline-flex items-center gap-2"
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2, duration: 0.36 }}
+                            >
+                                <FiAward className="text-amber-300" />
+                                Fight #{fightNumber}
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             <style>{`
@@ -171,6 +255,6 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
                     animation: overlaySilhouetteBlink 1.8s ease-in-out infinite;
                 }
             `}</style>
-        </div>
+        </motion.div>
     );
 }
