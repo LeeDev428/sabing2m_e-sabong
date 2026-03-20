@@ -14,7 +14,7 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
     if (history.length === 0) return null;
 
     const [page, setPage] = useState(0);
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 8;
     const totalPages = Math.max(1, Math.ceil(history.length / ITEMS_PER_PAGE));
 
     useEffect(() => {
@@ -29,14 +29,18 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
     }, [history, page]);
 
     const getResultBg = (result: string) => {
-        return result === 'meron' ? 'bg-red-500' : 
-               result === 'wala' ? 'bg-blue-500' : 
-               result === 'draw' ? 'bg-green-500' : 'bg-gray-500';
+        return result === 'meron'
+            ? 'bg-gradient-to-br from-rose-500/85 to-red-600/90 border border-rose-200/30'
+            : result === 'wala'
+              ? 'bg-gradient-to-br from-sky-500/85 to-blue-600/90 border border-blue-200/30'
+              : result === 'draw'
+                ? 'bg-gradient-to-br from-emerald-500/85 to-green-600/90 border border-emerald-200/30'
+                : 'bg-gradient-to-br from-slate-500/90 to-slate-600/90 border border-slate-200/25';
     };
 
     return (
-        <div className="rounded-2xl border border-slate-700/80 bg-slate-900/45 backdrop-blur-sm p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="mt-auto rounded-2xl border border-slate-700/80 bg-slate-900/50 backdrop-blur-sm p-2.5 sm:p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-slate-300 inline-flex items-center gap-2">
                     <FiClock /> Recent Results
                 </h3>
@@ -64,13 +68,13 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 pb-1">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 pb-0.5 min-h-[44px]">
                 {visibleHistory.map((h, idx) => (
                     <div
                         key={`${h.fight_number}-${idx}`}
-                        className={`${getResultBg(h.result)} rounded-xl px-3 py-2 flex-shrink-0 shadow-md transition-transform hover:scale-[1.03] min-w-[96px]`}
+                        className={`${getResultBg(h.result)} rounded-xl px-2.5 py-1.5 flex-shrink-0 shadow-md min-w-[84px] sm:min-w-[96px]`}
                     >
-                        <div className="text-[10px] text-white/75 uppercase tracking-wide">Fight #{h.fight_number}</div>
+                        <div className="text-[9px] sm:text-[10px] text-white/80 uppercase tracking-wide">Fight #{h.fight_number}</div>
                         <div className="text-sm sm:text-base font-black text-white uppercase leading-tight">{h.result}</div>
                     </div>
                 ))}
