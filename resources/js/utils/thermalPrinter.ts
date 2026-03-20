@@ -512,9 +512,10 @@ export class ThermalPrinter {
                 { text: `Claimed By: ${payoutData.claimed_by}`,                       size: 'normal', bold: false, align: 'left'   },
                 { text: `Receipt: ${payoutData.ticket_id}`,                           size: 'normal', bold: false, align: 'left'   },
                 { text: `Date/Time: ${dateTimeStr}`,                                  size: 'normal', bold: false, align: 'left'   },
+                { text: `Claim Amount: P${payoutData.payout_amount.toLocaleString()}`, size: 'normal', bold: true,  align: 'left'   },
                 { text: `Side: ${sideDisplay}`,                                       size: 'normal', bold: false, align: 'left'   },
                 { text: '--------------------------------',                            size: 'small',  bold: false, align: 'center' },
-                { text: `CLAIM AMOUNT: P${payoutData.payout_amount.toLocaleString()}`, size: 'large',  bold: true,  align: 'center' },
+                { text: `P${payoutData.payout_amount.toLocaleString()}`,              size: 'normal', bold: true,  align: 'center' },
                 { text: 'OFFICIAL BETTING RECEIPT',                                   size: 'normal', bold: false, align: 'center' },
             ];
             console.log('[ThermalPrinter] Sending payout to SDK print path...');
@@ -548,13 +549,14 @@ export class ThermalPrinter {
             `Claimed By: ${payoutData.claimed_by}\n`,
             `Receipt: ${payoutData.ticket_id}\n`,
             `Date/Time: ${dateTimeStr}\n`,
+            `Claim Amount: P${payoutData.payout_amount.toLocaleString()}\n`,
             `Side: ${sideDisplay}\n`,
             '--------------------------------\n',
 
-            // Payout Amount (BIGGER)
+            // Payout Amount (repeat centered for readability)
             `${ESC}a${String.fromCharCode(1)}`, // Center align
-            `${ESC}!${String.fromCharCode(48)}`, // Double height and width + Bold
-            `CLAIM AMOUNT: P${payoutData.payout_amount.toLocaleString()}\n`,
+            `${ESC}!${String.fromCharCode(8)}`, // Bold
+            `P${payoutData.payout_amount.toLocaleString()}\n`,
             `${ESC}!${String.fromCharCode(0)}`, // Normal
             `${ESC}a${String.fromCharCode(1)}`, // Center align
             'OFFICIAL BETTING RECEIPT\n',
