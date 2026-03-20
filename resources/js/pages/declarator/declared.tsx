@@ -63,7 +63,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
     const [commission, setCommission] = useState('7.5');
     const [editingFunds, setEditingFunds] = useState<number | null>(null);
     const [fundsData, setFundsData] = useState<{[key: number]: {revolving_funds: string, assignments: any[]}}>({});
-    const [statusSelections, setStatusSelections] = useState<Record<number, 'open' | 'lastcall' | 'closed'>>({});
+    const [statusSelections, setStatusSelections] = useState<Record<number, 'standby' | 'open' | 'lastcall' | 'closed'>>({});
     const [resultSelections, setResultSelections] = useState<Record<number, '' | 'meron' | 'wala' | 'draw' | 'cancelled'>>({});
     const { data, setData, post, processing, errors } = useForm({
         new_result: '',
@@ -138,12 +138,12 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
         });
     };
 
-    const getCurrentStatusValue = (fight: Fight): 'open' | 'lastcall' | 'closed' => {
+    const getCurrentStatusValue = (fight: Fight): 'standby' | 'open' | 'lastcall' | 'closed' => {
         if (statusSelections[fight.id]) {
             return statusSelections[fight.id];
         }
 
-        if (fight.status === 'open' || fight.status === 'lastcall' || fight.status === 'closed') {
+        if (fight.status === 'standby' || fight.status === 'open' || fight.status === 'lastcall' || fight.status === 'closed') {
             return fight.status;
         }
 
@@ -170,6 +170,11 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
     };
 
     const submitInlineResult = (fight: Fight) => {
+        if (getCurrentStatusValue(fight) !== 'closed') {
+            alert('You can only declare a result when fight status is CLOSED.');
+            return;
+        }
+
         const selectedResult = getCurrentResultValue(fight);
         if (!selectedResult) return;
 
@@ -615,10 +620,11 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                                 value={getCurrentStatusValue(fight)}
                                                 onChange={(e) => setStatusSelections((prev) => ({
                                                     ...prev,
-                                                    [fight.id]: e.target.value as 'open' | 'lastcall' | 'closed',
+                                                    [fight.id]: e.target.value as 'standby' | 'open' | 'lastcall' | 'closed',
                                                 }))}
                                                 className="flex-1 px-3 py-2 bg-gray-900 border border-gray-500 rounded text-sm font-semibold text-white"
                                             >
+                                                <option value="standby">Standby</option>
                                                 <option value="open">Open</option>
                                                 <option value="lastcall">Last Call</option>
                                                 <option value="closed">Closed</option>
@@ -651,7 +657,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                             </select>
                                             <button
                                                 onClick={() => submitInlineResult(fight)}
-                                                disabled={!getCurrentResultValue(fight)}
+                                                disabled={!getCurrentResultValue(fight) || getCurrentStatusValue(fight) !== 'closed'}
                                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded text-sm font-bold"
                                             >
                                                 Set
