@@ -133,6 +133,17 @@ export default function BigScreen() {
                 <div className="absolute -top-32 right-0 h-[26rem] w-[26rem] rounded-full bg-cyan-500/12 blur-3xl" />
                 <div className="absolute bottom-[-10rem] left-1/3 h-[20rem] w-[28rem] rounded-full bg-blue-500/10 blur-3xl" />
                 <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:44px_44px]" />
+
+                <img
+                    src="/silhouette/meron.png"
+                    alt="Meron silhouette"
+                    className="absolute left-2 sm:left-6 lg:left-10 top-[18vh] sm:top-[20vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-40 silhouette-blink"
+                />
+                <img
+                    src="/silhouette/wala.png"
+                    alt="Wala silhouette"
+                    className="absolute right-2 sm:right-6 lg:right-10 top-[18vh] sm:top-[20vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-40 silhouette-blink"
+                />
             </div>
 
             <WinnerOverlay 
@@ -141,7 +152,7 @@ export default function BigScreen() {
                 fightNumber={fight.fight_number} 
             />
 
-            <div className="relative z-10 h-full flex flex-col px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
+            <div className="relative z-10 h-full flex flex-col px-3 py-2 sm:px-5 sm:py-3 lg:px-8 lg:py-4">
                 <FightHeader
                     fightNumber={fight.fight_number}
                     venue={fight.venue}
@@ -158,7 +169,7 @@ export default function BigScreen() {
                     walaBettingOpen={fight.wala_betting_open}
                 />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 py-2 sm:py-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3 lg:gap-5 py-1.5 sm:py-2">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
@@ -182,19 +193,6 @@ export default function BigScreen() {
                     />
                 </div>
 
-                <div className="relative h-20 sm:h-24 lg:h-28 overflow-hidden pointer-events-none">
-                    <img
-                        src="/silhouette/meron.png"
-                        alt="Meron silhouette"
-                        className="absolute left-0 bottom-0 h-full w-auto object-contain opacity-55 silhouette-blink"
-                    />
-                    <img
-                        src="/silhouette/wala.png"
-                        alt="Wala silhouette"
-                        className="absolute right-0 bottom-0 h-full w-auto object-contain opacity-55 silhouette-blink"
-                    />
-                </div>
-
                 <NotesDisplay
                     notes={fight.notes}
                     specialConditions={fight.special_conditions}
@@ -205,11 +203,11 @@ export default function BigScreen() {
 
             <style>{`
                 @keyframes silhouetteBlink {
-                    0%, 100% { opacity: 0.45; filter: brightness(0.95); }
-                    50% { opacity: 0.72; filter: brightness(1.12); }
+                    0%, 100% { opacity: 0.34; filter: brightness(0.92); }
+                    50% { opacity: 0.56; filter: brightness(1.08); }
                 }
                 .silhouette-blink {
-                    animation: silhouetteBlink 2.1s ease-in-out infinite;
+                    animation: silhouetteBlink 2.4s ease-in-out infinite;
                 }
             `}</style>
         </div>
