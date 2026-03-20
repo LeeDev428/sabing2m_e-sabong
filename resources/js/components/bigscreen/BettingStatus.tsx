@@ -49,12 +49,8 @@ export default function BettingStatus({ status, result, meronBettingOpen, walaBe
                     </div>
 
                     <div className={`inline-flex items-center justify-center gap-2 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-lg font-bold tracking-wide whitespace-nowrap ${statusBadge.bg} ${statusBadge.pulse ? 'animate-pulse' : ''}`}>
-                        {status === 'standby' && <FiPauseCircle />}
                         {status === 'open' && <FiCheckCircle />}
                         {status === 'lastcall' && <FiActivity />}
-                        {status === 'closed' && <FiLock />}
-                        {(status === 'declared' || status === 'result_declared') && <FiCheckCircle />}
-                        {status === 'cancelled' && <FiXCircle />}
                         {statusBadge.text}
                     </div>
 
