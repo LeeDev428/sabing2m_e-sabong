@@ -155,12 +155,12 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
                 <img
                     src="/silhouette/meron.png"
                     alt="Meron silhouette"
-                    className={`absolute left-[18%] top-1/2 -translate-y-1/2 h-40 sm:h-56 lg:h-72 w-auto object-contain overlay-silhouette-blink ${normalizedResult === 'meron' ? 'opacity-70' : 'opacity-20'}`}
+                    className={`absolute left-[12%] top-1/2 -translate-y-1/2 h-40 sm:h-56 lg:h-72 w-auto object-contain overlay-silhouette-blink ${normalizedResult === 'meron' ? 'opacity-72' : 'opacity-18'}`}
                 />
                 <img
                     src="/silhouette/wala.png"
                     alt="Wala silhouette"
-                    className={`absolute right-[18%] top-1/2 -translate-y-1/2 h-40 sm:h-56 lg:h-72 w-auto object-contain overlay-silhouette-blink ${normalizedResult === 'wala' ? 'opacity-70' : 'opacity-20'}`}
+                    className={`absolute right-[12%] top-1/2 -translate-y-1/2 h-40 sm:h-56 lg:h-72 w-auto object-contain overlay-silhouette-blink ${normalizedResult === 'wala' ? 'opacity-72' : 'opacity-18'}`}
                 />
 
                 <motion.div
@@ -176,6 +176,41 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
                     animate={{ opacity: [0, 0.24, 0.08] }}
                     transition={{ duration: 1.2, ease: 'easeOut' }}
                 />
+
+                <motion.div
+                    className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/40"
+                    initial={{ scale: 0.2, opacity: 0.8 }}
+                    animate={{ scale: [0.2, 4.8], opacity: [0.8, 0] }}
+                    transition={{ duration: 1.05, ease: 'easeOut' }}
+                />
+
+                <motion.div
+                    className="absolute inset-x-0 top-[35%] h-[1px] bg-gradient-to-r from-transparent via-white/70 to-transparent"
+                    initial={{ opacity: 0, x: -240 }}
+                    animate={{ opacity: [0, 0.85, 0], x: [-240, 240, 420] }}
+                    transition={{ duration: 1.25, ease: 'easeInOut' }}
+                />
+
+                <motion.div
+                    className="absolute inset-x-0 top-[66%] h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                    initial={{ opacity: 0, x: 220 }}
+                    animate={{ opacity: [0, 0.7, 0], x: [220, -220, -380] }}
+                    transition={{ duration: 1.35, ease: 'easeInOut' }}
+                />
+
+                {[...Array(10)].map((_, index) => (
+                    <motion.span
+                        key={`spark-${index}`}
+                        className="absolute h-1.5 w-1.5 rounded-full bg-white/80"
+                        style={{
+                            left: `${40 + Math.random() * 20}%`,
+                            top: `${35 + Math.random() * 28}%`,
+                        }}
+                        initial={{ opacity: 0, scale: 0.2 }}
+                        animate={{ opacity: [0, 0.95, 0], scale: [0.2, 1.2, 0.2], y: [0, -20 - Math.random() * 25] }}
+                        transition={{ duration: 0.9 + Math.random() * 0.5, delay: 0.12 + index * 0.05, ease: 'easeOut' }}
+                    />
+                ))}
             </div>
 
             <div className="relative z-10 w-full max-w-5xl mx-auto text-center">
@@ -229,7 +264,12 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 transition={{ delay: 0.12, duration: 0.44, ease: 'easeOut' }}
                             >
-                                {result.toUpperCase()} WINS
+                                <motion.span
+                                    animate={{ textShadow: ['0 0 0 rgba(255,255,255,0)', '0 0 30px rgba(255,255,255,0.24)', '0 0 8px rgba(255,255,255,0)'] }}
+                                    transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
+                                >
+                                    {result.toUpperCase()} WINS
+                                </motion.span>
                             </motion.div>
 
                             <motion.div
