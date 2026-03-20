@@ -47,6 +47,8 @@ interface HistoryFight {
     result: string;
 }
 
+const isDeclaredStatus = (status?: string) => status === 'declared' || status === 'result_declared';
+
 export default function BigScreen() {
     const [fight, setFight] = useState<FightData | null>(null);
     const [history, setHistory] = useState<HistoryFight[]>([]);
@@ -64,13 +66,10 @@ export default function BigScreen() {
             const response = await axios.get('/api/bigscreen');
             const newFight = response.data.fight;
             
-            // Show winner overlay only once when result is first declared
-            // Don't show for cancelled fights
-            if (newFight && newFight.status === 'declared' && newFight.result && newFight.result !== 'cancelled' && newFight.result !== 'cancel') {
-                // Only show if this is a NEW result (different fight OR different result)
+            if (newFight && isDeclaredStatus(newFight.status) && newFight.result && newFight.result !== 'cancelled' && newFight.result !== 'cancel') {
                 if (!fight || fight.id !== newFight.id || fight.result !== newFight.result) {
                     setShowWinner(true);
-                    setTimeout(() => setShowWinner(false), 15000); // Show for 15 seconds
+                    setTimeout(() => setShowWinner(false), 15000);
                 }
             }
             
@@ -91,43 +90,42 @@ export default function BigScreen() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-                <div className="text-white text-5xl animate-pulse">Loading...</div>
+            <div className="h-screen w-screen bg-[#050b1a] flex items-center justify-center">
+                <div className="text-slate-200 text-2xl sm:text-4xl animate-pulse tracking-wide">Loading Big Screen...</div>
             </div>
         );
     }
 
     if (!fight) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+            <div className="h-screen w-screen bg-[#050b1a] flex items-center justify-center px-6">
                 <Head title="Big Screen - Sabing2m" />
-                <div className="text-center p-8">
-                    <div className="text-9xl mb-8 animate-bounce">🐓</div>
-                    <h1 className="text-7xl font-bold text-orange-500 mb-4">SABING2M</h1>
-                    <p className="text-4xl text-gray-400">Waiting for Next Fight...</p>
-                    <p className="text-2xl text-gray-600 mt-6">Fight will start soon</p>
-                    <div className="mt-8 animate-pulse">
-                        <div className="text-6xl mb-4">⏳</div>
-                        <p className="text-xl text-gray-500">Preparing arena...</p>
-                    </div>
+                <div className="text-center p-8 rounded-3xl border border-slate-700 bg-slate-900/55 backdrop-blur-md max-w-3xl w-full">
+                    <h1 className="text-3xl sm:text-5xl font-black text-slate-100">No Active Fight</h1>
+                    <p className="text-slate-300 mt-3 text-base sm:text-xl">Standby mode is active. The next fight feed will appear shortly.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 text-white overflow-hidden">
+        <div className="relative h-screen w-screen overflow-hidden bg-[#050b1a] text-slate-100">
             <Head title={`Fight #${fight.fight_number} - Sabing2m`} />
 
-            {/* Winner Announcement Overlay */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute -top-40 -left-20 h-96 w-96 rounded-full bg-rose-500/15 blur-3xl" />
+                <div className="absolute -top-32 right-0 h-[26rem] w-[26rem] rounded-full bg-cyan-500/12 blur-3xl" />
+                <div className="absolute bottom-[-10rem] left-1/3 h-[20rem] w-[28rem] rounded-full bg-blue-500/10 blur-3xl" />
+                <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:44px_44px]" />
+            </div>
+
             <WinnerOverlay 
                 show={showWinner} 
                 result={fight.result || ''} 
                 fightNumber={fight.fight_number} 
             />
 
-            <div className="container mx-auto px-4 py-4">
-                {/* Fight Header with Event Info */}
+            <div className="relative z-10 h-full flex flex-col px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
                 <FightHeader
                     fightNumber={fight.fight_number}
                     venue={fight.venue}
@@ -137,7 +135,6 @@ export default function BigScreen() {
                     matchType={fight.match_type}
                 />
 
-                {/* Betting Status with Individual Side Status */}
                 <BettingStatus
                     status={fight.status}
                     result={fight.result}
@@ -145,8 +142,7 @@ export default function BigScreen() {
                     walaBettingOpen={fight.wala_betting_open}
                 />
 
-                {/* Fighter Cards Grid - Only Meron and Wala */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 py-2 sm:py-3">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
@@ -155,18 +151,8 @@ export default function BigScreen() {
                         betCount={fight.meron_count}
                         bettingOpen={fight.meron_betting_open}
                         isWinner={fight.status === 'declared' && fight.result === 'meron'}
-                        isCancelled={fight.status === 'declared' && fight.result === 'cancelled'}
+                        isCancelled={isDeclaredStatus(fight.status) && fight.result === 'cancelled'}
                     />
-
-                    {/* Draw is hidden for Big Screen - only show Meron and Wala */}
-                    {/* <FighterCard
-                        side="draw"
-                        fighter="Even Match"
-                        odds={fight.draw_odds}
-                        totalBets={fight.draw_total}
-                        betCount={fight.draw_count}
-                        bettingOpen={fight.draw_betting_open}
-                    /> */}
 
                     <FighterCard
                         side="wala"
@@ -175,12 +161,11 @@ export default function BigScreen() {
                         totalBets={fight.wala_total}
                         betCount={fight.wala_count}
                         bettingOpen={fight.wala_betting_open}
-                        isWinner={fight.status === 'declared' && fight.result === 'wala'}
-                        isCancelled={fight.status === 'declared' && fight.result === 'cancelled'}
+                        isWinner={isDeclaredStatus(fight.status) && fight.result === 'wala'}
+                        isCancelled={isDeclaredStatus(fight.status) && fight.result === 'cancelled'}
                     />
                 </div>
 
-                {/* Total Pot & Commission */}
                 <StatsPanel
                     totalPot={fight.total_pot}
                     commission={fight.commission}
@@ -188,32 +173,13 @@ export default function BigScreen() {
                     netPot={fight.net_pot}
                 />
 
-                {/* Notes & Special Conditions - Compact */}
                 <NotesDisplay
                     notes={fight.notes}
                     specialConditions={fight.special_conditions}
                 />
 
-                {/* Fight History */}
                 <HistoryStrip history={history} />
             </div>
-
-            <style>{`
-                @keyframes confetti {
-                    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-                    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-                }
-                .animate-confetti {
-                    animation: confetti 4s linear infinite;
-                }
-                @keyframes fade-in {
-                    from { opacity: 0; transform: scale(0.8); }
-                    to { opacity: 1; transform: scale(1); }
-                }
-                .animate-fade-in {
-                    animation: fade-in 0.5s ease-out;
-                }
-            `}</style>
         </div>
     );
 }
