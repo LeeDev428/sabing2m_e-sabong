@@ -1,3 +1,5 @@
+import { FiAward, FiLock } from 'react-icons/fi';
+
 interface FighterCardProps {
     side: 'meron' | 'wala' | 'draw';
     fighter: string;
@@ -12,84 +14,89 @@ interface FighterCardProps {
 export default function FighterCard({ side, fighter, odds, totalBets, betCount, bettingOpen, isWinner, isCancelled }: FighterCardProps) {
     const colors = {
         meron: {
-            gradient: 'from-red-600 to-red-800',
-            light: 'text-red-100',
-            bg: 'bg-red-900/50',
-            border: 'border-red-400',
+            card: 'from-red-950/70 via-red-900/55 to-slate-900/80',
+            glow: 'shadow-[0_0_0_1px_rgba(248,113,113,0.6),0_0_45px_rgba(239,68,68,0.2)]',
+            text: 'text-rose-100',
+            accent: 'text-rose-300',
+            chip: 'bg-rose-400/15 border-rose-300/45',
+            winner: 'ring-2 ring-amber-300/70',
         },
         wala: {
-            gradient: 'from-blue-600 to-blue-800',
-            light: 'text-blue-100',
-            bg: 'bg-blue-900/50',
-            border: 'border-blue-400',
+            card: 'from-blue-950/70 via-blue-900/55 to-slate-900/80',
+            glow: 'shadow-[0_0_0_1px_rgba(96,165,250,0.6),0_0_45px_rgba(59,130,246,0.2)]',
+            text: 'text-blue-100',
+            accent: 'text-sky-300',
+            chip: 'bg-sky-400/15 border-sky-300/45',
+            winner: 'ring-2 ring-amber-300/70',
         },
         draw: {
-            gradient: 'from-green-600 to-emerald-800',
-            light: 'text-green-100',
-            bg: 'bg-green-900/50',
-            border: 'border-green-400',
+            card: 'from-emerald-950/70 via-emerald-900/55 to-slate-900/80',
+            glow: 'shadow-[0_0_0_1px_rgba(52,211,153,0.6),0_0_45px_rgba(16,185,129,0.2)]',
+            text: 'text-emerald-100',
+            accent: 'text-emerald-300',
+            chip: 'bg-emerald-400/15 border-emerald-300/45',
+            winner: 'ring-2 ring-amber-300/70',
         },
     };
 
     const color = colors[side];
 
     return (
-        <div className={`bg-gradient-to-br ${color.gradient} rounded-3xl p-8 shadow-2xl transform transition-all hover:scale-105 relative border-4 ${
-            isWinner ? 'border-yellow-400 ring-8 ring-yellow-300/50 animate-pulse' : color.border
-        }`}>
-            {/* Winner Crown Overlay */}
+        <article className={`relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-4 sm:p-5 lg:p-6 ${color.glow} ${isWinner ? `${color.winner} animate-pulse` : ''}`}>
+            <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.22),transparent_55%)]" />
+
             {isWinner && (
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-20">
-                    <div className="text-8xl animate-bounce drop-shadow-2xl">🏆</div>
+                <div className="absolute top-3 right-3 z-20 rounded-full bg-amber-300/20 border border-amber-200/60 p-2 text-amber-200">
+                    <FiAward className="text-lg sm:text-xl" />
                 </div>
             )}
-            
-            {/* Cancelled Overlay */}
+
             {isCancelled && (
-                <div className="absolute inset-0 bg-black/70 rounded-3xl flex items-center justify-center z-10">
+                <div className="absolute inset-0 z-20 grid place-items-center bg-slate-950/80 backdrop-blur-sm">
                     <div className="text-center">
-                        <div className="text-6xl mb-2">❌</div>
-                        <div className="text-3xl font-bold text-white">CANCELLED</div>
-                        <div className="text-xl text-gray-300 mt-2">REFUND</div>
+                        <div className="text-2xl sm:text-3xl font-black tracking-wide text-slate-100">Cancelled</div>
+                        <div className="text-xs sm:text-sm text-slate-300 mt-1 uppercase">Refund In Progress</div>
                     </div>
                 </div>
             )}
 
-            {/* Betting Closed Overlay */}
             {bettingOpen === false && !isWinner && !isCancelled && (
-                <div className="absolute inset-0 bg-black/70 rounded-3xl flex items-center justify-center z-10">
-                    <div className="text-center">
-                        <div className="text-6xl mb-2">🔒</div>
-                        <div className="text-3xl font-bold text-white">CLOSED</div>
+                <div className="absolute inset-0 z-20 grid place-items-center bg-slate-950/72 backdrop-blur-[2px]">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-4 py-2 border border-slate-500/80 text-slate-100 font-bold uppercase text-xs sm:text-sm tracking-wide">
+                        <FiLock />
+                        Closed
                     </div>
                 </div>
             )}
 
-            <div className="text-center">
-                {/* Side Label */}
-                <div className={`text-3xl font-black mb-6 ${color.light} tracking-wider`}>{side.toUpperCase()}</div>
+            <div className="relative z-10 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                    <div className={`text-lg sm:text-xl font-black uppercase tracking-[0.2em] ${color.text}`}>{side}</div>
+                    <div className={`px-2.5 py-1 rounded-full border text-[10px] sm:text-xs uppercase tracking-wide ${color.chip} ${color.accent}`}>
+                        {betCount} Bets
+                    </div>
+                </div>
 
-                {/* Total Bets - LARGE */}
-                <div className={`${color.bg} rounded-xl p-4 mb-4 border-2 ${color.border}`}>
-                    <div className="text-7xl font-black text-white drop-shadow-2xl">
+                <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-4 sm:px-4 sm:py-5">
+                    <div className="text-[clamp(1.8rem,4.2vw,3.8rem)] font-black text-white leading-none">
                         {totalBets.toLocaleString()}
                     </div>
-                    <div className={`text-xl ${color.light} mt-2 font-semibold`}>{betCount} bets</div>
+                    <div className={`text-[11px] sm:text-sm mt-1 font-semibold uppercase tracking-wide ${color.accent}`}>Tickets</div>
                 </div>
 
-                {/* Fighter Name */}
-                <div className={`text-2xl mb-4 ${color.light} font-bold ${side === 'draw' ? '' : 'truncate'}`}>
+                <div className={`mt-3 sm:mt-4 text-base sm:text-xl font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
                     {side === 'draw' ? 'Even Match' : fighter}
                 </div>
 
-                {/* Payout Odds - PROMINENT */}
-                <div className="bg-black/30 rounded-xl p-4 border-2 border-white/20">
-                    <div className="text-sm text-white/70 uppercase tracking-wider mb-1">Payout</div>
-                    <div className="text-6xl font-black text-yellow-300 drop-shadow-lg">
+                <div className="mt-auto pt-3 sm:pt-4">
+                    <div className="rounded-2xl bg-slate-950/45 border border-white/10 p-3 sm:p-4">
+                        <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-400">Payout</div>
+                        <div className="text-[clamp(1.3rem,3.5vw,2.8rem)] font-black text-amber-200 mt-1 leading-none">
                         {totalBets > 0 ? Number(odds).toFixed(2) : '---'}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </article>
     );
 }
