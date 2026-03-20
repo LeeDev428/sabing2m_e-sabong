@@ -4,7 +4,6 @@ import axios from 'axios';
 import FightHeader from '@/components/bigscreen/FightHeader';
 import BettingStatus from '@/components/bigscreen/BettingStatus';
 import FighterCard from '@/components/bigscreen/FighterCard';
-import StatsPanel from '@/components/bigscreen/StatsPanel';
 import HistoryStrip from '@/components/bigscreen/HistoryStrip';
 import NotesDisplay from '@/components/bigscreen/NotesDisplay';
 import WinnerOverlay from '@/components/bigscreen/WinnerOverlay';
@@ -159,7 +158,7 @@ export default function BigScreen() {
                     walaBettingOpen={fight.wala_betting_open}
                 />
 
-                <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 py-2 sm:py-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 py-2 sm:py-3">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
@@ -183,12 +182,18 @@ export default function BigScreen() {
                     />
                 </div>
 
-                <StatsPanel
-                    totalPot={fight.total_pot}
-                    commission={fight.commission}
-                    commissionPercentage={fight.commission_percentage}
-                    netPot={fight.net_pot}
-                />
+                <div className="relative h-20 sm:h-24 lg:h-28 overflow-hidden pointer-events-none">
+                    <img
+                        src="/silhouette/meron.png"
+                        alt="Meron silhouette"
+                        className="absolute left-0 bottom-0 h-full w-auto object-contain opacity-55 silhouette-blink"
+                    />
+                    <img
+                        src="/silhouette/wala.png"
+                        alt="Wala silhouette"
+                        className="absolute right-0 bottom-0 h-full w-auto object-contain opacity-55 silhouette-blink"
+                    />
+                </div>
 
                 <NotesDisplay
                     notes={fight.notes}
@@ -197,6 +202,16 @@ export default function BigScreen() {
 
                 <HistoryStrip history={history} />
             </div>
+
+            <style>{`
+                @keyframes silhouetteBlink {
+                    0%, 100% { opacity: 0.45; filter: brightness(0.95); }
+                    50% { opacity: 0.72; filter: brightness(1.12); }
+                }
+                .silhouette-blink {
+                    animation: silhouetteBlink 2.1s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 }
