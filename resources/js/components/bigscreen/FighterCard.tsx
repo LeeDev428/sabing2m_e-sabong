@@ -8,10 +8,11 @@ interface FighterCardProps {
     betCount: number;
     bettingOpen?: boolean;
     isWinner?: boolean;
+    isLoser?: boolean;
     isCancelled?: boolean;
 }
 
-export default function FighterCard({ side, fighter, odds, totalBets, betCount, bettingOpen, isWinner, isCancelled }: FighterCardProps) {
+export default function FighterCard({ side, fighter, odds, totalBets, betCount, bettingOpen, isWinner, isLoser, isCancelled }: FighterCardProps) {
     const colors = {
         meron: {
             card: 'from-red-950/70 via-red-900/55 to-slate-900/80',
@@ -42,7 +43,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
     const color = colors[side];
 
     return (
-        <article className={`relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-4 sm:p-5 lg:p-6 ${color.glow} ${isWinner ? `${color.winner} animate-pulse` : ''}`}>
+        <article className={`relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-4 sm:p-5 lg:p-6 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''}`}>
             <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.22),transparent_55%)]" />
 
             {isWinner && (
