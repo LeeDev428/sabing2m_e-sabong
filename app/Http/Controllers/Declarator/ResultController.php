@@ -89,7 +89,7 @@ class ResultController extends Controller
 
     public function declare(Request $request, Fight $fight)
     {
-        if (!in_array($fight->status, ['closed', 'lastcall'])) {
+        if ($fight->status !== 'closed') {
             return redirect()->back()
                 ->with('error', 'Can only declare results for closed fights.');
         }
