@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
-import Lottie from 'lottie-react';
 import { FiAward, FiZap } from 'react-icons/fi';
 
 interface WinnerOverlayProps {
@@ -11,6 +10,8 @@ interface WinnerOverlayProps {
 
 export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverlayProps) {
     if (!show || !result || result === 'cancelled' || result === 'cancel') return null;
+
+    const normalizedResult = result.toLowerCase();
 
     const palette = useMemo(() => {
         if (result.toLowerCase() === 'meron') {
@@ -23,67 +24,6 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
 
         return ['#10b981', '#34d399', '#6ee7b7', '#f8fafc'];
     }, [result]);
-
-    const lottiePulse = useMemo(
-        () => ({
-            v: '5.7.4',
-            fr: 60,
-            ip: 0,
-            op: 180,
-            w: 512,
-            h: 512,
-            nm: 'Pulse Ring',
-            ddd: 0,
-            assets: [],
-            layers: [
-                {
-                    ddd: 0,
-                    ind: 1,
-                    ty: 4,
-                    nm: 'ring',
-                    sr: 1,
-                    ks: {
-                        o: { a: 0, k: 60 },
-                        r: { a: 0, k: 0 },
-                        p: { a: 0, k: [256, 256, 0] },
-                        a: { a: 0, k: [0, 0, 0] },
-                        s: {
-                            a: 1,
-                            k: [
-                                { i: { x: [0.667, 0.667, 0.667], y: [1, 1, 1] }, o: { x: [0.333, 0.333, 0.333], y: [0, 0, 0] }, t: 0, s: [35, 35, 100] },
-                                { t: 90, s: [145, 145, 100] },
-                                { t: 180, s: [35, 35, 100] },
-                            ],
-                        },
-                    },
-                    ao: 0,
-                    shapes: [
-                        {
-                            ty: 'gr',
-                            it: [
-                                { ty: 'el', p: { a: 0, k: [0, 0] }, s: { a: 0, k: [250, 250] }, d: 1 },
-                                {
-                                    ty: 'st',
-                                    c: { a: 0, k: [0.98, 0.98, 0.98, 1] },
-                                    o: { a: 0, k: 100 },
-                                    w: { a: 0, k: 9 },
-                                    lc: 2,
-                                    lj: 2,
-                                },
-                                { ty: 'tr', p: { a: 0, k: [0, 0] }, a: { a: 0, k: [0, 0] }, s: { a: 0, k: [100, 100] }, r: { a: 0, k: 0 }, o: { a: 0, k: 100 } },
-                            ],
-                            nm: 'ellipseGroup',
-                        },
-                    ],
-                    ip: 0,
-                    op: 180,
-                    st: 0,
-                    bm: 0,
-                },
-            ],
-        }),
-        [],
-    );
 
     useEffect(() => {
         if (!show) return;
@@ -189,12 +129,21 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center px-4">
-            <div className="absolute inset-0 pointer-events-none opacity-45">
-                <Lottie animationData={lottiePulse as any} loop autoplay className="w-full h-full" />
+        <div className="fixed inset-0 z-50 bg-slate-950/88 backdrop-blur-sm flex items-center justify-center px-4 overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+                <img
+                    src="/silhouette/meron.png"
+                    alt="Meron silhouette"
+                    className={`absolute left-[18%] top-1/2 -translate-y-1/2 h-40 sm:h-56 lg:h-72 w-auto object-contain overlay-silhouette-blink ${normalizedResult === 'meron' ? 'opacity-70' : 'opacity-20'}`}
+                />
+                <img
+                    src="/silhouette/wala.png"
+                    alt="Wala silhouette"
+                    className={`absolute right-[18%] top-1/2 -translate-y-1/2 h-40 sm:h-56 lg:h-72 w-auto object-contain overlay-silhouette-blink ${normalizedResult === 'wala' ? 'opacity-70' : 'opacity-20'}`}
+                />
             </div>
 
-            <div className="relative text-center animate-fade-in">
+            <div className="relative text-center animate-fade-in z-10 bg-slate-950/35 backdrop-blur-sm rounded-3xl px-6 py-8 border border-white/10">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/10 text-cyan-100 px-4 py-2 text-xs sm:text-sm uppercase tracking-[0.25em]">
                     <FiZap /> Result Declared
                 </div>
@@ -212,6 +161,16 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
                     Confetti sequence active
                 </div> */}
             </div>
+
+            <style>{`
+                @keyframes overlaySilhouetteBlink {
+                    0%, 100% { transform: translateY(-50%) scale(0.98); filter: brightness(0.85); }
+                    50% { transform: translateY(-50%) scale(1.03); filter: brightness(1.15); }
+                }
+                .overlay-silhouette-blink {
+                    animation: overlaySilhouetteBlink 1.8s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 }
