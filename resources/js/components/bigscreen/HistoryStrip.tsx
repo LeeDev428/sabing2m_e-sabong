@@ -14,8 +14,25 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
     if (history.length === 0) return null;
 
     const [page, setPage] = useState(0);
-    const ITEMS_PER_PAGE = 8;
-    const totalPages = Math.max(1, Math.ceil(history.length / ITEMS_PER_PAGE));
+    const [itemsPerPage, setItemsPerPage] = useState(8);
+    const totalPages = Math.max(1, Math.ceil(history.length / itemsPerPage));
+
+    useEffect(() => {
+        const computeItemsPerPage = () => {
+            const width = window.innerWidth;
+            const reservedForControls = width < 640 ? 110 : 180;
+            const chipWidth = width < 640 ? 92 : 106;
+            const maxItems = Math.floor((width - reservedForControls) / chipWidth);
+            setItemsPerPage(Math.max(6, maxItems));
+        };
+
+        computeItemsPerPage();
+        window.addEventListener('resize', computeItemsPerPage);
+
+        return () => {
+            window.removeEventListener('resize', computeItemsPerPage);
+        };
+    }, []);
 
     useEffect(() => {
         if (page > totalPages - 1) {
@@ -24,22 +41,22 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
     }, [page, totalPages]);
 
     const visibleHistory = useMemo(() => {
-        const start = page * ITEMS_PER_PAGE;
-        return history.slice(start, start + ITEMS_PER_PAGE);
-    }, [history, page]);
+        const start = page * itemsPerPage;
+        return history.slice(start, start + itemsPerPage);
+    }, [history, itemsPerPage, page]);
 
     const getResultBg = (result: string) => {
         return result === 'meron'
-            ? 'bg-gradient-to-br from-rose-500/85 to-red-600/90 border border-rose-200/30'
+            ? 'bg-gradient-to-br from-red-950/92 via-red-900/75 to-slate-900/90 border border-rose-300/45 shadow-[0_0_0_1px_rgba(248,113,113,0.45),0_0_20px_rgba(239,68,68,0.20)]'
             : result === 'wala'
-              ? 'bg-gradient-to-br from-sky-500/85 to-blue-600/90 border border-blue-200/30'
+              ? 'bg-gradient-to-br from-blue-950/92 via-blue-900/75 to-slate-900/90 border border-blue-300/45 shadow-[0_0_0_1px_rgba(96,165,250,0.45),0_0_20px_rgba(59,130,246,0.20)]'
               : result === 'draw'
-                ? 'bg-gradient-to-br from-emerald-500/85 to-green-600/90 border border-emerald-200/30'
-                : 'bg-gradient-to-br from-slate-500/90 to-slate-600/90 border border-slate-200/25';
+                ? 'bg-gradient-to-br from-emerald-950/92 via-emerald-900/75 to-slate-900/90 border border-emerald-300/45 shadow-[0_0_0_1px_rgba(52,211,153,0.45),0_0_20px_rgba(16,185,129,0.20)]'
+                : 'bg-gradient-to-br from-slate-800/95 via-slate-700/90 to-slate-900/90 border border-slate-300/35 shadow-[0_0_0_1px_rgba(148,163,184,0.35),0_0_18px_rgba(100,116,139,0.20)]';
     };
 
     return (
-        <div className="mt-auto rounded-2xl border border-slate-700/80 bg-slate-900/50 backdrop-blur-sm p-2.5 sm:p-3">
+        <div className="mt-1 sm:mt-2 rounded-2xl border border-slate-700/80 bg-slate-900/50 backdrop-blur-sm p-2 sm:p-2.5">
             <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-slate-300 inline-flex items-center gap-2">
                     <FiClock /> Recent Results
@@ -68,11 +85,11 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 pb-0.5 min-h-[44px]">
+            <div className="flex flex-nowrap gap-1.5 sm:gap-2 overflow-hidden min-h-[44px]">
                 {visibleHistory.map((h, idx) => (
                     <div
                         key={`${h.fight_number}-${idx}`}
-                        className={`${getResultBg(h.result)} rounded-xl px-2.5 py-1.5 flex-shrink-0 shadow-md min-w-[84px] sm:min-w-[96px]`}
+                        className={`${getResultBg(h.result)} relative overflow-hidden rounded-2xl px-2.5 py-1.5 flex-shrink-0 min-w-[84px] sm:min-w-[96px]`}
                     >
                         <div className="text-[9px] sm:text-[10px] text-white/80 uppercase tracking-wide">Fight #{h.fight_number}</div>
                         <div className="text-sm sm:text-base font-black text-white uppercase leading-tight">{h.result}</div>
