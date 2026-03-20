@@ -14,7 +14,7 @@ export default function FightHeader({ fightNumber, venue, eventName, eventDate, 
 
     return (
         <div className="text-center">
-            <p className="text-[11px] sm:text-xs uppercase tracking-[0.35em] text-slate-400 mb-1">Live Match Feed</p>
+            <p className="text-[11px] sm:text-xs uppercase tracking-[0.35em] text-slate-400 mb-1">🟢 Live Match Feed</p>
             <h1 className="text-[clamp(1.9rem,4.2vw,4rem)] font-black tracking-tight bg-gradient-to-r from-rose-500 via-amber-300 to-cyan-300 bg-clip-text text-transparent leading-none">
                 Fight #{fightNumber}
             </h1>
