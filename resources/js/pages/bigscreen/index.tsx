@@ -137,12 +137,12 @@ export default function BigScreen() {
                 <img
                     src="/silhouette/meron.png"
                     alt="Meron silhouette"
-                    className="absolute left-2 sm:left-6 lg:left-10 top-[18vh] sm:top-[20vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-40 silhouette-blink"
+                    className="absolute left-[25%] -translate-x-1/2 top-[12vh] sm:top-[14vh] lg:top-[15vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-42 silhouette-blink"
                 />
                 <img
                     src="/silhouette/wala.png"
                     alt="Wala silhouette"
-                    className="absolute right-2 sm:right-6 lg:right-10 top-[18vh] sm:top-[20vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-40 silhouette-blink"
+                    className="absolute left-[75%] -translate-x-1/2 top-[12vh] sm:top-[14vh] lg:top-[15vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-42 silhouette-blink"
                 />
             </div>
 
@@ -152,7 +152,7 @@ export default function BigScreen() {
                 fightNumber={fight.fight_number} 
             />
 
-            <div className="relative z-10 h-full flex flex-col px-3 py-2 sm:px-5 sm:py-3 lg:px-8 lg:py-4">
+            <div className="relative z-10 h-full flex flex-col overflow-hidden px-3 py-2 sm:px-5 sm:py-3 lg:px-8 lg:py-4">
                 <FightHeader
                     fightNumber={fight.fight_number}
                     venue={fight.venue}
@@ -169,7 +169,7 @@ export default function BigScreen() {
                     walaBettingOpen={fight.wala_betting_open}
                 />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3 lg:gap-5 py-1.5 sm:py-2">
+                <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3 lg:gap-5 py-1 sm:py-1.5">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
