@@ -178,6 +178,7 @@ export default function BigScreen() {
                         betCount={fight.meron_count}
                         bettingOpen={fight.meron_betting_open}
                         isWinner={isDeclaredStatus(fight.status) && fight.result === 'meron'}
+                        isLoser={isDeclaredStatus(fight.status) && fight.result === 'wala'}
                         isCancelled={isDeclaredStatus(fight.status) && fight.result === 'cancelled'}
                     />
 
@@ -189,6 +190,7 @@ export default function BigScreen() {
                         betCount={fight.wala_count}
                         bettingOpen={fight.wala_betting_open}
                         isWinner={isDeclaredStatus(fight.status) && fight.result === 'wala'}
+                        isLoser={isDeclaredStatus(fight.status) && fight.result === 'meron'}
                         isCancelled={isDeclaredStatus(fight.status) && fight.result === 'cancelled'}
                     />
                 </div>
