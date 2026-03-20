@@ -138,14 +138,39 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
         });
     };
 
+    const getCurrentStatusValue = (fight: Fight): 'open' | 'lastcall' | 'closed' => {
+        if (statusSelections[fight.id]) {
+            return statusSelections[fight.id];
+        }
+
+        if (fight.status === 'open' || fight.status === 'lastcall' || fight.status === 'closed') {
+            return fight.status;
+        }
+
+        // Fights with result_declared/cancelled should show as closed in status dropdown.
+        return 'closed';
+    };
+
+    const getCurrentResultValue = (fight: Fight): '' | 'meron' | 'wala' | 'draw' | 'cancelled' => {
+        if (resultSelections[fight.id] !== undefined) {
+            return resultSelections[fight.id];
+        }
+
+        if (fight.result === 'meron' || fight.result === 'wala' || fight.result === 'draw' || fight.result === 'cancelled') {
+            return fight.result;
+        }
+
+        return '';
+    };
+
     const submitInlineStatus = (fight: Fight) => {
-        const selectedStatus = statusSelections[fight.id] || (fight.status as 'open' | 'lastcall' | 'closed');
+        const selectedStatus = getCurrentStatusValue(fight);
         if (!selectedStatus) return;
         updateFightStatus(fight.id, selectedStatus);
     };
 
     const submitInlineResult = (fight: Fight) => {
-        const selectedResult = resultSelections[fight.id] || '';
+        const selectedResult = getCurrentResultValue(fight);
         if (!selectedResult) return;
 
         router.post(`/declarator/declare/${fight.id}`, {
@@ -587,7 +612,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                         <label className="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wide">Change Status</label>
                                         <div className="flex gap-2">
                                             <select
-                                                value={statusSelections[fight.id] || (['open', 'lastcall', 'closed'].includes(fight.status) ? fight.status : 'open')}
+                                                value={getCurrentStatusValue(fight)}
                                                 onChange={(e) => setStatusSelections((prev) => ({
                                                     ...prev,
                                                     [fight.id]: e.target.value as 'open' | 'lastcall' | 'closed',
@@ -611,7 +636,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                         <label className="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wide">Declare Result</label>
                                         <div className="flex gap-2">
                                             <select
-                                                value={resultSelections[fight.id] || ''}
+                                                value={getCurrentResultValue(fight)}
                                                 onChange={(e) => setResultSelections((prev) => ({
                                                     ...prev,
                                                     [fight.id]: e.target.value as '' | 'meron' | 'wala' | 'draw' | 'cancelled',
@@ -626,7 +651,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                             </select>
                                             <button
                                                 onClick={() => submitInlineResult(fight)}
-                                                disabled={!resultSelections[fight.id]}
+                                                disabled={!getCurrentResultValue(fight)}
                                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded text-sm font-bold"
                                             >
                                                 Set
