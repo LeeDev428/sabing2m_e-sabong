@@ -150,7 +150,7 @@ export default function BigScreen() {
                         totalBets={fight.meron_total}
                         betCount={fight.meron_count}
                         bettingOpen={fight.meron_betting_open}
-                        isWinner={fight.status === 'declared' && fight.result === 'meron'}
+                        isWinner={isDeclaredStatus(fight.status) && fight.result === 'meron'}
                         isCancelled={isDeclaredStatus(fight.status) && fight.result === 'cancelled'}
                     />
 
