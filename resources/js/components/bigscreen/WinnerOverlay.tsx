@@ -88,42 +88,57 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
     useEffect(() => {
         if (!show) return;
 
+        const timers: ReturnType<typeof setTimeout>[] = [];
+
         const burst = (originX: number, originY: number, particleCount: number) => {
             confetti({
                 particleCount,
                 spread: 62,
-                startVelocity: 48,
-                gravity: 0.95,
+                startVelocity: 36,
+                gravity: 1,
                 origin: { x: originX, y: originY },
-                ticks: 120,
-                scalar: 1.05,
+                ticks: 95,
+                scalar: 0.92,
+                disableForReducedMotion: true,
                 colors: palette,
             });
         };
 
-        burst(0.5, 0.36, 140);
+        burst(0.5, 0.34, 80);
 
-        const fireworks = setInterval(() => {
-            burst(0.15 + Math.random() * 0.7, 0.2 + Math.random() * 0.25, 60);
+        timers.push(setTimeout(() => {
+            burst(0.22, 0.3, 42);
+            burst(0.78, 0.3, 42);
+        }, 450));
+
+        timers.push(setTimeout(() => {
             confetti({
-                particleCount: 36,
+                particleCount: 26,
                 angle: 60,
-                spread: 48,
-                startVelocity: 36,
-                origin: { x: 0, y: 0.75 },
+                spread: 42,
+                startVelocity: 28,
+                origin: { x: 0, y: 0.72 },
+                disableForReducedMotion: true,
                 colors: palette,
             });
             confetti({
-                particleCount: 36,
+                particleCount: 26,
                 angle: 120,
-                spread: 48,
-                startVelocity: 36,
-                origin: { x: 1, y: 0.75 },
+                spread: 42,
+                startVelocity: 28,
+                origin: { x: 1, y: 0.72 },
+                disableForReducedMotion: true,
                 colors: palette,
             });
-        }, 760);
+        }, 900));
 
-        return () => clearInterval(fireworks);
+        timers.push(setTimeout(() => {
+            burst(0.5, 0.25, 36);
+        }, 1400));
+
+        return () => {
+            timers.forEach((timer) => clearTimeout(timer));
+        };
     }, [palette, show]);
 
     const getResultColor = (result: string) => {
