@@ -61,7 +61,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
             )}
 
             {bettingOpen === false && !isWinner && !isCancelled && (
-                <div className="absolute inset-0 z-20 grid place-items-center bg-slate-950/72 backdrop-blur-[2px]">
+                <div className="absolute inset-0 z-20 grid place-items-center pointer-events-none">
                     <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-4 py-2 border border-slate-500/80 text-slate-100 font-bold uppercase text-xs sm:text-sm tracking-wide">
                         <FiLock />
                         Closed
@@ -84,11 +84,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                     <div className={`text-[11px] sm:text-sm mt-1 font-semibold uppercase tracking-wide ${color.accent}`}>Tickets</div>
                 </div>
 
-                <div className={`mt-3 sm:mt-4 text-base sm:text-xl font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
-                    {side === 'draw' ? 'Even Match' : fighter}
-                </div>
-
-                <div className="mt-auto pt-3 sm:pt-4">
+                <div className="pt-3 sm:pt-4">
                     <div className="rounded-2xl bg-slate-950/45 border border-white/10 p-3 sm:p-4">
                         <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-400">Payout</div>
                         <div className="text-[clamp(1.3rem,3.5vw,2.8rem)] font-black text-amber-200 mt-1 leading-none">
@@ -98,6 +94,10 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                             Payout Multiplier
                         </div>
                     </div>
+                </div>
+
+                <div className={`mt-auto pt-3 text-sm sm:text-base font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
+                    {side === 'draw' ? 'Even Match' : fighter}
                 </div>
             </div>
         </article>
