@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import FightHeader from '@/components/bigscreen/FightHeader';
 import BettingStatus from '@/components/bigscreen/BettingStatus';
@@ -54,39 +54,56 @@ export default function BigScreen() {
     const [history, setHistory] = useState<HistoryFight[]>([]);
     const [loading, setLoading] = useState(true);
     const [showWinner, setShowWinner] = useState(false);
+    const shownResultKeyRef = useRef<string | null>(null);
+    const winnerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    useEffect(() => {
-        fetchFight();
-        const interval = setInterval(fetchFight, 2000); // Refresh every 2 seconds
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchFight = async () => {
+    const fetchFight = useCallback(async () => {
         try {
             const response = await axios.get('/api/bigscreen');
             const newFight = response.data.fight;
-            
+
             if (newFight && isDeclaredStatus(newFight.status) && newFight.result && newFight.result !== 'cancelled' && newFight.result !== 'cancel') {
-                if (!fight || fight.id !== newFight.id || fight.result !== newFight.result) {
+                const resultKey = `${newFight.id}:${newFight.result}`;
+                if (shownResultKeyRef.current !== resultKey) {
+                    shownResultKeyRef.current = resultKey;
                     setShowWinner(true);
-                    setTimeout(() => setShowWinner(false), 15000);
+
+                    if (winnerTimeoutRef.current) {
+                        clearTimeout(winnerTimeoutRef.current);
+                    }
+
+                    winnerTimeoutRef.current = setTimeout(() => {
+                        setShowWinner(false);
+                    }, 15000);
                 }
             }
-            
+
             setFight(newFight);
-            
+
             // Fetch recent history
             if (newFight) {
                 const historyResponse = await axios.get('/api/bigscreen/history');
                 setHistory(historyResponse.data.history || []);
             }
-            
+
             setLoading(false);
         } catch (error) {
             console.error('Error fetching fight data:', error);
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchFight();
+        const interval = setInterval(fetchFight, 2000);
+
+        return () => {
+            clearInterval(interval);
+            if (winnerTimeoutRef.current) {
+                clearTimeout(winnerTimeoutRef.current);
+            }
+        };
+    }, [fetchFight]);
 
     if (loading) {
         return (
