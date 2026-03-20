@@ -92,7 +92,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                     <div className="rounded-2xl bg-slate-950/45 border border-white/10 p-3 sm:p-4">
                         <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-400">Payout</div>
                         <div className="text-[clamp(1.3rem,3.5vw,2.8rem)] font-black text-amber-200 mt-1 leading-none">
-                            {totalBets > 0 ? `${Number(odds).toFixed(2)}x` : '---'}
+                            {Number(odds) > 0 ? `${Number(odds).toFixed(2)}x` : '---'}
                         </div>
                         <div className="mt-1 text-[10px] sm:text-xs text-slate-400 uppercase tracking-wide">
                             Payout Multiplier
