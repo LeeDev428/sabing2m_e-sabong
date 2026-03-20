@@ -169,9 +169,9 @@ export default function WinnerOverlay({ show, result, fightNumber }: WinnerOverl
                     Fight #{fightNumber}
                 </div>
 
-                <div className="mt-6 text-sm sm:text-base uppercase tracking-[0.2em] text-slate-300">
+                {/* <div className="mt-6 text-sm sm:text-base uppercase tracking-[0.2em] text-slate-300">
                     Confetti sequence active
-                </div>
+                </div> */}
             </div>
         </div>
     );
