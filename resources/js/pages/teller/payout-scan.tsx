@@ -8,6 +8,33 @@ import { thermalPrinter } from '@/utils/thermalPrinter';
 
 interface PayoutScanProps {
     message?: string;
+    payoutTracking?: {
+        winning_tickets: number;
+        winning_amount: number;
+        unclaimed_tickets: number;
+        unclaimed_amount: number;
+        paid_out_tickets: number;
+        paid_out_amount: number;
+    };
+    unclaimedWinningTickets?: Array<{
+        ticket_id: string;
+        fight_number?: number;
+        event_name?: string;
+        side: string;
+        payout_amount: number;
+        sold_by?: string;
+        created_at?: string;
+    }>;
+    paidOutWinningTickets?: Array<{
+        ticket_id: string;
+        fight_number?: number;
+        event_name?: string;
+        side: string;
+        payout_amount: number;
+        sold_by?: string;
+        claimed_by?: string;
+        claimed_at?: string;
+    }>;
     claimData?: {
         amount: number;
         bet_by: string;
@@ -25,7 +52,13 @@ interface PayoutScanProps {
     };
 }
 
-export default function PayoutScan({ message, claimData }: PayoutScanProps) {
+export default function PayoutScan({
+    message,
+    claimData,
+    payoutTracking,
+    unclaimedWinningTickets = [],
+    paidOutWinningTickets = [],
+}: PayoutScanProps) {
     const [scanning, setScanning] = useState(false);
     const [result, setResult] = useState<string | null>(null);
     const [cameraError, setCameraError] = useState<string | null>(null);
@@ -241,6 +274,72 @@ export default function PayoutScan({ message, claimData }: PayoutScanProps) {
                     <h1 className="text-2xl font-bold text-orange-500 mb-1">Payout Scanning</h1>
                     <p className="text-sm text-gray-400">Scan QR code on bet ticket to claim winnings</p>
                 </div>
+
+                {payoutTracking && (
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                            <div className="bg-blue-900/30 border border-blue-500 rounded-lg p-3">
+                                <div className="text-xs text-blue-200 uppercase tracking-wide mb-1">Winning Tickets</div>
+                                <div className="text-2xl font-bold text-white">{payoutTracking.winning_tickets}</div>
+                                <div className="text-sm text-blue-300">₱{Number(payoutTracking.winning_amount || 0).toLocaleString()}</div>
+                            </div>
+
+                            <div className="bg-yellow-900/30 border border-yellow-500 rounded-lg p-3">
+                                <div className="text-xs text-yellow-200 uppercase tracking-wide mb-1">Not Claimed / Scanned</div>
+                                <div className="text-2xl font-bold text-white">{payoutTracking.unclaimed_tickets}</div>
+                                <div className="text-sm text-yellow-300">₱{Number(payoutTracking.unclaimed_amount || 0).toLocaleString()}</div>
+                            </div>
+
+                            <div className="bg-green-900/30 border border-green-500 rounded-lg p-3">
+                                <div className="text-xs text-green-200 uppercase tracking-wide mb-1">Already Paid Out</div>
+                                <div className="text-2xl font-bold text-white">{payoutTracking.paid_out_tickets}</div>
+                                <div className="text-sm text-green-300">₱{Number(payoutTracking.paid_out_amount || 0).toLocaleString()}</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 border border-gray-700">
+                            <h3 className="text-base font-bold text-white mb-3">Unclaimed Winning Tickets</h3>
+                            {unclaimedWinningTickets.length === 0 ? (
+                                <p className="text-sm text-gray-400">No unclaimed winning tickets.</p>
+                            ) : (
+                                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                    {unclaimedWinningTickets.map((ticket) => (
+                                        <div key={ticket.ticket_id} className="bg-gray-800/70 rounded-md p-2 border border-gray-700">
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-gray-400">{ticket.ticket_id}</span>
+                                                <span className="text-yellow-300 font-semibold">₱{Number(ticket.payout_amount || 0).toLocaleString()}</span>
+                                            </div>
+                                            <div className="text-xs text-gray-300 mt-1">
+                                                Fight #{ticket.fight_number || '-'} • {(ticket.side || '').toUpperCase()} • {ticket.sold_by || 'N/A'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 border border-gray-700">
+                            <h3 className="text-base font-bold text-white mb-3">Recently Paid Out Tickets</h3>
+                            {paidOutWinningTickets.length === 0 ? (
+                                <p className="text-sm text-gray-400">No paid out winning tickets yet.</p>
+                            ) : (
+                                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                                    {paidOutWinningTickets.map((ticket) => (
+                                        <div key={`${ticket.ticket_id}-${ticket.claimed_at || ''}`} className="bg-gray-800/70 rounded-md p-2 border border-gray-700">
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-gray-400">{ticket.ticket_id}</span>
+                                                <span className="text-green-300 font-semibold">₱{Number(ticket.payout_amount || 0).toLocaleString()}</span>
+                                            </div>
+                                            <div className="text-xs text-gray-300 mt-1">
+                                                Fight #{ticket.fight_number || '-'} • {(ticket.side || '').toUpperCase()} • Claimed by {ticket.claimed_by || 'N/A'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
 
                 {/* Camera Display */}
                 {!claimData && !message && (
