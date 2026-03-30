@@ -22,7 +22,8 @@ interface Stats {
     total_commission: number;
     total_pot: number;
     total_fights: number;
-    average_commission: number;
+    revolving_fund: number;
+    overall_profit: number;
 }
 
 interface Filters {
@@ -69,7 +70,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                 <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg p-6">
                     <div className="text-purple-200 text-sm mb-2">Total Commission</div>
                     <div className="text-4xl font-bold text-white">
@@ -89,9 +90,15 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                     </div>
                 </div>
                 <div className="bg-gradient-to-br from-orange-600 to-orange-800 rounded-lg p-6">
-                    <div className="text-orange-200 text-sm mb-2">Avg Commission</div>
+                    <div className="text-orange-200 text-sm mb-2">Revolving Fund</div>
                     <div className="text-4xl font-bold text-white">
-                        ₱{stats.average_commission.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        ₱{stats.revolving_fund.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    </div>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-lg p-6">
+                    <div className="text-emerald-100 text-sm mb-2">Overall Profit</div>
+                    <div className="text-4xl font-bold text-white">
+                        ₱{stats.overall_profit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                     </div>
                 </div>
             </div>
