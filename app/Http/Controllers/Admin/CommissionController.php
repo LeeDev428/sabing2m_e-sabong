@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Fight;
 use App\Models\Bet;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use DB;
@@ -52,12 +53,38 @@ class CommissionController extends Controller
                 ];
             });
 
+        $revolvingFund = 0;
+        if ($eventFilter) {
+            $eventRecord = Event::where('name', $eventFilter)
+                ->latest('event_date')
+                ->first();
+
+            if ($eventRecord) {
+                $revolvingFund = (float) $eventRecord->revolving_funds;
+            } else {
+                $latestFightWithEvent = Fight::where('event_name', $eventFilter)
+                    ->latest('event_date')
+                    ->latest('id')
+                    ->first();
+                $revolvingFund = (float) ($latestFightWithEvent?->revolving_funds ?? 0);
+            }
+        } else {
+            $latestEvent = Event::latest('event_date')->first();
+            if ($latestEvent) {
+                $revolvingFund = (float) $latestEvent->revolving_funds;
+            } else {
+                $latestFight = Fight::latest('event_date')->latest('id')->first();
+                $revolvingFund = (float) ($latestFight?->revolving_funds ?? 0);
+            }
+        }
+
         // Summary stats
         $stats = [
             'total_commission' => $fights->sum('commission_amount'),
             'total_pot' => $fights->sum('total_pot'),
             'total_fights' => $fights->count(),
-            'average_commission' => $fights->count() > 0 ? $fights->avg('commission_amount') : 0,
+            'revolving_fund' => $revolvingFund,
+            'overall_profit' => $fights->sum('commission_amount') + $revolvingFund,
         ];
 
         return Inertia::render('admin/commissions/index', [
