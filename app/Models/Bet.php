@@ -66,6 +66,11 @@ class Bet extends Model
         return $this->belongsTo(User::class, 'teller_id');
     }
 
+    public function claimer()
+    {
+        return $this->belongsTo(User::class, 'claimed_by');
+    }
+
     // Helper methods
     public function isWinning(): bool
     {
