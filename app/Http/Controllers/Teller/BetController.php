@@ -277,7 +277,7 @@ class BetController extends Controller
      */
     public function payoutScan()
     {
-        return Inertia::render('teller/payout-scan');
+        return Inertia::render('teller/payout-scan', $this->getPayoutTrackingPayload());
     }
 
     /**
@@ -290,10 +290,11 @@ class BetController extends Controller
         ]);
 
         $bet = Bet::with(['fight', 'teller'])->where('ticket_id', $validated['ticket_id'])->firstOrFail();
+        $trackingData = $this->getPayoutTrackingPayload();
 
         // Check if bet has already been claimed or refunded
         if ($bet->status === 'claimed') {
-            return Inertia::render('teller/payout-scan', [
+            return Inertia::render('teller/payout-scan', array_merge([
                 'message' => 'This bet has already been claimed.',
                 'claimData' => [
                     'amount' => $bet->actual_payout ?? 0,
@@ -302,12 +303,12 @@ class BetController extends Controller
                     'status' => 'Already Claimed',
                     'already_claimed' => true,
                 ]
-            ]);
+            ], $trackingData));
         }
 
         // Check if bet is already refunded (scanned before)
         if ($bet->status === 'refund_claimed') {
-            return Inertia::render('teller/payout-scan', [
+            return Inertia::render('teller/payout-scan', array_merge([
                 'message' => 'This ticket has already been refunded.',
                 'claimData' => [
                     'amount' => $bet->actual_payout ?? $bet->amount,
@@ -316,7 +317,7 @@ class BetController extends Controller
                     'status' => 'Already Refunded',
                     'already_claimed' => true,
                 ]
-            ]);
+            ], $trackingData));
         }
 
         // Handle REFUND flow (draw or cancelled fights)
@@ -353,6 +354,8 @@ class BetController extends Controller
                 $reasonText = 'CANCELLED';
             }
 
+            $trackingData = $this->getPayoutTrackingPayload();
+
             \Log::info("💰 Refund claimed: {$bet->ticket_id}, Amount: ₱{$refundAmount}, Reason: {$reasonText}");
 
             return Inertia::render('teller/payout-scan', [
@@ -372,7 +375,7 @@ class BetController extends Controller
                     'is_refund' => true,
                     'refund_reason' => $reasonText,
                 ]
-            ]);
+            ] + $trackingData);
         }
 
         // Check if bet is a winning bet
@@ -380,7 +383,7 @@ class BetController extends Controller
             $statusMessage = $bet->status === 'lost' ? 'Lost' : 'Not eligible for payout';
             return Inertia::render('teller/payout-scan', [
                 'message' => "Cannot claim payout. This bet {$statusMessage}.",
-            ]);
+            ] + $trackingData);
         }
 
         // Use actual_payout (calculated with FINAL closing odds when result was declared)
@@ -400,7 +403,7 @@ class BetController extends Controller
             if ($assignment && $assignment->current_balance < $payoutAmount) {
                 return Inertia::render('teller/payout-scan', [
                     'message' => "⚠️ Insufficient funds to process payout. Available: ₱" . number_format($assignment->current_balance, 2) . ", Required: ₱" . number_format($payoutAmount, 2),
-                ]);
+                ] + $trackingData);
             }
         }
 
@@ -427,6 +430,8 @@ class BetController extends Controller
 
         \Log::info("✅ Payout claimed: {$bet->ticket_id}, Amount: ₱{$payoutAmount}");
 
+        $trackingData = $this->getPayoutTrackingPayload();
+
         return Inertia::render('teller/payout-scan', [
             'message' => "Payout claimed successfully! ₱{$payoutAmount} paid to customer.",
             'claimData' => [
@@ -442,7 +447,72 @@ class BetController extends Controller
                 'odds' => (float) $finalOdds,  // Use FINAL closing odds, not bet-time odds
                 'event_name' => $bet->fight->event_name ?? null,
             ]
-        ]);
+        ] + $trackingData);
+    }
+
+    private function getPayoutTrackingPayload(): array
+    {
+        $winningBase = Bet::query()
+            ->with([
+                'fight:id,fight_number,event_name',
+                'teller:id,name',
+                'claimer:id,name',
+            ])
+            ->whereHas('fight', function ($query) {
+                $query->where('status', 'result_declared')
+                    ->whereIn('result', ['meron', 'wala'])
+                    ->whereColumn('fights.result', 'bets.side');
+            });
+
+        $winningQuery = (clone $winningBase)->whereIn('status', ['won', 'claimed']);
+        $unclaimedQuery = (clone $winningBase)->where('status', 'won');
+        $paidOutQuery = (clone $winningBase)->where('status', 'claimed');
+
+        $unclaimedTickets = (clone $unclaimedQuery)
+            ->latest('updated_at')
+            ->limit(10)
+            ->get()
+            ->map(function ($bet) {
+                return [
+                    'ticket_id' => $bet->ticket_id,
+                    'fight_number' => $bet->fight?->fight_number,
+                    'event_name' => $bet->fight?->event_name,
+                    'side' => $bet->side,
+                    'payout_amount' => (float) ($bet->actual_payout ?? 0),
+                    'sold_by' => $bet->teller?->name,
+                    'created_at' => $bet->created_at,
+                ];
+            });
+
+        $paidOutTickets = (clone $paidOutQuery)
+            ->latest('claimed_at')
+            ->limit(10)
+            ->get()
+            ->map(function ($bet) {
+                return [
+                    'ticket_id' => $bet->ticket_id,
+                    'fight_number' => $bet->fight?->fight_number,
+                    'event_name' => $bet->fight?->event_name,
+                    'side' => $bet->side,
+                    'payout_amount' => (float) ($bet->actual_payout ?? 0),
+                    'sold_by' => $bet->teller?->name,
+                    'claimed_by' => $bet->claimer?->name,
+                    'claimed_at' => $bet->claimed_at,
+                ];
+            });
+
+        return [
+            'payoutTracking' => [
+                'winning_tickets' => (clone $winningQuery)->count(),
+                'winning_amount' => (float) (clone $winningQuery)->sum('actual_payout'),
+                'unclaimed_tickets' => (clone $unclaimedQuery)->count(),
+                'unclaimed_amount' => (float) (clone $unclaimedQuery)->sum('actual_payout'),
+                'paid_out_tickets' => (clone $paidOutQuery)->count(),
+                'paid_out_amount' => (float) (clone $paidOutQuery)->sum('actual_payout'),
+            ],
+            'unclaimedWinningTickets' => $unclaimedTickets,
+            'paidOutWinningTickets' => $paidOutTickets,
+        ];
     }
 
     /**
