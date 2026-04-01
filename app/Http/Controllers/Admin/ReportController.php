@@ -191,7 +191,7 @@ class ReportController extends Controller
 
             $csv = "Fight Number,Meron,Wala,Status,Result,Total Bets,Total Amount,Payouts,Revenue,Date\n";
 
-            foreach ($fights as $fight) {
+                $fights = $query->orderBy('scheduled_at', 'desc')->get();
                 $totalBets = $fight->bets->count();
                 $totalAmount = $fight->bets->sum('amount');
                 $payouts = $fight->bets->where('status', 'won')->sum('actual_payout');
@@ -224,12 +224,6 @@ class ReportController extends Controller
                     'Content-Type' => 'text/csv; charset=UTF-8',
                     'Content-Disposition' => 'inline; filename=' . $filename,
                 ]);
-                ->header('Content-Type', 'text/csv; charset=utf-8')
-                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
-                ->header('Pragma', 'no-cache')
-                ->header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0')
-                ->header('Expires', '0')
-                ->header('Content-Length', strlen($csv));
         } catch (\Exception $e) {
             Log::error('CSV Export Error: ' . $e->getMessage(), [
                 'exception' => $e,
