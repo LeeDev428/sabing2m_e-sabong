@@ -88,7 +88,7 @@ class ReportController extends Controller
 
             // Teller reports
             $teller_reports = DB::table('users')
-                ->leftJoin('bets', 'users.id', '=', 'bets.user_id')
+                ->leftJoin('bets', 'users.id', '=', 'bets.teller_id')
                 ->leftJoin('fights', 'bets.fight_id', '=', 'fights.id')
                 ->select(
                     'users.id',
