@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class ReportController extends Controller
 {
@@ -19,98 +20,106 @@ class ReportController extends Controller
         // Get event filter
         $eventFilter = $request->input('event');
 
-        // Build base query with optional event filter
-        $baseBetQuery = Bet::query();
-        if ($eventFilter) {
-            $baseBetQuery->whereHas('fight', fn($q) => $q->where('event_name', $eventFilter));
-        }
+        try {
+            $hasEventDate = Schema::hasColumn('fights', 'event_date');
+            $hasRevolvingFunds = Schema::hasColumn('fights', 'revolving_funds');
 
-        // Overall stats
-        $stats = [
-            'total_bets' => (clone $baseBetQuery)->count(),
-            'total_amount' => (clone $baseBetQuery)->sum('amount'),
-            'total_payouts' => (clone $baseBetQuery)->where('status', 'won')->sum('actual_payout'),
-            'total_revenue' => (clone $baseBetQuery)->sum('amount') - (clone $baseBetQuery)->where('status', 'won')->sum('actual_payout'),
-            'fights_today' => Fight::when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
-                ->whereDate('scheduled_at', today())
-                ->count(),
-            'active_users' => User::count(),
-            'unclaimed_winnings_count' => (clone $baseBetQuery)->where('status', 'won')->whereNull('claimed_at')->count(),
-            'unclaimed_winnings_amount' => (clone $baseBetQuery)->where('status', 'won')->whereNull('claimed_at')->sum('actual_payout'),
-        ];
+            // Build base query with optional event filter
+            $baseBetQuery = Bet::query();
+            if ($eventFilter) {
+                $baseBetQuery->whereHas('fight', fn($q) => $q->where('event_name', $eventFilter));
+            }
 
-        // Daily reports query
-        $dailyQuery = DB::table('fights')
-            ->leftJoin('bets', 'fights.id', '=', 'bets.fight_id')
-            ->select(
-                DB::raw('DATE(fights.scheduled_at) as date'),
-                DB::raw('COUNT(DISTINCT fights.id) as fights'),
-                DB::raw('COUNT(bets.id) as bets'),
-                DB::raw('COALESCE(SUM(bets.amount), 0) as amount'),
-                DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as payouts'),
-                DB::raw('COALESCE(SUM(bets.amount), 0) - COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as revenue')
-            )
-            ->where('fights.scheduled_at', '>=', now()->subDays(30))
-            ->whereNull('fights.deleted_at');
+            // Overall stats
+            $stats = [
+                'total_bets' => (clone $baseBetQuery)->count(),
+                'total_amount' => (clone $baseBetQuery)->sum('amount'),
+                'total_payouts' => (clone $baseBetQuery)->where('status', 'won')->sum('actual_payout'),
+                'total_revenue' => (clone $baseBetQuery)->sum('amount') - (clone $baseBetQuery)->where('status', 'won')->sum('actual_payout'),
+                'fights_today' => Fight::when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
+                    ->whereDate('scheduled_at', today())
+                    ->count(),
+                'active_users' => User::count(),
+                'unclaimed_winnings_count' => (clone $baseBetQuery)->where('status', 'won')->whereNull('claimed_at')->count(),
+                'unclaimed_winnings_amount' => (clone $baseBetQuery)->where('status', 'won')->whereNull('claimed_at')->sum('actual_payout'),
+            ];
 
-        if ($eventFilter) {
-            $dailyQuery->where('fights.event_name', $eventFilter);
-        }
+            // Daily reports query
+            $dailyQuery = DB::table('fights')
+                ->leftJoin('bets', 'fights.id', '=', 'bets.fight_id')
+                ->select(
+                    DB::raw('DATE(fights.scheduled_at) as date'),
+                    DB::raw('COUNT(DISTINCT fights.id) as fights'),
+                    DB::raw('COUNT(bets.id) as bets'),
+                    DB::raw('COALESCE(SUM(bets.amount), 0) as amount'),
+                    DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as payouts'),
+                    DB::raw('COALESCE(SUM(bets.amount), 0) - COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as revenue')
+                )
+                ->where('fights.scheduled_at', '>=', now()->subDays(30))
+                ->whereNull('fights.deleted_at');
 
-        $daily_reports = $dailyQuery
-            ->groupBy('date')
-            ->orderBy('date', 'desc')
-            ->paginate(10, ['*'], 'daily_page')
-            ->withQueryString();
+            if ($eventFilter) {
+                $dailyQuery->where('fights.event_name', $eventFilter);
+            }
 
-        // Commission reports by fight
-        $commission_reports = Fight::select(
-                'fights.id',
-                'fights.fight_number',
-                'fights.event_name',
-                'fights.commission_percentage',
-                'fights.scheduled_at',
-                DB::raw('COALESCE(SUM(bets.amount), 0) as total_amount'),
-                DB::raw('COALESCE(SUM(bets.amount), 0) * (COALESCE(fights.commission_percentage, 7.5) / 100) as commission_earned')
-            )
-            ->leftJoin('bets', 'fights.id', '=', 'bets.fight_id')
-            ->when($eventFilter, fn($q) => $q->where('fights.event_name', $eventFilter))
-            ->whereNull('fights.deleted_at')
-            ->groupBy('fights.id', 'fights.fight_number', 'fights.event_name', 'fights.commission_percentage', 'fights.scheduled_at')
-            ->orderBy('fights.scheduled_at', 'desc')
-            ->paginate(20, ['*'], 'commission_page')
-            ->withQueryString();
+            $daily_reports = $dailyQuery
+                ->groupBy('date')
+                ->orderBy('date', 'desc')
+                ->paginate(10, ['*'], 'daily_page')
+                ->withQueryString();
 
-        // Teller reports
-        $teller_reports = DB::table('users')
-            ->leftJoin('bets', 'users.id', '=', 'bets.user_id')
-            ->leftJoin('fights', 'bets.fight_id', '=', 'fights.id')
-            ->select(
-                'users.id',
-                'users.name',
-                'users.email',
-                DB::raw('COUNT(bets.id) as total_bets'),
-                DB::raw('COALESCE(SUM(bets.amount), 0) as total_amount'),
-                DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN 1 ELSE 0 END), 0) as won_bets'),
-                DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as total_payouts')
-            )
-            ->where('users.role', 'teller')
-            ->when($eventFilter, fn($q) => $q->where('fights.event_name', $eventFilter))
-            ->groupBy('users.id', 'users.name', 'users.email')
-            ->orderBy('users.name')
-            ->paginate(20, ['*'], 'teller_page')
-            ->withQueryString();
+            // Commission reports by fight
+            $commission_reports = Fight::select(
+                    'fights.id',
+                    'fights.fight_number',
+                    'fights.event_name',
+                    'fights.commission_percentage',
+                    'fights.scheduled_at',
+                    DB::raw('COALESCE(SUM(bets.amount), 0) as total_amount'),
+                    DB::raw('COALESCE(SUM(bets.amount), 0) * (COALESCE(fights.commission_percentage, 7.5) / 100) as commission_earned')
+                )
+                ->leftJoin('bets', 'fights.id', '=', 'bets.fight_id')
+                ->when($eventFilter, fn($q) => $q->where('fights.event_name', $eventFilter))
+                ->whereNull('fights.deleted_at')
+                ->groupBy('fights.id', 'fights.fight_number', 'fights.event_name', 'fights.commission_percentage', 'fights.scheduled_at')
+                ->orderBy('fights.scheduled_at', 'desc')
+                ->paginate(20, ['*'], 'commission_page')
+                ->withQueryString();
 
-        // Get events for dropdown
-        $events = Fight::select('event_name')
-            ->whereNotNull('event_name')
-            ->distinct()
-            ->pluck('event_name');
+            // Teller reports
+            $teller_reports = DB::table('users')
+                ->leftJoin('bets', 'users.id', '=', 'bets.user_id')
+                ->leftJoin('fights', 'bets.fight_id', '=', 'fights.id')
+                ->select(
+                    'users.id',
+                    'users.name',
+                    'users.email',
+                    DB::raw('COUNT(bets.id) as total_bets'),
+                    DB::raw('COALESCE(SUM(bets.amount), 0) as total_amount'),
+                    DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN 1 ELSE 0 END), 0) as won_bets'),
+                    DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as total_payouts')
+                )
+                ->where('users.role', 'teller')
+                ->when($eventFilter, fn($q) => $q->where('fights.event_name', $eventFilter))
+                ->groupBy('users.id', 'users.name', 'users.email')
+                ->orderBy('users.name')
+                ->paginate(20, ['*'], 'teller_page')
+                ->withQueryString();
 
-        // Event Summary - Group fights by event with comprehensive stats
-        $event_summaries = Fight::select(
+            // Get events for dropdown
+            $events = Fight::select('event_name')
+                ->whereNotNull('event_name')
+                ->distinct()
+                ->pluck('event_name');
+
+            // Event Summary - Group fights by event with comprehensive stats
+            $eventSummaryQuery = Fight::query()
+                ->whereNotNull('event_name')
+                ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
+                ->whereNull('deleted_at');
+
+            $eventSummarySelects = [
                 'event_name',
-                'event_date',
                 DB::raw('COUNT(*) as total_fights'),
                 DB::raw('SUM(CASE WHEN status = "result_declared" THEN 1 ELSE 0 END) as declared_fights'),
                 DB::raw('SUM(CASE WHEN result = "meron" THEN 1 ELSE 0 END) as meron_wins'),
@@ -118,21 +127,40 @@ class ReportController extends Controller
                 DB::raw('SUM(CASE WHEN result = "draw" THEN 1 ELSE 0 END) as draws'),
                 DB::raw('SUM(CASE WHEN result = "cancelled" THEN 1 ELSE 0 END) as cancelled'),
                 DB::raw('AVG(commission_percentage) as avg_commission'),
-                DB::raw('SUM(revolving_funds) as total_revolving_funds')
-            )
-            ->whereNotNull('event_name')
-            ->when($eventFilter, fn($q) => $q->where('event_name', $eventFilter))
-            ->whereNull('deleted_at')
-            ->groupBy('event_name', 'event_date')
-            ->orderBy('event_date', 'desc')
-            ->paginate(10, ['*'], 'event_page')
-            ->withQueryString();
+                $hasRevolvingFunds
+                    ? DB::raw('SUM(revolving_funds) as total_revolving_funds')
+                    : DB::raw('0 as total_revolving_funds'),
+            ];
 
-        $event_summaries->getCollection()->transform(function($event) {
+            if ($hasEventDate) {
+                $eventSummarySelects[] = 'event_date';
+                $event_summaries = $eventSummaryQuery
+                    ->select($eventSummarySelects)
+                    ->groupBy('event_name', 'event_date')
+                    ->orderBy('event_date', 'desc')
+                    ->paginate(10, ['*'], 'event_page')
+                    ->withQueryString();
+            } else {
+                $eventSummarySelects[] = DB::raw('DATE(scheduled_at) as event_date');
+                $event_summaries = $eventSummaryQuery
+                    ->select($eventSummarySelects)
+                    ->groupBy('event_name', DB::raw('DATE(scheduled_at)'))
+                    ->orderByRaw('DATE(scheduled_at) desc')
+                    ->paginate(10, ['*'], 'event_page')
+                    ->withQueryString();
+            }
+
+            $event_summaries->getCollection()->transform(function ($event) use ($hasEventDate) {
                 // Get detailed stats for this event
-                $fights = Fight::where('event_name', $event->event_name)
-                    ->where('event_date', $event->event_date)
-                    ->pluck('id');
+                $fightsQuery = Fight::where('event_name', $event->event_name);
+
+                if ($hasEventDate) {
+                    $fightsQuery->where('event_date', $event->event_date);
+                } else {
+                    $fightsQuery->whereDate('scheduled_at', $event->event_date);
+                }
+
+                $fights = $fightsQuery->pluck('id');
 
                 $totalBets = Bet::whereIn('fight_id', $fights)->count();
                 $totalAmount = Bet::whereIn('fight_id', $fights)->sum('amount');
@@ -159,17 +187,76 @@ class ReportController extends Controller
                 ];
             });
 
-        return Inertia::render('admin/reports/index', [
-            'stats' => $stats,
-            'daily_reports' => $daily_reports,
-            'commission_reports' => $commission_reports,
-            'teller_reports' => $teller_reports,
-            'event_summaries' => $event_summaries,
-            'events' => $events,
-            'filters' => [
-                'event' => $eventFilter,
-            ],
-        ]);
+            return Inertia::render('admin/reports/index', [
+                'stats' => $stats,
+                'daily_reports' => $daily_reports,
+                'commission_reports' => $commission_reports,
+                'teller_reports' => $teller_reports,
+                'event_summaries' => $event_summaries,
+                'events' => $events,
+                'filters' => [
+                    'event' => $eventFilter,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Reports index error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request_data' => $request->all(),
+            ]);
+
+            return Inertia::render('admin/reports/index', [
+                'stats' => [
+                    'total_bets' => 0,
+                    'total_amount' => 0,
+                    'total_payouts' => 0,
+                    'total_revenue' => 0,
+                    'fights_today' => 0,
+                    'active_users' => 0,
+                    'unclaimed_winnings_count' => 0,
+                    'unclaimed_winnings_amount' => 0,
+                ],
+                'daily_reports' => [
+                    'data' => [],
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'from' => null,
+                    'to' => null,
+                    'total' => 0,
+                    'links' => [],
+                ],
+                'commission_reports' => [
+                    'data' => [],
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'from' => null,
+                    'to' => null,
+                    'total' => 0,
+                    'links' => [],
+                ],
+                'teller_reports' => [
+                    'data' => [],
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'from' => null,
+                    'to' => null,
+                    'total' => 0,
+                    'links' => [],
+                ],
+                'event_summaries' => [
+                    'data' => [],
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'from' => null,
+                    'to' => null,
+                    'total' => 0,
+                    'links' => [],
+                ],
+                'events' => [],
+                'filters' => [
+                    'event' => $eventFilter,
+                ],
+            ]);
+        }
     }
 
     public function export(Request $request)
