@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import AdminLayout from '@/layouts/admin-layout';
 import { useState } from 'react';
+import Pagination from '@/components/pagination';
 
 interface EventSummary {
   event_name: string;
@@ -31,7 +32,7 @@ interface Props {
         unclaimed_winnings_count: number;
         unclaimed_winnings_amount: number;
     };
-    daily_reports?: Array<{
+    daily_reports?: Paginated<{
         date: string;
         fights: number;
         bets: number;
@@ -39,7 +40,7 @@ interface Props {
         payouts: number;
         revenue: number;
     }>;
-    commission_reports?: Array<{
+    commission_reports?: Paginated<{
         id: number;
         fight_number: number;
         event_name: string;
@@ -48,7 +49,7 @@ interface Props {
         total_amount: number;
         commission_earned: number;
     }>;
-    teller_reports?: Array<{
+    teller_reports?: Paginated<{
         id: number;
         name: string;
         email: string;
@@ -58,24 +59,56 @@ interface Props {
         total_payouts: number;
     }>;
     events: string[];
-    event_summaries?: EventSummary[];
+    event_summaries?: Paginated<EventSummary>;
     filters?: {
         event?: string;
     };
 }
 
+interface Paginated<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+}
+
 export default function ReportsIndex({ 
-    stats = { total_bets: 0, total_amount: 0, total_payouts: 0, total_revenue: 0, fights_today: 0, active_users: 0 }, 
-    daily_reports = [],
-    commission_reports = [],
-    teller_reports = [],
-    event_summaries = [],
+    stats = {
+        total_bets: 0,
+        total_amount: 0,
+        total_payouts: 0,
+        total_revenue: 0,
+        fights_today: 0,
+        active_users: 0,
+        unclaimed_winnings_count: 0,
+        unclaimed_winnings_amount: 0,
+    }, 
+    daily_reports = { data: [], current_page: 1, last_page: 1, from: 0, to: 0, total: 0, links: [] },
+    commission_reports = { data: [], current_page: 1, last_page: 1, from: 0, to: 0, total: 0, links: [] },
+    teller_reports = { data: [], current_page: 1, last_page: 1, from: 0, to: 0, total: 0, links: [] },
+    event_summaries = { data: [], current_page: 1, last_page: 1, from: 0, to: 0, total: 0, links: [] },
     events = [],
     filters = {}
 }: Props) {
     const [eventFilter, setEventFilter] = useState(filters.event || '');
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
+
+    const formatNumber = (value: number | string | null | undefined, decimals?: number) => {
+        const numericValue = Number(value ?? 0);
+        const options = decimals === undefined
+            ? {}
+            : { minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+
+        return numericValue.toLocaleString(undefined, options);
+    };
 
     const applyFilters = () => {
         router.get('/admin/reports', {
@@ -179,7 +212,7 @@ export default function ReportsIndex({
                         <h3 className="text-gray-400 text-sm">Fights Today</h3>
                         <span className="text-purple-400">🎯</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{stats.fights_today}</p>
+                    <p className="text-3xl font-bold text-white">{formatNumber(stats.fights_today)}</p>
                 </div>
 
                 <div className="bg-gray-800 p-6 rounded-lg">
@@ -187,7 +220,7 @@ export default function ReportsIndex({
                         <h3 className="text-gray-400 text-sm">Active Users</h3>
                         <span className="text-indigo-400">👥</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{stats.active_users}</p>
+                    <p className="text-3xl font-bold text-white">{formatNumber(stats.active_users)}</p>
                 </div>
 
                 <div className="bg-gray-800 p-6 rounded-lg">
@@ -195,7 +228,7 @@ export default function ReportsIndex({
                         <h3 className="text-gray-400 text-sm">Unclaimed Winnings</h3>
                         <span className="text-orange-400">🎫</span>
                     </div>
-                    <p className="text-xl font-bold text-white">{stats.unclaimed_winnings_count} tickets</p>
+                    <p className="text-xl font-bold text-white">{formatNumber(stats.unclaimed_winnings_count)} tickets</p>
                     <p className="text-2xl font-bold text-orange-400 mt-1">₱{stats.unclaimed_winnings_amount.toLocaleString()}</p>
                 </div>
             </div>
@@ -237,9 +270,9 @@ export default function ReportsIndex({
                     <h3 className="text-xl font-bold text-white">📊 Event Summary Reports</h3>
                     <p className="text-gray-400 text-sm mt-1">Comprehensive breakdown by event</p>
                 </div>
-                {event_summaries.length > 0 ? (
+                {event_summaries.data.length > 0 ? (
                     <div className="p-6 space-y-6">
-                        {event_summaries.map((event, idx) => (
+                        {event_summaries.data.map((event, idx) => (
                             <div key={idx} className="bg-gray-700 rounded-lg p-6">
                                 {/* Event Header */}
                                 <div className="border-b border-gray-600 pb-4 mb-4">
@@ -251,8 +284,8 @@ export default function ReportsIndex({
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-gray-800 p-4 rounded">
                                         <p className="text-gray-400 text-xs mb-1">Total Fights</p>
-                                        <p className="text-2xl font-bold text-white">{event.total_fights}</p>
-                                        <p className="text-xs text-gray-500 mt-1">{event.declared_fights} declared</p>
+                                        <p className="text-2xl font-bold text-white">{formatNumber(event.total_fights)}</p>
+                                        <p className="text-xs text-gray-500 mt-1">{formatNumber(event.declared_fights)} declared</p>
                                     </div>
                                     <div className="bg-gray-800 p-4 rounded">
                                         <p className="text-gray-400 text-xs mb-1">Total Bets</p>
@@ -277,28 +310,28 @@ export default function ReportsIndex({
                                     <div className="grid grid-cols-4 gap-3">
                                         <div className="bg-red-900/30 border border-red-700 p-3 rounded">
                                             <p className="text-red-400 text-xs font-semibold mb-1">MERON</p>
-                                            <p className="text-2xl font-bold text-red-300">{event.meron_wins}</p>
+                                            <p className="text-2xl font-bold text-red-300">{formatNumber(event.meron_wins)}</p>
                                             <p className="text-xs text-red-400/70 mt-1">
                                                 {event.declared_fights > 0 ? ((event.meron_wins / event.declared_fights) * 100).toFixed(1) : 0}%
                                             </p>
                                         </div>
                                         <div className="bg-blue-900/30 border border-blue-700 p-3 rounded">
                                             <p className="text-blue-400 text-xs font-semibold mb-1">WALA</p>
-                                            <p className="text-2xl font-bold text-blue-300">{event.wala_wins}</p>
+                                            <p className="text-2xl font-bold text-blue-300">{formatNumber(event.wala_wins)}</p>
                                             <p className="text-xs text-blue-400/70 mt-1">
                                                 {event.declared_fights > 0 ? ((event.wala_wins / event.declared_fights) * 100).toFixed(1) : 0}%
                                             </p>
                                         </div>
                                         <div className="bg-yellow-900/30 border border-yellow-700 p-3 rounded">
                                             <p className="text-yellow-400 text-xs font-semibold mb-1">DRAW</p>
-                                            <p className="text-2xl font-bold text-yellow-300">{event.draws}</p>
+                                            <p className="text-2xl font-bold text-yellow-300">{formatNumber(event.draws)}</p>
                                             <p className="text-xs text-yellow-400/70 mt-1">
                                                 {event.declared_fights > 0 ? ((event.draws / event.declared_fights) * 100).toFixed(1) : 0}%
                                             </p>
                                         </div>
                                         <div className="bg-gray-900/30 border border-gray-600 p-3 rounded">
                                             <p className="text-gray-400 text-xs font-semibold mb-1">CANCELLED</p>
-                                            <p className="text-2xl font-bold text-gray-300">{event.cancelled}</p>
+                                            <p className="text-2xl font-bold text-gray-300">{formatNumber(event.cancelled)}</p>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 {event.total_fights > 0 ? ((event.cancelled / event.total_fights) * 100).toFixed(1) : 0}%
                                             </p>
@@ -320,7 +353,7 @@ export default function ReportsIndex({
                                                 <span className="text-red-400 font-semibold">-₱{event.total_payouts.toLocaleString()}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-gray-400 text-sm">Commission ({event.avg_commission}%):</span>
+                                                <span className="text-gray-400 text-sm">Commission ({formatNumber(event.avg_commission, 2)}%):</span>
                                                 <span className="text-orange-400 font-semibold">-₱{event.total_commission.toLocaleString()}</span>
                                             </div>
                                             <div className="border-t border-gray-600 pt-2 mt-2">
@@ -352,15 +385,26 @@ export default function ReportsIndex({
                                                 </div>
                                             </div>
                                             <div className="text-xs text-gray-400 space-y-1">
-                                                <p>• Avg. bet: ₱{event.total_bets > 0 ? (event.total_amount / event.total_bets).toLocaleString(undefined, {maximumFractionDigits: 2}) : 0}</p>
+                                                <p>• Avg. bet: ₱{event.total_bets > 0 ? formatNumber(event.total_amount / event.total_bets, 2) : 0}</p>
                                                 <p>• Payout ratio: {event.total_amount > 0 ? ((event.total_payouts / event.total_amount) * 100).toFixed(1) : 0}%</p>
-                                                <p>• Revenue per fight: ₱{event.total_fights > 0 ? (event.net_revenue / event.total_fights).toLocaleString(undefined, {maximumFractionDigits: 2}) : 0}</p>
+                                                <p>• Revenue per fight: ₱{event.total_fights > 0 ? formatNumber(event.net_revenue / event.total_fights, 2) : 0}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         ))}
+
+                        {event_summaries.last_page > 1 && (
+                            <Pagination
+                                currentPage={event_summaries.current_page}
+                                lastPage={event_summaries.last_page}
+                                from={event_summaries.from || 0}
+                                to={event_summaries.to || 0}
+                                total={event_summaries.total}
+                                links={event_summaries.links}
+                            />
+                        )}
                     </div>
                 ) : (
                     <div className="p-12 text-center">
@@ -393,14 +437,14 @@ export default function ReportsIndex({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {commission_reports.length === 0 ? (
+                            {commission_reports.data.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                                         No commission data available.
                                     </td>
                                 </tr>
                             ) : (
-                                commission_reports.map((report) => (
+                                commission_reports.data.map((report) => (
                                     <tr key={report.id} className="hover:bg-gray-700/50">
                                         <td className="px-6 py-4 text-white font-semibold">
                                             #{report.fight_number}
@@ -412,10 +456,10 @@ export default function ReportsIndex({
                                             {report.commission_percentage || 7.5}%
                                         </td>
                                         <td className="px-6 py-4 text-white">
-                                            ₱{Number(report.total_amount).toLocaleString()}
+                                            ₱{formatNumber(report.total_amount)}
                                         </td>
                                         <td className="px-6 py-4 text-green-400 font-semibold">
-                                            ₱{Number(report.commission_earned).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            ₱{formatNumber(report.commission_earned, 2)}
                                         </td>
                                         <td className="px-6 py-4 text-gray-300">
                                             {new Date(report.scheduled_at).toLocaleDateString()}
@@ -426,6 +470,18 @@ export default function ReportsIndex({
                         </tbody>
                     </table>
                 </div>
+                {commission_reports.last_page > 1 && (
+                    <div className="px-6 pb-6">
+                        <Pagination
+                            currentPage={commission_reports.current_page}
+                            lastPage={commission_reports.last_page}
+                            from={commission_reports.from || 0}
+                            to={commission_reports.to || 0}
+                            total={commission_reports.total}
+                            links={commission_reports.links}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Teller Reports */}
@@ -447,14 +503,14 @@ export default function ReportsIndex({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {teller_reports.length === 0 ? (
+                            {teller_reports.data.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                                         No teller data available.
                                     </td>
                                 </tr>
                             ) : (
-                                teller_reports.map((teller) => (
+                                teller_reports.data.map((teller) => (
                                     <tr key={teller.id} className="hover:bg-gray-700/50">
                                         <td className="px-6 py-4 text-white font-semibold">
                                             {teller.name}
@@ -469,10 +525,10 @@ export default function ReportsIndex({
                                             {teller.won_bets.toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 text-white">
-                                            ₱{teller.total_amount.toLocaleString()}
+                                            ₱{formatNumber(teller.total_amount)}
                                         </td>
                                         <td className="px-6 py-4 text-red-400">
-                                            ₱{teller.total_payouts.toLocaleString()}
+                                            ₱{formatNumber(teller.total_payouts)}
                                         </td>
                                     </tr>
                                 ))
@@ -480,6 +536,18 @@ export default function ReportsIndex({
                         </tbody>
                     </table>
                 </div>
+                {teller_reports.last_page > 1 && (
+                    <div className="px-6 pb-6">
+                        <Pagination
+                            currentPage={teller_reports.current_page}
+                            lastPage={teller_reports.last_page}
+                            from={teller_reports.from || 0}
+                            to={teller_reports.to || 0}
+                            total={teller_reports.total}
+                            links={teller_reports.links}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Daily Reports Table */}
@@ -500,20 +568,20 @@ export default function ReportsIndex({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {daily_reports.length === 0 ? (
+                            {daily_reports.data.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                                         No reports available.
                                     </td>
                                 </tr>
                             ) : (
-                                daily_reports.map((report, index) => (
+                                daily_reports.data.map((report, index) => (
                                     <tr key={index} className="hover:bg-gray-700/50">
                                         <td className="px-6 py-4 text-white font-semibold">
                                             {new Date(report.date).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-gray-300">
-                                            {report.fights}
+                                            {formatNumber(report.fights)}
                                         </td>
                                         <td className="px-6 py-4 text-gray-300">
                                             {report.bets.toLocaleString()}
@@ -533,6 +601,18 @@ export default function ReportsIndex({
                         </tbody>
                     </table>
                 </div>
+                {daily_reports.last_page > 1 && (
+                    <div className="px-6 pb-6">
+                        <Pagination
+                            currentPage={daily_reports.current_page}
+                            lastPage={daily_reports.last_page}
+                            from={daily_reports.from || 0}
+                            to={daily_reports.to || 0}
+                            total={daily_reports.total}
+                            links={daily_reports.links}
+                        />
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );
