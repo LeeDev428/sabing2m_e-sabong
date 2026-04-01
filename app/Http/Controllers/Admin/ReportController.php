@@ -176,61 +176,81 @@ class ReportController extends Controller
 
     public function export(Request $request)
     {
+        $validated = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+            'event' => ['nullable', 'string', 'max:255'],
+        ]);
+
         try {
-            $query = Fight::with(['bets']);
-
-            // Apply date filters
-            if ($request->from) {
-                $query->whereDate('scheduled_at', '>=', $request->from);
-            }
-
-            if ($request->to) {
-                $query->whereDate('scheduled_at', '<=', $request->to);
-            }
-
-            // Apply event filter if provided
-            if ($request->event) {
-                $query->where('event_name', $request->event);
-            }
-
-            $fights = $query->orderBy('scheduled_at', 'desc')->get();
-
-            // Build CSV
-            $csv = "Fight Number,Meron,Wala,Status,Result,Total Bets,Total Amount,Payouts,Revenue,Date\n";
-
-            foreach ($fights as $fight) {
-                $totalBets = $fight->bets->count();
-                $totalAmount = $fight->bets->sum('amount');
-                $payouts = $fight->bets->where('status', 'won')->sum('actual_payout');
-                $revenue = $totalAmount - $payouts;
-
-                // Format date safely
-                $scheduledDate = $fight->scheduled_at 
-                    ? $fight->scheduled_at->format('Y-m-d H:i:s')
-                    : 'N/A';
-
-                $csv .= sprintf(
-                    "%s,%s,%s,%s,%s,%d,%.2f,%.2f,%.2f,%s\n",
-                    $fight->fight_number ?? 'N/A',
-                    $fight->meron_fighter ?? 'N/A',
-                    $fight->wala_fighter ?? 'N/A',
-                    $fight->status ?? 'N/A',
-                    $fight->result ?? 'N/A',
-                    $totalBets,
-                    (float) $totalAmount,
-                    (float) $payouts,
-                    (float) $revenue,
-                    $scheduledDate
-                );
-            }
-
             $filename = 'fights_report_' . date('Y-m-d_H-i-s') . '.csv';
 
-            return response($csv, 200, [
+            return response()->streamDownload(function () use ($validated) {
+                $handle = fopen('php://output', 'w');
+                if ($handle === false) {
+                    throw new \RuntimeException('Unable to open CSV output stream.');
+                }
+
+                // UTF-8 BOM for Excel compatibility.
+                fwrite($handle, "\xEF\xBB\xBF");
+
+                fputcsv($handle, [
+                    'Fight Number',
+                    'Meron',
+                    'Wala',
+                    'Status',
+                    'Result',
+                    'Total Bets',
+                    'Total Amount',
+                    'Payouts',
+                    'Revenue',
+                    'Date',
+                ]);
+
+                Fight::query()
+                    ->select([
+                        'id',
+                        'fight_number',
+                        'meron_fighter',
+                        'wala_fighter',
+                        'status',
+                        'result',
+                        'scheduled_at',
+                    ])
+                    ->when(!empty($validated['from']), fn($q) => $q->whereDate('scheduled_at', '>=', $validated['from']))
+                    ->when(!empty($validated['to']), fn($q) => $q->whereDate('scheduled_at', '<=', $validated['to']))
+                    ->when(!empty($validated['event']), fn($q) => $q->where('event_name', $validated['event']))
+                    ->withCount('bets')
+                    ->withSum('bets as total_amount', 'amount')
+                    ->withSum(['bets as total_payouts' => fn($q) => $q->where('status', 'won')], 'actual_payout')
+                    ->orderBy('id')
+                    ->chunkById(500, function ($fights) use ($handle) {
+                        foreach ($fights as $fight) {
+                            $totalAmount = (float) ($fight->total_amount ?? 0);
+                            $payouts = (float) ($fight->total_payouts ?? 0);
+                            $revenue = $totalAmount - $payouts;
+
+                            fputcsv($handle, [
+                                $fight->fight_number ?? 'N/A',
+                                $fight->meron_fighter ?? 'N/A',
+                                $fight->wala_fighter ?? 'N/A',
+                                $fight->status ?? 'N/A',
+                                $fight->result ?? 'N/A',
+                                (int) ($fight->bets_count ?? 0),
+                                number_format($totalAmount, 2, '.', ''),
+                                number_format($payouts, 2, '.', ''),
+                                number_format($revenue, 2, '.', ''),
+                                $fight->scheduled_at ? $fight->scheduled_at->format('Y-m-d H:i:s') : 'N/A',
+                            ]);
+                        }
+                    });
+
+                fclose($handle);
+            }, $filename, [
                 'Content-Type' => 'text/csv; charset=UTF-8',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('CSV Export Error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request_data' => $request->all(),
