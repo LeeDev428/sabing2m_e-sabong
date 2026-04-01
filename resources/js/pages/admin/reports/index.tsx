@@ -180,7 +180,7 @@ export default function ReportsIndex({
                         <h3 className="text-gray-400 text-sm">Total Bets</h3>
                         <span className="text-blue-400">📊</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">{stats.total_bets.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-white">{formatNumber(stats.total_bets)}</p>
                 </div>
 
                 <div className="bg-gray-800 p-6 rounded-lg">
@@ -188,7 +188,7 @@ export default function ReportsIndex({
                         <h3 className="text-gray-400 text-sm">Total Amount</h3>
                         <span className="text-green-400">💰</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">₱{stats.total_amount.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-white">₱{formatNumber(stats.total_amount, 2)}</p>
                 </div>
 
                 <div className="bg-gray-800 p-6 rounded-lg">
@@ -196,7 +196,7 @@ export default function ReportsIndex({
                         <h3 className="text-gray-400 text-sm">Total Payouts</h3>
                         <span className="text-red-400">💸</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">₱{stats.total_payouts.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-white">₱{formatNumber(stats.total_payouts, 2)}</p>
                 </div>
 
                 <div className="bg-gray-800 p-6 rounded-lg">
@@ -204,7 +204,7 @@ export default function ReportsIndex({
                         <h3 className="text-gray-400 text-sm">Total Revenue</h3>
                         <span className="text-yellow-400">⭐</span>
                     </div>
-                    <p className="text-3xl font-bold text-white">₱{stats.total_revenue.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-white">₱{formatNumber(stats.total_revenue, 2)}</p>
                 </div>
 
                 <div className="bg-gray-800 p-6 rounded-lg">
@@ -229,7 +229,7 @@ export default function ReportsIndex({
                         <span className="text-orange-400">🎫</span>
                     </div>
                     <p className="text-xl font-bold text-white">{formatNumber(stats.unclaimed_winnings_count)} tickets</p>
-                    <p className="text-2xl font-bold text-orange-400 mt-1">₱{stats.unclaimed_winnings_amount.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-orange-400 mt-1">₱{formatNumber(stats.unclaimed_winnings_amount, 2)}</p>
                 </div>
             </div>
 
@@ -289,17 +289,17 @@ export default function ReportsIndex({
                                     </div>
                                     <div className="bg-gray-800 p-4 rounded">
                                         <p className="text-gray-400 text-xs mb-1">Total Bets</p>
-                                        <p className="text-2xl font-bold text-blue-400">{event.total_bets.toLocaleString()}</p>
+                                        <p className="text-2xl font-bold text-blue-400">{formatNumber(event.total_bets)}</p>
                                         <p className="text-xs text-gray-500 mt-1">bets placed</p>
                                     </div>
                                     <div className="bg-gray-800 p-4 rounded">
                                         <p className="text-gray-400 text-xs mb-1">Total Wagered</p>
-                                        <p className="text-2xl font-bold text-green-400">₱{event.total_amount.toLocaleString()}</p>
+                                        <p className="text-2xl font-bold text-green-400">₱{formatNumber(event.total_amount, 2)}</p>
                                         <p className="text-xs text-gray-500 mt-1">total amount</p>
                                     </div>
                                     <div className="bg-gray-800 p-4 rounded">
                                         <p className="text-gray-400 text-xs mb-1">Revolving Funds</p>
-                                        <p className="text-2xl font-bold text-purple-400">₱{event.total_revolving_funds.toLocaleString()}</p>
+                                        <p className="text-2xl font-bold text-purple-400">₱{formatNumber(event.total_revolving_funds, 2)}</p>
                                         <p className="text-xs text-gray-500 mt-1">allocated</p>
                                     </div>
                                 </div>
@@ -346,21 +346,21 @@ export default function ReportsIndex({
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-gray-400 text-sm">Total Wagered:</span>
-                                                <span className="text-white font-semibold">₱{event.total_amount.toLocaleString()}</span>
+                                                <span className="text-white font-semibold">₱{formatNumber(event.total_amount, 2)}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
                                                 <span className="text-gray-400 text-sm">Payouts:</span>
-                                                <span className="text-red-400 font-semibold">-₱{event.total_payouts.toLocaleString()}</span>
+                                                <span className="text-red-400 font-semibold">-₱{formatNumber(event.total_payouts, 2)}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
                                                 <span className="text-gray-400 text-sm">Commission ({formatNumber(event.avg_commission, 2)}%):</span>
-                                                <span className="text-orange-400 font-semibold">-₱{event.total_commission.toLocaleString()}</span>
+                                                <span className="text-orange-400 font-semibold">-₱{formatNumber(event.total_commission, 2)}</span>
                                             </div>
                                             <div className="border-t border-gray-600 pt-2 mt-2">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-white font-semibold">Net Revenue:</span>
                                                     <span className={`text-xl font-bold ${event.net_revenue >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                        ₱{event.net_revenue.toLocaleString()}
+                                                        ₱{formatNumber(event.net_revenue, 2)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -519,10 +519,10 @@ export default function ReportsIndex({
                                             {teller.email}
                                         </td>
                                         <td className="px-6 py-4 text-blue-400">
-                                            {teller.total_bets.toLocaleString()}
+                                            {formatNumber(teller.total_bets)}
                                         </td>
                                         <td className="px-6 py-4 text-green-400">
-                                            {teller.won_bets.toLocaleString()}
+                                            {formatNumber(teller.won_bets)}
                                         </td>
                                         <td className="px-6 py-4 text-white">
                                             ₱{formatNumber(teller.total_amount)}
@@ -584,16 +584,16 @@ export default function ReportsIndex({
                                             {formatNumber(report.fights)}
                                         </td>
                                         <td className="px-6 py-4 text-gray-300">
-                                            {report.bets.toLocaleString()}
+                                            {formatNumber(report.bets)}
                                         </td>
                                         <td className="px-6 py-4 text-white">
-                                            ₱{report.amount.toLocaleString()}
+                                            ₱{formatNumber(report.amount, 2)}
                                         </td>
                                         <td className="px-6 py-4 text-red-400">
-                                            ₱{report.payouts.toLocaleString()}
+                                            ₱{formatNumber(report.payouts, 2)}
                                         </td>
                                         <td className="px-6 py-4 text-green-400 font-semibold">
-                                            ₱{report.revenue.toLocaleString()}
+                                            ₱{formatNumber(report.revenue, 2)}
                                         </td>
                                     </tr>
                                 ))
