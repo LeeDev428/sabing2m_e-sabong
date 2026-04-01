@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
 {
@@ -177,42 +178,65 @@ class ReportController extends Controller
     {
         $query = Fight::with(['bets']);
 
-        if ($request->from) {
-            $query->whereDate('scheduled_at', '>=', $request->from);
+        try {
+            if ($request->from) {
+                $query->whereDate('scheduled_at', '>=', $request->from);
+            }
+
+            if ($request->to) {
+                $query->whereDate('scheduled_at', '<=', $request->to);
+            }
+
+                $fights = $query->orderBy('scheduled_at', 'desc')->get();
+
+            $csv = "Fight Number,Meron,Wala,Status,Result,Total Bets,Total Amount,Payouts,Revenue,Date\n";
+
+            foreach ($fights as $fight) {
+                $totalBets = $fight->bets->count();
+                $totalAmount = $fight->bets->sum('amount');
+                $payouts = $fight->bets->where('status', 'won')->sum('actual_payout');
+                $revenue = $totalAmount - $payouts;
+
+                // Format date safely - handle NULL scheduled_at
+                $scheduledDate = $fight->scheduled_at 
+                    ? $fight->scheduled_at->format('Y-m-d H:i:s')
+                    : 'N/A';
+
+                $csv .= sprintf(
+                    "%s,%s,%s,%s,%s,%d,%.2f,%.2f,%.2f,%s\n",
+                    $fight->fight_number ?? 'N/A',
+                    $fight->meron_fighter ?? 'N/A',
+                    $fight->wala_fighter ?? 'N/A',
+                    $fight->status ?? 'N/A',
+                    $fight->result ?? 'N/A',
+                    $totalBets,
+                    (float) $totalAmount,
+                    (float) $payouts,
+                    (float) $revenue,
+                    $scheduledDate
+                );
+            }
+
+            $filename = 'fights_report_' . date('Y-m-d_H-i-s') . '.csv';
+
+            // FIX: Correct response() helper usage - chain headers instead of passing as array
+                return response(gzcompress($csv), 200, [
+                    'Content-Type' => 'text/csv; charset=UTF-8',
+                    'Content-Disposition' => 'inline; filename=' . $filename,
+                ]);
+                ->header('Content-Type', 'text/csv; charset=utf-8')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Pragma', 'no-cache')
+                ->header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0')
+                ->header('Expires', '0')
+                ->header('Content-Length', strlen($csv));
+        } catch (\Exception $e) {
+            Log::error('CSV Export Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request_data' => $request->all(),
+            ]);
+
+            return response('Error generating CSV export', 500);
         }
-
-        if ($request->to) {
-            $query->whereDate('scheduled_at', '<=', $request->to);
-        }
-
-        $fights = $query->get();
-
-        $csv = "Fight Number,Meron,Wala,Status,Result,Total Bets,Total Amount,Payouts,Revenue,Date\n";
-
-        foreach ($fights as $fight) {
-            $totalBets = $fight->bets->count();
-            $totalAmount = $fight->bets->sum('amount');
-            $payouts = $fight->bets->where('status', 'won')->sum('actual_payout');
-            $revenue = $totalAmount - $payouts;
-
-            $csv .= sprintf(
-                "%s,%s,%s,%s,%s,%d,%.2f,%.2f,%.2f,%s\n",
-                $fight->fight_number,
-                $fight->meron_fighter,
-                $fight->wala_fighter,
-                $fight->status,
-                $fight->result ?? 'N/A',
-                $totalBets,
-                $totalAmount,
-                $payouts,
-                $revenue,
-                $fight->scheduled_at->format('Y-m-d H:i:s')
-            );
-        }
-
-        return response($csv, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="fights_report_' . date('Y-m-d') . '.csv"',
-        ]);
     }
 }
