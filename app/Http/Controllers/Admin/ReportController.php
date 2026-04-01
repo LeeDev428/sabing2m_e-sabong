@@ -60,10 +60,11 @@ class ReportController extends Controller
         $daily_reports = $dailyQuery
             ->groupBy('date')
             ->orderBy('date', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'daily_page')
+            ->withQueryString();
 
         // Commission reports by fight
-        $commissionQuery = Fight::select(
+        $commission_reports = Fight::select(
                 'fights.id',
                 'fights.fight_number',
                 'fights.event_name',
@@ -77,33 +78,28 @@ class ReportController extends Controller
             ->whereNull('fights.deleted_at')
             ->groupBy('fights.id', 'fights.fight_number', 'fights.event_name', 'fights.commission_percentage', 'fights.scheduled_at')
             ->orderBy('fights.scheduled_at', 'desc')
-            ->limit(50)
-            ->get();
+            ->paginate(20, ['*'], 'commission_page')
+            ->withQueryString();
 
         // Teller reports
-        $tellerReports = User::where('role', 'teller')
-            ->withCount('bets')
-            ->withSum('bets', 'amount')
-            ->when($eventFilter, function($q) use ($eventFilter) {
-                $q->whereHas('bets.fight', fn($query) => $query->where('event_name', $eventFilter));
-            })
-            ->get()
-            ->map(function($user) use ($eventFilter) {
-                $betsQuery = $user->bets();
-                if ($eventFilter) {
-                    $betsQuery->whereHas('fight', fn($q) => $q->where('event_name', $eventFilter));
-                }
-                
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'total_bets' => $betsQuery->count(),
-                    'total_amount' => $betsQuery->sum('amount'),
-                    'won_bets' => $betsQuery->where('status', 'won')->count(),
-                    'total_payouts' => $betsQuery->where('status', 'won')->sum('actual_payout'),
-                ];
-            });
+        $teller_reports = DB::table('users')
+            ->leftJoin('bets', 'users.id', '=', 'bets.user_id')
+            ->leftJoin('fights', 'bets.fight_id', '=', 'fights.id')
+            ->select(
+                'users.id',
+                'users.name',
+                'users.email',
+                DB::raw('COUNT(bets.id) as total_bets'),
+                DB::raw('COALESCE(SUM(bets.amount), 0) as total_amount'),
+                DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN 1 ELSE 0 END), 0) as won_bets'),
+                DB::raw('COALESCE(SUM(CASE WHEN bets.status = "won" THEN bets.actual_payout ELSE 0 END), 0) as total_payouts')
+            )
+            ->where('users.role', 'teller')
+            ->when($eventFilter, fn($q) => $q->where('fights.event_name', $eventFilter))
+            ->groupBy('users.id', 'users.name', 'users.email')
+            ->orderBy('users.name')
+            ->paginate(20, ['*'], 'teller_page')
+            ->withQueryString();
 
         // Get events for dropdown
         $events = Fight::select('event_name')
@@ -112,7 +108,7 @@ class ReportController extends Controller
             ->pluck('event_name');
 
         // Event Summary - Group fights by event with comprehensive stats
-        $eventSummaries = Fight::select(
+        $event_summaries = Fight::select(
                 'event_name',
                 'event_date',
                 DB::raw('COUNT(*) as total_fights'),
@@ -129,8 +125,10 @@ class ReportController extends Controller
             ->whereNull('deleted_at')
             ->groupBy('event_name', 'event_date')
             ->orderBy('event_date', 'desc')
-            ->get()
-            ->map(function($event) {
+            ->paginate(10, ['*'], 'event_page')
+            ->withQueryString();
+
+        $event_summaries->getCollection()->transform(function($event) {
                 // Get detailed stats for this event
                 $fights = Fight::where('event_name', $event->event_name)
                     ->where('event_date', $event->event_date)
@@ -164,9 +162,9 @@ class ReportController extends Controller
         return Inertia::render('admin/reports/index', [
             'stats' => $stats,
             'daily_reports' => $daily_reports,
-            'commission_reports' => $commissionQuery,
-            'teller_reports' => $tellerReports,
-            'event_summaries' => $eventSummaries,
+            'commission_reports' => $commission_reports,
+            'teller_reports' => $teller_reports,
+            'event_summaries' => $event_summaries,
             'events' => $events,
             'filters' => [
                 'event' => $eventFilter,
