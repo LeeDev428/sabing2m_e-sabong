@@ -176,9 +176,10 @@ class ReportController extends Controller
 
     public function export(Request $request)
     {
-        $query = Fight::with(['bets']);
-
         try {
+            $query = Fight::with(['bets']);
+
+            // Apply date filters
             if ($request->from) {
                 $query->whereDate('scheduled_at', '>=', $request->from);
             }
@@ -187,17 +188,23 @@ class ReportController extends Controller
                 $query->whereDate('scheduled_at', '<=', $request->to);
             }
 
-                $fights = $query->orderBy('scheduled_at', 'desc')->get();
+            // Apply event filter if provided
+            if ($request->event) {
+                $query->where('event_name', $request->event);
+            }
 
+            $fights = $query->orderBy('scheduled_at', 'desc')->get();
+
+            // Build CSV
             $csv = "Fight Number,Meron,Wala,Status,Result,Total Bets,Total Amount,Payouts,Revenue,Date\n";
 
-                $fights = $query->orderBy('scheduled_at', 'desc')->get();
+            foreach ($fights as $fight) {
                 $totalBets = $fight->bets->count();
                 $totalAmount = $fight->bets->sum('amount');
                 $payouts = $fight->bets->where('status', 'won')->sum('actual_payout');
                 $revenue = $totalAmount - $payouts;
 
-                // Format date safely - handle NULL scheduled_at
+                // Format date safely
                 $scheduledDate = $fight->scheduled_at 
                     ? $fight->scheduled_at->format('Y-m-d H:i:s')
                     : 'N/A';
@@ -219,18 +226,17 @@ class ReportController extends Controller
 
             $filename = 'fights_report_' . date('Y-m-d_H-i-s') . '.csv';
 
-            // FIX: Correct response() helper usage - chain headers instead of passing as array
-                return response(gzcompress($csv), 200, [
-                    'Content-Type' => 'text/csv; charset=UTF-8',
-                    'Content-Disposition' => 'inline; filename=' . $filename,
-                ]);
+            return response($csv, 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
         } catch (\Exception $e) {
             Log::error('CSV Export Error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request_data' => $request->all(),
             ]);
 
-            return response('Error generating CSV export', 500);
+            return response()->json(['error' => 'Failed to generate CSV export'], 500);
         }
     }
 }
