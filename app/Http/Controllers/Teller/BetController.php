@@ -603,9 +603,59 @@ class BetController extends Controller
                 ->count(),
         ];
 
+        $fightResults = Fight::query()
+            ->whereHas('bets', function ($query) use ($teller) {
+                $query->where('teller_id', $teller->id);
+            })
+            ->where(function ($query) {
+                $query->whereNotNull('result')
+                    ->orWhere('status', 'result_declared');
+            })
+            ->withCount([
+                'bets as teller_total_bets' => function ($query) use ($teller) {
+                    $query->where('teller_id', $teller->id)
+                        ->whereNotIn('status', ['voided', 'cancelled']);
+                },
+                'bets as teller_won_bets' => function ($query) use ($teller) {
+                    $query->where('teller_id', $teller->id)
+                        ->whereIn('status', ['won', 'claimed']);
+                },
+                'bets as teller_lost_bets' => function ($query) use ($teller) {
+                    $query->where('teller_id', $teller->id)
+                        ->where('status', 'lost');
+                },
+            ])
+            ->withSum([
+                'bets as teller_total_amount' => function ($query) use ($teller) {
+                    $query->where('teller_id', $teller->id)
+                        ->whereNotIn('status', ['voided', 'cancelled']);
+                },
+            ], 'amount')
+            ->orderByDesc('result_declared_at')
+            ->orderByDesc('id')
+            ->paginate(10, ['*'], 'results_page')
+            ->withQueryString()
+            ->through(function ($fight) {
+                return [
+                    'id' => $fight->id,
+                    'fight_number' => $fight->fight_number,
+                    'meron_fighter' => $fight->meron_fighter,
+                    'wala_fighter' => $fight->wala_fighter,
+                    'event_name' => $fight->event_name,
+                    'status' => $fight->status,
+                    'result' => $fight->result,
+                    'result_declared_at' => $fight->result_declared_at,
+                    'teller_total_bets' => (int) ($fight->teller_total_bets ?? 0),
+                    'teller_won_bets' => (int) ($fight->teller_won_bets ?? 0),
+                    'teller_lost_bets' => (int) ($fight->teller_lost_bets ?? 0),
+                    'teller_total_amount' => (float) ($fight->teller_total_amount ?? 0),
+                ];
+            });
+
         return Inertia::render('teller/history', [
             'bets' => $bets,
             'summary' => $summary,
+            'fightResults' => $fightResults,
         ]);
     }
 
