@@ -226,7 +226,17 @@ export default function History({ bets, summary }: HistoryProps) {
     };
 
     const getClaimState = (status: string) => {
-        const claimed = status.toLowerCase() === 'claimed' || status.toLowerCase() === 'refund_claimed';
+        const normalizedStatus = status.toLowerCase();
+        const claimNotApplicableStatuses = ['lost', 'active', 'voided', 'cancelled'];
+
+        if (claimNotApplicableStatuses.includes(normalizedStatus)) {
+            return {
+                label: '',
+                className: '',
+            };
+        }
+
+        const claimed = normalizedStatus === 'claimed' || normalizedStatus === 'refund_claimed';
         return {
             label: claimed ? 'CLAIMED' : 'UNCLAIMED',
             className: claimed ? 'text-green-400' : 'text-yellow-400',
@@ -390,9 +400,13 @@ export default function History({ bets, summary }: HistoryProps) {
 
                                         <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                                             <span>{new Date(bet.created_at).toLocaleString()}</span>
-                                            <span className={`font-bold ${getClaimState(bet.status).className}`}>
-                                                {getClaimState(bet.status).label}
-                                            </span>
+                                            {getClaimState(bet.status).label ? (
+                                                <span className={`font-bold ${getClaimState(bet.status).className}`}>
+                                                    {getClaimState(bet.status).label}
+                                                </span>
+                                            ) : (
+                                                <span></span>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
