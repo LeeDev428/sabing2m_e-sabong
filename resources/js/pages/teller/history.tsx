@@ -44,8 +44,35 @@ interface PaginatedBets {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
+interface FightResultItem {
+    id: number;
+    fight_number: number;
+    meron_fighter: string;
+    wala_fighter: string;
+    event_name?: string;
+    status: string;
+    result: string | null;
+    result_declared_at?: string;
+    teller_total_bets: number;
+    teller_won_bets: number;
+    teller_lost_bets: number;
+    teller_total_amount: number;
+}
+
+interface PaginatedFightResults {
+    data: FightResultItem[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+    links: { url: string | null; label: string; active: boolean }[];
+}
+
 interface HistoryProps {
     bets: PaginatedBets;
+    fightResults: PaginatedFightResults;
     summary: {
         total_bets: number;
         total_amount: number;
@@ -56,7 +83,7 @@ interface HistoryProps {
     };
 }
 
-export default function History({ bets, summary }: HistoryProps) {
+export default function History({ bets, fightResults, summary }: HistoryProps) {
     const [activeTab, setActiveTab] = useState<'bets' | 'summary'>('summary');
     const [showVoidScanner, setShowVoidScanner] = useState(false);
     const [scanning, setScanning] = useState(false);
@@ -249,6 +276,16 @@ export default function History({ bets, summary }: HistoryProps) {
         };
     };
 
+    const getFightResultColor = (result: string | null) => {
+        switch ((result || '').toLowerCase()) {
+            case 'meron': return 'bg-red-600';
+            case 'wala': return 'bg-blue-600';
+            case 'draw': return 'bg-emerald-600';
+            case 'cancelled': return 'bg-gray-600';
+            default: return 'bg-gray-600';
+        }
+    };
+
     return (
         <TellerLayout currentPage="history">
             <Head title="History & Summary" />
@@ -339,6 +376,72 @@ export default function History({ bets, summary }: HistoryProps) {
                                     <div className="text-2xl font-bold text-white">{summary.voided_bets}</div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-700 mt-2">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-base font-bold text-white">Fight Results</h3>
+                                <span className="text-xs text-gray-400">10 per page</span>
+                            </div>
+
+                            {fightResults.data.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <p className="text-sm text-gray-400">No fight results yet.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="space-y-2">
+                                        {fightResults.data.map((fightResult) => (
+                                            <div key={fightResult.id} className="bg-gray-800/70 rounded-md p-3 border border-gray-700">
+                                                {fightResult.event_name && (
+                                                    <div className="text-center mb-2 pb-2 border-b border-gray-700">
+                                                        <div className="text-sm font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                                                            {fightResult.event_name}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <div className="flex justify-between items-start gap-2 mb-2">
+                                                    <div>
+                                                        <div className="text-xs text-gray-400">Fight #{fightResult.fight_number}</div>
+                                                        <div className="text-sm font-semibold text-white">
+                                                            {fightResult.meron_fighter} vs {fightResult.wala_fighter}
+                                                        </div>
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold text-white ${getFightResultColor(fightResult.result)}`}>
+                                                        {(fightResult.result || 'N/A').toUpperCase()}
+                                                    </span>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 text-xs mt-2">
+                                                    <div className="text-gray-300">Your Bets: <span className="text-white font-semibold">{fightResult.teller_total_bets}</span></div>
+                                                    <div className="text-gray-300">Won/Lost: <span className="text-green-400 font-semibold">{fightResult.teller_won_bets}</span>/<span className="text-red-400 font-semibold">{fightResult.teller_lost_bets}</span></div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-xs text-gray-400 mt-2">
+                                                    <span>Total Amount: <span className="text-yellow-300 font-semibold">₱{fightResult.teller_total_amount.toLocaleString()}</span></span>
+                                                    <span>
+                                                        {fightResult.result_declared_at
+                                                            ? new Date(fightResult.result_declared_at).toLocaleString()
+                                                            : 'No declaration date'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {fightResults.last_page > 1 && (
+                                        <Pagination
+                                            currentPage={fightResults.current_page}
+                                            lastPage={fightResults.last_page}
+                                            from={fightResults.from || 0}
+                                            to={fightResults.to || 0}
+                                            total={fightResults.total}
+                                            links={fightResults.links}
+                                        />
+                                    )}
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
