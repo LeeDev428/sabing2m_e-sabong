@@ -459,7 +459,7 @@ class BetController extends Controller
 
     private function getPayoutTrackingPayload(): array
     {
-        $user = auth()->user();
+        $tellerId = auth()->id();
 
         $winningBase = Bet::query()
             ->with([
@@ -473,9 +473,9 @@ class BetController extends Controller
                     ->whereColumn('fights.result', 'bets.side');
             });
 
-        // Least-privilege visibility: tellers should only see their own unclaimed/claimed payout records.
-        if ($user && $user->isTeller()) {
-            $winningBase->where('teller_id', $user->id);
+        // Least-privilege visibility: scoped to the authenticated teller only.
+        if ($tellerId) {
+            $winningBase->where('teller_id', $tellerId);
         }
 
         $winningQuery = (clone $winningBase)->whereIn('status', ['won', 'claimed']);

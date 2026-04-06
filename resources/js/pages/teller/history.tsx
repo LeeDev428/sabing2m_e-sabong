@@ -227,19 +227,25 @@ export default function History({ bets, summary }: HistoryProps) {
 
     const getClaimState = (status: string) => {
         const normalizedStatus = status.toLowerCase();
-        const claimNotApplicableStatuses = ['lost', 'active', 'voided', 'cancelled'];
+        const claimEligibleStatuses = ['won', 'refunded'];
 
-        if (claimNotApplicableStatuses.includes(normalizedStatus)) {
+        if (normalizedStatus === 'claimed' || normalizedStatus === 'refund_claimed') {
             return {
-                label: '',
-                className: '',
+                label: 'CLAIMED',
+                className: 'text-green-400',
             };
         }
 
-        const claimed = normalizedStatus === 'claimed' || normalizedStatus === 'refund_claimed';
+        if (claimEligibleStatuses.includes(normalizedStatus)) {
+            return {
+                label: 'UNCLAIMED',
+                className: 'text-yellow-400',
+            };
+        }
+
         return {
-            label: claimed ? 'CLAIMED' : 'UNCLAIMED',
-            className: claimed ? 'text-green-400' : 'text-yellow-400',
+            label: '',
+            className: '',
         };
     };
 
