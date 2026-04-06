@@ -347,7 +347,10 @@ export default function History({ bets, summary }: HistoryProps) {
                             </div>
                         ) : (
                             <>
-                                {bets.data.map((bet) => (
+                                {bets.data.map((bet) => {
+                                    const claimState = getClaimState(bet.status);
+
+                                    return (
                                     <div key={bet.id} className="bg-[#1a1a1a] rounded-lg p-4 border border-gray-700">
                                         {/* Event Name Header */}
                                         {bet.fight.event_name && (
@@ -400,16 +403,15 @@ export default function History({ bets, summary }: HistoryProps) {
 
                                         <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                                             <span>{new Date(bet.created_at).toLocaleString()}</span>
-                                            {getClaimState(bet.status).label ? (
-                                                <span className={`font-bold ${getClaimState(bet.status).className}`}>
-                                                    {getClaimState(bet.status).label}
+                                            {claimState.label && (
+                                                <span className={`font-bold ${claimState.className}`}>
+                                                    {claimState.label}
                                                 </span>
-                                            ) : (
-                                                <span></span>
                                             )}
                                         </div>
                                     </div>
-                                ))}
+                                );
+                                })}
 
                                 {/* Pagination */}
                                 {bets.last_page > 1 && (
