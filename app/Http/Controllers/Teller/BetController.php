@@ -292,6 +292,13 @@ class BetController extends Controller
         $bet = Bet::with(['fight', 'teller'])->where('ticket_id', $validated['ticket_id'])->firstOrFail();
         $trackingData = $this->getPayoutTrackingPayload();
 
+        // Only the ticket's assigned teller can access and claim payout/refund actions.
+        if ($bet->teller_id !== auth()->id()) {
+            return Inertia::render('teller/payout-scan', [
+                'message' => 'You are not authorized to access this ticket.',
+            ] + $trackingData);
+        }
+
         // Check if bet has already been claimed or refunded
         if ($bet->status === 'claimed') {
             return Inertia::render('teller/payout-scan', array_merge([
@@ -452,6 +459,8 @@ class BetController extends Controller
 
     private function getPayoutTrackingPayload(): array
     {
+        $user = auth()->user();
+
         $winningBase = Bet::query()
             ->with([
                 'fight:id,fight_number,event_name',
@@ -463,6 +472,11 @@ class BetController extends Controller
                     ->whereIn('result', ['meron', 'wala'])
                     ->whereColumn('fights.result', 'bets.side');
             });
+
+        // Least-privilege visibility: tellers should only see their own unclaimed/claimed payout records.
+        if ($user && $user->isTeller()) {
+            $winningBase->where('teller_id', $user->id);
+        }
 
         $winningQuery = (clone $winningBase)->whereIn('status', ['won', 'claimed']);
         $unclaimedQuery = (clone $winningBase)->where('status', 'won');
