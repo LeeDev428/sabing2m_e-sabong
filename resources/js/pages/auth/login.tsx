@@ -148,7 +148,7 @@ export default function Login({
                 </div>
 
                 {/* Test Accounts Info */}
-                <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                {/* <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
                     <p className="text-sm text-gray-400 mb-2 font-medium">Test Accounts:</p>
                     <div className="text-xs text-gray-500 space-y-1">
                         <p>• Admin: admin@esabong.com</p>
@@ -156,7 +156,7 @@ export default function Login({
                         <p>• Teller: teller@esabong.com</p>
                         <p className="mt-2">Password: <span className="text-gray-400">password</span></p>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );
