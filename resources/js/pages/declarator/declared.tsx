@@ -51,9 +51,10 @@ interface Teller {
 interface Props {
     declared_fights?: Fight[];
     tellers?: Teller[];
+    hasActiveEvent?: boolean;
 }
 
-export default function DeclaredFights({ declared_fights = [], tellers = [] }: Props) {
+export default function DeclaredFights({ declared_fights = [], tellers = [], hasActiveEvent = false }: Props) {
     const [showResultModal, setShowResultModal] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showCommissionModal, setShowCommissionModal] = useState(false);
@@ -80,10 +81,12 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
 
     // Check if "Next Fight" button should be enabled
     const latestFight = declared_fights[0]; // Assuming sorted by latest first
-    const canCreateNextFight = latestFight && 
-        latestFight.status === 'result_declared' && 
-        latestFight.result && 
+    const canCreateFirstFight = hasActiveEvent && !latestFight;
+    const canCreateAfterDeclared = !!latestFight &&
+        latestFight.status === 'result_declared' &&
+        latestFight.result &&
         latestFight.result !== '';
+    const canCreateNextFight = canCreateFirstFight || canCreateAfterDeclared;
 
     const handleDeclareResult = (fight: Fight) => {
         setSelectedFight(fight);
@@ -379,7 +382,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [] }: P
                                 ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
                                 : 'bg-gray-600 cursor-not-allowed opacity-50'
                         }`}
-                        title={!canCreateNextFight ? 'Latest fight must be closed and declared' : 'Create next fight'}
+                        title={!canCreateNextFight ? (hasActiveEvent ? 'Latest fight must be closed and declared' : 'No active event found') : 'Create next fight'}
                     >
                         ➕ Next Fight
                     </button>
