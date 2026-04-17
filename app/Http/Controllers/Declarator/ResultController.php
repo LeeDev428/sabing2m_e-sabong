@@ -26,6 +26,8 @@ class ResultController extends Controller
 
     public function declared()
     {
+        $hasActiveEvent = \App\Models\Event::where('status', 'active')->exists();
+
         // Show all active fights (not just result_declared) - same as admin fights
         $declared_fights = Fight::whereNotIn('status', ['cancelled'])
             ->with(['creator', 'declarator', 'tellerCashAssignments.teller'])
@@ -51,6 +53,7 @@ class ResultController extends Controller
         return Inertia::render('declarator/declared', [
             'declared_fights' => $declared_fights,
             'tellers' => $tellers,
+            'hasActiveEvent' => $hasActiveEvent,
         ]);
     }
 
