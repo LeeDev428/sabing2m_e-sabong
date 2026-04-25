@@ -1,4 +1,4 @@
-import { FiAward, FiLock } from 'react-icons/fi';
+import { FiAward, FiCheckCircle, FiLock } from 'react-icons/fi';
 
 interface FighterCardProps {
     side: 'meron' | 'wala' | 'draw';
@@ -42,12 +42,22 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
 
     const color = colors[side];
     const isLocked = bettingOpen === false && !isWinner && !isCancelled;
+    const isOpen = bettingOpen !== false;
+    const showSideStateBadge = side !== 'draw' && !isCancelled;
     const sideLabel = side.charAt(0).toUpperCase() + side.slice(1);
 
     return (
         <article className={`relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-3 sm:p-4 lg:p-4 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''}`}>
             <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.22),transparent_55%)]" />
             {isLocked && <div className="absolute inset-0 bg-slate-950/16 pointer-events-none" />}
+
+            {isLocked && (
+                <div className="absolute inset-0 z-20 grid place-items-center pointer-events-none">
+                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-slate-950/70 border border-slate-400/60 flex items-center justify-center text-slate-100 shadow-[0_10px_35px_rgba(2,6,23,0.55)]">
+                        <FiLock className="text-2xl sm:text-3xl" />
+                    </div>
+                </div>
+            )}
 
             {isWinner && (
                 <div className="absolute top-3 right-3 z-20 rounded-full bg-amber-300/20 border border-amber-200/60 p-2 text-amber-200">
@@ -91,11 +101,17 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                     </div>
                 </div>
 
-                {isLocked && (
+                {showSideStateBadge && (
                     <div className="pt-2 sm:pt-2.5 flex justify-center">
-                        <div className="inline-flex items-center gap-2 rounded-lg bg-slate-950/80 border border-slate-500/80 px-4 sm:px-5 py-1.5 sm:py-2 text-slate-100 font-black uppercase tracking-wide text-sm sm:text-base shadow-[0_8px_28px_rgba(2,6,23,0.45)]">
-                            <FiLock className="shrink-0" />
-                            {sideLabel} Closed
+                        <div className={`inline-flex items-center gap-2 rounded-lg px-4 sm:px-5 py-1.5 sm:py-2 font-black uppercase tracking-wide text-sm sm:text-base shadow-[0_8px_28px_rgba(2,6,23,0.45)] ${
+                            isOpen
+                                ? (side === 'meron'
+                                    ? 'bg-rose-500/20 border border-rose-300/55 text-rose-100'
+                                    : 'bg-blue-500/20 border border-blue-300/55 text-blue-100')
+                                : 'bg-slate-950/80 border border-slate-500/80 text-slate-100'
+                        }`}>
+                            {isOpen ? <FiCheckCircle className="shrink-0" /> : <FiLock className="shrink-0" />}
+                            {sideLabel} {isOpen ? 'Open' : 'Closed'}
                         </div>
                     </div>
                 )}
