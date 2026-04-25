@@ -78,7 +78,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                     </div>
                 </div>
                 <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg p-6 min-w-0">
-                    <div className="text-blue-200 text-sm mb-2">Total Pot</div>
+                    <div className="text-blue-200 text-sm mb-2">Overall Total Bet</div>
                     <div className="text-2xl xl:text-3xl font-bold text-white leading-tight break-words">
                         ₱{stats.total_pot.toLocaleString()}
                     </div>
