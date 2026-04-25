@@ -58,7 +58,7 @@ export default function FightHeader({ fightNumber, venue, eventName, eventDate, 
                     )}
                 </div>
             )}
-            <div className="mt-3 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
+            <div className="mt-2 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
         </div>
     );
 }
