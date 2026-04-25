@@ -157,7 +157,7 @@ export default function BigScreen() {
                 fightNumber={fight.fight_number} 
             />
 
-            <div className="relative z-10 h-full flex flex-col overflow-hidden px-3 py-2 sm:px-5 sm:py-3 lg:px-8 lg:py-4">
+            <div className="relative z-10 h-full flex flex-col overflow-hidden px-3 py-1.5 sm:px-5 sm:py-2.5 lg:px-8 lg:py-3">
                 <FightHeader
                     fightNumber={fight.fight_number}
                     venue={fight.venue}
@@ -174,7 +174,7 @@ export default function BigScreen() {
                     walaBettingOpen={fight.wala_betting_open}
                 />
 
-                <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3 lg:gap-5 py-1 sm:py-1.5">
+                <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-2.5 lg:gap-4 py-0.5 sm:py-1">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
@@ -201,15 +201,15 @@ export default function BigScreen() {
                 </div>
 
                 {showClosedRow && (
-                    <div className="mb-2 sm:mb-3 flex items-center justify-center gap-3 sm:gap-4">
+                    <div className="mb-1.5 sm:mb-2.5 flex items-center justify-center gap-2.5 sm:gap-3.5">
                         {fight.meron_betting_open === false && (
-                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-400/75 bg-slate-900/80 px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-2xl font-black uppercase tracking-wide text-slate-100">
+                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-400/75 bg-slate-900/80 px-3 sm:px-5 py-1.5 sm:py-2.5 text-sm sm:text-xl font-black uppercase tracking-wide text-slate-100">
                                 <FiLock className="shrink-0" />
                                 Meron Closed
                             </div>
                         )}
                         {fight.wala_betting_open === false && (
-                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-400/75 bg-slate-900/80 px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-2xl font-black uppercase tracking-wide text-slate-100">
+                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-400/75 bg-slate-900/80 px-3 sm:px-5 py-1.5 sm:py-2.5 text-sm sm:text-xl font-black uppercase tracking-wide text-slate-100">
                                 <FiLock className="shrink-0" />
                                 Wala Closed
                             </div>
