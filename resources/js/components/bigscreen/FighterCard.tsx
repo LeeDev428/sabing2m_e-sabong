@@ -43,7 +43,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
     const color = colors[side];
 
     return (
-        <article className={`relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-4 sm:p-5 lg:p-6 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''}`}>
+        <article className={`relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-3 sm:p-4 lg:p-4 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''}`}>
             <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.22),transparent_55%)]" />
 
             {isWinner && (
@@ -62,33 +62,33 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
             )}
 
             <div className="relative z-10 h-full flex flex-col">
-                <div className="flex flex-col items-center mb-3 sm:mb-4 gap-1">
-                    <div className={`text-2xl sm:text-3xl font-black uppercase tracking-[0.2em] text-center ${color.text}`}>{side}</div>
+                <div className="flex flex-col items-center mb-2 sm:mb-3 gap-1">
+                    <div className={`text-xl sm:text-2xl font-black uppercase tracking-[0.2em] text-center ${color.text}`}>{side}</div>
                     <div className={`px-2.5 py-1 rounded-full border text-[10px] sm:text-xs uppercase tracking-wide ${color.chip} ${color.accent}`}>
                         {betCount} Bets
                     </div>
                 </div>
 
-                <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-4 sm:px-4 sm:py-5 text-center">
-                    <div className="text-[clamp(1.8rem,4.2vw,3.8rem)] font-black text-white leading-none">
+                <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-3 sm:px-4 sm:py-3.5 text-center">
+                    <div className="text-[clamp(1.6rem,3.6vw,3rem)] font-black text-white leading-none">
                         {totalBets.toLocaleString()}
                     </div>
                     <div className={`text-[11px] sm:text-sm mt-1 font-semibold uppercase tracking-wide ${color.accent}`}>Tickets</div>
                 </div>
 
-                <div className="pt-3 sm:pt-4">
-                    <div className="rounded-2xl bg-slate-950/45 border border-white/10 p-3 sm:p-4 text-center">
-                        <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-400">Payout</div>
-                        <div className="text-[clamp(1.3rem,3.5vw,2.8rem)] font-black text-amber-200 mt-1 leading-none">
+                <div className="pt-2 sm:pt-2.5">
+                    <div className="rounded-2xl bg-slate-950/45 border border-white/10 p-2.5 sm:p-3 text-center">
+                        <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-slate-400">Payout</div>
+                        <div className="text-[clamp(1.1rem,2.9vw,2.2rem)] font-black text-amber-200 mt-1 leading-none">
                             {Number(odds) > 0 ? `${Number(odds).toFixed(2)}x` : '---'}
                         </div>
-                        <div className="mt-1 text-[10px] sm:text-xs text-slate-400 uppercase tracking-wide">
+                        <div className="mt-1 text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-wide">
                             Payout Multiplier
                         </div>
                     </div>
                 </div>
 
-                <div className={`mt-auto pt-3 text-sm sm:text-base font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
+                <div className={`mt-auto pt-2 text-xs sm:text-sm font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
                     {side === 'draw' ? 'Even Match' : fighter}
                 </div>
             </div>
