@@ -137,12 +137,12 @@ export default function BigScreen() {
                 <img
                     src="/silhouette/meron.png"
                     alt="Meron silhouette"
-                    className="absolute left-[25%] -translate-x-1/2 top-[12vh] sm:top-[14vh] lg:top-[15vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-42 silhouette-blink"
+                    className="absolute left-[12%] -translate-x-1/2 top-[12vh] sm:top-[14vh] lg:top-[15vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-42 silhouette-blink"
                 />
                 <img
                     src="/silhouette/wala.png"
                     alt="Wala silhouette"
-                    className="absolute left-[75%] -translate-x-1/2 top-[12vh] sm:top-[14vh] lg:top-[15vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-42 silhouette-blink"
+                    className="absolute left-[88%] -translate-x-1/2 top-[12vh] sm:top-[14vh] lg:top-[15vh] h-24 sm:h-32 lg:h-40 w-auto object-contain opacity-42 silhouette-blink"
                 />
             </div>
 
