@@ -71,8 +71,8 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
             )}
 
             <div className="relative z-10 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <div className={`text-lg sm:text-xl font-black uppercase tracking-[0.2em] ${color.text}`}>{side}</div>
+                <div className="flex flex-col items-center mb-3 sm:mb-4 gap-1">
+                    <div className={`text-2xl sm:text-3xl font-black uppercase tracking-[0.2em] text-center ${color.text}`}>{side}</div>
                     <div className={`px-2.5 py-1 rounded-full border text-[10px] sm:text-xs uppercase tracking-wide ${color.chip} ${color.accent}`}>
                         {betCount} Bets
                     </div>
