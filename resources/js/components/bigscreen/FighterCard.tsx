@@ -1,4 +1,4 @@
-import { FiAward, FiLock } from 'react-icons/fi';
+import { FiAward } from 'react-icons/fi';
 
 interface FighterCardProps {
     side: 'meron' | 'wala' | 'draw';
@@ -61,15 +61,6 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                 </div>
             )}
 
-            {bettingOpen === false && !isWinner && !isCancelled && (
-                <div className="absolute inset-0 z-20 grid place-items-center pointer-events-none">
-                    <div className="inline-flex items-center gap-3 rounded-2xl bg-slate-900/90 px-6 sm:px-10 py-3 sm:py-5 border-2 border-slate-400/80 text-slate-100 font-black uppercase text-2xl sm:text-4xl tracking-wide">
-                        <FiLock className="shrink-0" />
-                        Closed
-                    </div>
-                </div>
-            )}
-
             <div className="relative z-10 h-full flex flex-col">
                 <div className="flex flex-col items-center mb-3 sm:mb-4 gap-1">
                     <div className={`text-2xl sm:text-3xl font-black uppercase tracking-[0.2em] text-center ${color.text}`}>{side}</div>
@@ -78,7 +69,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                     </div>
                 </div>
 
-                <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-4 sm:px-4 sm:py-5">
+                <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-4 sm:px-4 sm:py-5 text-center">
                     <div className="text-[clamp(1.8rem,4.2vw,3.8rem)] font-black text-white leading-none">
                         {totalBets.toLocaleString()}
                     </div>
@@ -86,7 +77,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                 </div>
 
                 <div className="pt-3 sm:pt-4">
-                    <div className="rounded-2xl bg-slate-950/45 border border-white/10 p-3 sm:p-4">
+                    <div className="rounded-2xl bg-slate-950/45 border border-white/10 p-3 sm:p-4 text-center">
                         <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-400">Payout</div>
                         <div className="text-[clamp(1.3rem,3.5vw,2.8rem)] font-black text-amber-200 mt-1 leading-none">
                             {Number(odds) > 0 ? `${Number(odds).toFixed(2)}x` : '---'}
