@@ -31,7 +31,7 @@ class CommissionController extends Controller
             ->get()
             ->map(function ($fight) {
                 $totalPot = (float) Bet::where('fight_id', $fight->id)
-                    ->whereIn('status', ['won', 'lost', 'refunded'])
+                    ->where('status', '!=', 'voided')
                     ->sum('amount');
                 
                 $commission = $totalPot * ($fight->commission_percentage / 100);
