@@ -63,8 +63,8 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
 
             {bettingOpen === false && !isWinner && !isCancelled && (
                 <div className="absolute inset-0 z-20 grid place-items-center pointer-events-none">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-4 py-2 border border-slate-500/80 text-slate-100 font-bold uppercase text-xs sm:text-sm tracking-wide">
-                        <FiLock />
+                    <div className="inline-flex items-center gap-3 rounded-2xl bg-slate-900/90 px-6 sm:px-10 py-3 sm:py-5 border-2 border-slate-400/80 text-slate-100 font-black uppercase text-2xl sm:text-4xl tracking-wide">
+                        <FiLock className="shrink-0" />
                         Closed
                     </div>
                 </div>
