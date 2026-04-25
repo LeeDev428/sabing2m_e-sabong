@@ -183,11 +183,31 @@ class BigScreenController extends Controller
 
     public function history()
     {
-        // Get last 10 declared fights for history display in natural order (oldest to newest, left to right)
-        $history = Fight::where('status', 'result_declared')
-            ->whereNotNull('result')
+        // Determine the current active event from the active fight (same priority as api())
+        $activeFight = Fight::whereIn('status', ['standby', 'open', 'lastcall', 'closed'])
+            ->latest()
+            ->first();
+
+        if (!$activeFight) {
+            // Fall back to the latest declared fight to get the event
+            $activeFight = Fight::where('status', 'result_declared')
+                ->latest('result_declared_at')
+                ->first();
+        }
+
+        $eventName = $activeFight?->event_name;
+
+        // Get declared fights scoped to the current event (oldest to newest, left to right)
+        $query = Fight::where('status', 'result_declared')
+            ->whereNotNull('result');
+
+        if ($eventName) {
+            $query->where('event_name', $eventName);
+        }
+
+        $history = $query
             ->orderBy('result_declared_at', 'desc')
-            ->limit(10)
+            ->limit(20)
             ->get(['fight_number', 'result'])
             ->reverse()
             ->values();
