@@ -13,7 +13,8 @@ class TransactionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Bet::with(['fight', 'teller']);
+        $query = Bet::with(['fight', 'teller'])
+            ->where('status', '!=', 'voided');
 
         // Filter by event
         if ($request->filled('event')) {
@@ -74,7 +75,7 @@ class TransactionController extends Controller
             ->pluck('event_name');
 
         // Statistics (apply same filters to stats)
-        $statsQuery = Bet::query();
+        $statsQuery = Bet::query()->where('status', '!=', 'voided');
         
         // Apply event filter to stats
         if ($request->filled('event')) {
@@ -84,6 +85,9 @@ class TransactionController extends Controller
         }
         
         // Apply other filters to stats
+        if ($request->filled('type')) {
+            $statsQuery->where('side', $request->type);
+        }
         if ($request->filled('status')) {
             $statsQuery->where('status', $request->status);
         }
@@ -98,6 +102,12 @@ class TransactionController extends Controller
         }
         if ($request->filled('teller_id')) {
             $statsQuery->where('teller_id', $request->teller_id);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $statsQuery->whereHas('fight', function($q) use ($search) {
+                $q->where('fight_number', 'like', "%{$search}%");
+            });
         }
         
         $stats = [
