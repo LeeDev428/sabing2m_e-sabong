@@ -7,6 +7,7 @@ import FighterCard from '@/components/bigscreen/FighterCard';
 import HistoryStrip from '@/components/bigscreen/HistoryStrip';
 import NotesDisplay from '@/components/bigscreen/NotesDisplay';
 import WinnerOverlay from '@/components/bigscreen/WinnerOverlay';
+import { FiLock } from 'react-icons/fi';
 
 interface FightData {
     id: number;
@@ -47,6 +48,8 @@ interface HistoryFight {
 }
 
 const isDeclaredStatus = (status?: string) => status === 'declared' || status === 'result_declared';
+
+const isOpenPhase = (status?: string) => status === 'open' || status === 'lastcall';
 
 export default function BigScreen() {
     const [fight, setFight] = useState<FightData | null>(null);
@@ -124,6 +127,8 @@ export default function BigScreen() {
         );
     }
 
+    const showClosedRow = fight.status === 'closed' || (isOpenPhase(fight.status) && (fight.meron_betting_open === false || fight.wala_betting_open === false));
+
     return (
         <div className="relative h-screen w-screen overflow-hidden bg-[#050b1a] text-slate-100">
             <Head title={`Fight #${fight.fight_number} - Sabing2m`} />
@@ -194,6 +199,23 @@ export default function BigScreen() {
                         isCancelled={isDeclaredStatus(fight.status) && fight.result === 'cancelled'}
                     />
                 </div>
+
+                {showClosedRow && (
+                    <div className="mb-2 sm:mb-3 flex items-center justify-center gap-3 sm:gap-4">
+                        {fight.meron_betting_open === false && (
+                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-400/75 bg-slate-900/80 px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-2xl font-black uppercase tracking-wide text-slate-100">
+                                <FiLock className="shrink-0" />
+                                Meron Closed
+                            </div>
+                        )}
+                        {fight.wala_betting_open === false && (
+                            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-400/75 bg-slate-900/80 px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-2xl font-black uppercase tracking-wide text-slate-100">
+                                <FiLock className="shrink-0" />
+                                Wala Closed
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <NotesDisplay
                     notes={fight.notes}
