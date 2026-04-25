@@ -59,6 +59,7 @@ export default function PayoutScan({
     unclaimedWinningTickets = [],
     paidOutWinningTickets = [],
 }: PayoutScanProps) {
+    const QR_READER_ID = 'payout-qr-reader';
     const [scanning, setScanning] = useState(false);
     const [result, setResult] = useState<string | null>(null);
     const [cameraError, setCameraError] = useState<string | null>(null);
@@ -182,9 +183,24 @@ export default function PayoutScan({
             setCameraError(null);
             setResult(null);
             setScanning(true); // Set scanning to true FIRST so div is visible
-            
-            // Wait a bit for the div to be rendered
-            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Wait a bit for the scanner container to render
+            await new Promise(resolve => setTimeout(resolve, 150));
+
+            // Ensure any previous scanner instance is fully cleaned up
+            if (html5QrCodeRef.current) {
+                try {
+                    await html5QrCodeRef.current.stop();
+                } catch {
+                    // Ignore stop errors for stale scanner instances
+                }
+                try {
+                    await html5QrCodeRef.current.clear();
+                } catch {
+                    // Ignore clear errors
+                }
+                html5QrCodeRef.current = null;
+            }
             
             // Request camera permission with proper error handling
             const permissionResult = await PermissionManager.ensureCameraPermission();
@@ -195,22 +211,33 @@ export default function PayoutScan({
                 return;
             }
             
-            const html5QrCode = new Html5Qrcode("qr-reader");
+            const html5QrCode = new Html5Qrcode(QR_READER_ID);
             html5QrCodeRef.current = html5QrCode;
+            isScanningRef.current = true;
 
             await html5QrCode.start(
                 { facingMode: "environment" },
                 {
-                    fps: 30,
-                    qrbox: { width: 180, height: 180 },
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
                     disableFlip: true,
                 },
-                (decodedText) => {
+                async (decodedText) => {
                     // QR Code scanned successfully
                     console.log('🎯 Payout QR Code scanned:', decodedText);
                     setResult(decodedText);
                     isScanningRef.current = false;
-                    html5QrCode.stop();
+                    try {
+                        await html5QrCode.stop();
+                    } catch {
+                        // Ignore stop errors if stream already ended
+                    }
+                    try {
+                        await html5QrCode.clear();
+                    } catch {
+                        // Ignore clear errors
+                    }
+                    html5QrCodeRef.current = null;
                     setScanning(false);
                     
                     // Send claim request to backend
@@ -236,7 +263,6 @@ export default function PayoutScan({
                 }
             );
             
-            isScanningRef.current = true;
             console.log('✅ Payout scanner started successfully');
 
         } catch (error: any) {
@@ -253,7 +279,12 @@ export default function PayoutScan({
         if (html5QrCodeRef.current && isScanningRef.current) {
             isScanningRef.current = false;
             html5QrCodeRef.current.stop()
-                .then(() => {
+                .then(async () => {
+                    try {
+                        await html5QrCodeRef.current?.clear();
+                    } catch {
+                        // Ignore clear errors
+                    }
                     setScanning(false);
                     html5QrCodeRef.current = null;
                 })
@@ -278,33 +309,38 @@ export default function PayoutScan({
                 {/* Camera Display */}
                 {!claimData && !message && (
                     <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 border border-gray-700">
-                        <div id="qr-reader" className={`rounded-lg overflow-hidden ${scanning ? '' : 'hidden'}`}></div>
-                        
-                        {!scanning && !cameraError && (
-                            <div className="text-center py-12">
-                                <div className="text-6xl mb-4">📷</div>
-                                <p className="text-gray-400 mb-4">Ready to scan QR code</p>
-                                <button
-                                    onClick={startScanning}
-                                    className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-bold"
-                                >
-                                    Start Camera
-                                </button>
-                            </div>
-                        )}
+                        <div className="relative rounded-lg overflow-hidden min-h-[320px] bg-black/20 border border-gray-700/60">
+                            <div
+                                id={QR_READER_ID}
+                                className={`h-[320px] w-full transition-opacity duration-200 ${scanning ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            ></div>
 
-                        {cameraError && (
-                            <div className="text-center py-12">
-                                <div className="text-6xl mb-4">⚠️</div>
-                                <p className="text-red-400 mb-4">{cameraError}</p>
-                                <button
-                                    onClick={startScanning}
-                                    className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-bold"
-                                >
-                                    Try Again
-                                </button>
-                            </div>
-                        )}
+                            {!scanning && !cameraError && (
+                                <div className="absolute inset-0 text-center py-12 flex flex-col items-center justify-center">
+                                    <div className="text-6xl mb-4">📷</div>
+                                    <p className="text-gray-400 mb-4">Ready to scan QR code</p>
+                                    <button
+                                        onClick={startScanning}
+                                        className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-bold"
+                                    >
+                                        Start Camera
+                                    </button>
+                                </div>
+                            )}
+
+                            {cameraError && (
+                                <div className="absolute inset-0 text-center py-12 flex flex-col items-center justify-center">
+                                    <div className="text-6xl mb-4">⚠️</div>
+                                    <p className="text-red-400 mb-4 px-4">{cameraError}</p>
+                                    <button
+                                        onClick={startScanning}
+                                        className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg font-bold"
+                                    >
+                                        Try Again
+                                    </button>
+                                </div>
+                            )}
+                        </div>
 
                         {scanning && (
                             <div className="text-center mt-4">
