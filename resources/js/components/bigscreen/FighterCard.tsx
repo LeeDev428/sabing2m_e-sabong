@@ -47,13 +47,13 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
     const sideLabel = side.charAt(0).toUpperCase() + side.slice(1);
 
     return (
-        <article className={`relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-3 sm:p-4 lg:p-4 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''}`}>
+        <article className={`relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-3 sm:p-4 lg:p-4 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''} ${isLocked ? 'saturate-75 brightness-90' : ''}`}>
             <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.22),transparent_55%)]" />
-            {isLocked && <div className="absolute inset-0 bg-slate-950/16 pointer-events-none" />}
+            {isLocked && <div className="absolute inset-0 z-20 bg-slate-950/45 backdrop-blur-[1px] pointer-events-none" />}
 
             {isLocked && (
-                <div className="absolute inset-0 z-20 grid place-items-center pointer-events-none">
-                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-slate-950/70 border border-slate-400/60 flex items-center justify-center text-slate-100 shadow-[0_10px_35px_rgba(2,6,23,0.55)]">
+                <div className="absolute inset-0 z-30 grid place-items-center pointer-events-none">
+                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-slate-950/85 border border-slate-300/80 flex items-center justify-center text-slate-100 shadow-[0_10px_35px_rgba(2,6,23,0.7)]">
                         <FiLock className="text-2xl sm:text-3xl" />
                     </div>
                 </div>
