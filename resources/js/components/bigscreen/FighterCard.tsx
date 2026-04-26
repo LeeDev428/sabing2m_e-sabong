@@ -47,7 +47,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
     const sideLabel = side.charAt(0).toUpperCase() + side.slice(1);
 
     return (
-        <article className={`relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-3 sm:p-4 lg:p-4 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''} ${isLocked ? 'saturate-75 brightness-90' : ''}`}>
+        <article className={`relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${color.card} p-2.5 sm:p-3.5 lg:p-3.5 ${color.glow} ${isWinner ? `${color.winner} ring-4 ring-amber-300/45 scale-[1.01]` : ''} ${isLoser ? 'opacity-55 saturate-50' : ''} ${isLocked ? 'saturate-75 brightness-90' : ''}`}>
             <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.22),transparent_55%)]" />
             {isLocked && <div className="absolute inset-0 z-20 bg-slate-950/45 backdrop-blur-[1px] pointer-events-none" />}
 
@@ -75,22 +75,22 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
             )}
 
             <div className="relative z-10 h-full flex flex-col">
-                <div className="flex flex-col items-center mb-2 sm:mb-3 gap-1">
+                <div className="flex flex-col items-center mb-1.5 sm:mb-2.5 gap-1">
                     <div className={`text-xl sm:text-2xl font-black uppercase tracking-[0.2em] text-center ${color.text}`}>{side}</div>
                     <div className={`px-2.5 py-1 rounded-full border text-[10px] sm:text-xs uppercase tracking-wide ${color.chip} ${color.accent}`}>
                         {betCount} Bets
                     </div>
                 </div>
 
-                <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-3 sm:px-4 sm:py-3.5 text-center">
-                    <div className="text-[clamp(2rem,4.4vw,3.6rem)] font-black text-white leading-none">
+                <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-2.5 sm:px-4 sm:py-3 text-center">
+                    <div className="text-[clamp(2rem,4.2vw,3.4rem)] font-black text-white leading-none">
                         {totalBets.toLocaleString()}
                     </div>
-                    <div className={`text-xs sm:text-base mt-1.5 font-semibold uppercase tracking-wide ${color.accent}`}>Tickets</div>
+                    <div className={`text-xs sm:text-base mt-1 font-semibold uppercase tracking-wide ${color.accent}`}>Tickets</div>
                 </div>
 
-                <div className="pt-2 sm:pt-2.5">
-                    <div className={`rounded-2xl p-2.5 sm:p-3 text-center ${isLocked ? 'bg-slate-950/65 border border-slate-500/60' : 'bg-slate-950/45 border border-white/10'}`}>
+                <div className="pt-1.5 sm:pt-2">
+                    <div className={`rounded-2xl p-2 sm:p-2.5 text-center ${isLocked ? 'bg-slate-950/65 border border-slate-500/60' : 'bg-slate-950/45 border border-white/10'}`}>
                         <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-slate-400">Payout</div>
                         <div className="text-[clamp(1.1rem,2.9vw,2.2rem)] font-black text-amber-200 mt-1 leading-none">
                             {Number(odds) > 0 ? `${Number(odds).toFixed(2)}x` : '---'}
@@ -102,8 +102,8 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                 </div>
 
                 {showSideStateBadge && (
-                    <div className="pt-2 sm:pt-2.5 flex justify-center">
-                        <div className={`inline-flex items-center gap-2 rounded-lg px-4 sm:px-5 py-1.5 sm:py-2 font-black uppercase tracking-wide text-sm sm:text-base shadow-[0_8px_28px_rgba(2,6,23,0.45)] ${
+                    <div className="pt-1.5 sm:pt-2 flex justify-center">
+                        <div className={`inline-flex items-center gap-2 rounded-lg px-4 sm:px-5 py-1 sm:py-1.5 font-black uppercase tracking-wide text-sm sm:text-base shadow-[0_8px_28px_rgba(2,6,23,0.45)] ${
                             isOpen
                                 ? (side === 'meron'
                                     ? 'bg-rose-500/20 border border-rose-300/55 text-rose-100'
@@ -116,7 +116,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                     </div>
                 )}
 
-                <div className={`mt-auto pt-2 text-xs sm:text-sm font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
+                <div className={`mt-auto pt-1 text-xs sm:text-sm font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
                     {side === 'draw' ? 'Even Match' : fighter}
                 </div>
             </div>
