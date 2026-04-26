@@ -115,10 +115,6 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                         </div>
                     </div>
                 )}
-
-                <div className={`mt-auto pt-1 text-xs sm:text-sm font-bold ${color.text} ${side === 'draw' ? '' : 'truncate'}`}>
-                    {side === 'draw' ? 'Even Match' : fighter}
-                </div>
             </div>
         </article>
     );
