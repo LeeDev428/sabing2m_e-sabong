@@ -103,7 +103,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
 
                 {showSideStateBadge && (
                     <div className="pt-1.5 sm:pt-2 flex justify-center">
-                        <div className={`inline-flex items-center gap-2 rounded-lg px-4 sm:px-5 py-1 sm:py-1.5 font-black uppercase tracking-wide text-sm sm:text-base shadow-[0_8px_28px_rgba(2,6,23,0.45)] ${
+                        <div className={`inline-flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-0.5 sm:py-1 font-black uppercase tracking-wide text-xs sm:text-sm shadow-[0_8px_28px_rgba(2,6,23,0.45)] ${
                             isOpen
                                 ? (side === 'meron'
                                     ? 'bg-rose-500/20 border border-rose-300/55 text-rose-100'
@@ -115,7 +115,6 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                         </div>
                     </div>
                 )}
-                <br />
             </div>
         </article>
     );
