@@ -152,7 +152,7 @@ export default function BigScreen() {
                 fightNumber={fight.fight_number} 
             />
 
-            <div className="relative z-10 h-full flex flex-col overflow-hidden px-3 py-1.5 sm:px-5 sm:py-2.5 lg:px-8 lg:py-3">
+            <div className="relative z-10 h-full flex flex-col overflow-hidden px-3 py-1 sm:px-5 sm:py-2 lg:px-8 lg:py-2.5 max-[860px]:py-1">
                 <FightHeader
                     fightNumber={fight.fight_number}
                     venue={fight.venue}
@@ -169,7 +169,7 @@ export default function BigScreen() {
                     walaBettingOpen={fight.wala_betting_open}
                 />
 
-                <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-2.5 lg:gap-4 py-0.5 sm:py-1">
+                <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-1.5 sm:gap-2 lg:gap-3 py-0.5 sm:py-1 max-[860px]:gap-1.5 max-[860px]:py-0">
                     <FighterCard
                         side="meron"
                         fighter={fight.meron_fighter}
