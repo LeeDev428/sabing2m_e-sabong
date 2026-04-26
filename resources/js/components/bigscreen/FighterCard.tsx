@@ -83,10 +83,10 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                 </div>
 
                 <div className="rounded-2xl bg-slate-950/45 border border-white/10 px-3 py-3 sm:px-4 sm:py-3.5 text-center">
-                    <div className="text-[clamp(1.6rem,3.6vw,3rem)] font-black text-white leading-none">
+                    <div className="text-[clamp(2rem,4.4vw,3.6rem)] font-black text-white leading-none">
                         {totalBets.toLocaleString()}
                     </div>
-                    <div className={`text-[11px] sm:text-sm mt-1 font-semibold uppercase tracking-wide ${color.accent}`}>Tickets</div>
+                    <div className={`text-xs sm:text-base mt-1.5 font-semibold uppercase tracking-wide ${color.accent}`}>Tickets</div>
                 </div>
 
                 <div className="pt-2 sm:pt-2.5">
