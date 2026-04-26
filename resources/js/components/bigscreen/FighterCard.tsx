@@ -115,6 +115,7 @@ export default function FighterCard({ side, fighter, odds, totalBets, betCount, 
                         </div>
                     </div>
                 )}
+                <br />
             </div>
         </article>
     );
