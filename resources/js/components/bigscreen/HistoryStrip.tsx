@@ -56,8 +56,8 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
     };
 
     return (
-        <div className="mt-1 sm:mt-2 rounded-2xl border border-slate-700/80 bg-slate-900/50 backdrop-blur-sm p-2 sm:p-2.5">
-            <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="mt-1 sm:mt-1.5 rounded-2xl border border-slate-700/80 bg-slate-900/50 backdrop-blur-sm p-1.5 sm:p-2">
+            <div className="mb-1.5 flex items-center justify-between gap-2">
                 <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-slate-300 inline-flex items-center gap-2">
                     <FiClock /> Recent Results
                 </h3>
@@ -67,7 +67,7 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
                         type="button"
                         onClick={() => setPage((prev) => Math.max(0, prev - 1))}
                         disabled={page === 0}
-                        className="h-7 w-7 rounded-md border border-slate-600 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700/70"
+                        className="h-6 w-6 rounded-md border border-slate-600 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700/70"
                     >
                         {'<'}
                     </button>
@@ -78,21 +78,21 @@ export default function HistoryStrip({ history }: HistoryStripProps) {
                         type="button"
                         onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
                         disabled={page >= totalPages - 1}
-                        className="h-7 w-7 rounded-md border border-slate-600 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700/70"
+                        className="h-6 w-6 rounded-md border border-slate-600 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700/70"
                     >
                         {'>'}
                     </button>
                 </div>
             </div>
 
-            <div className="flex flex-nowrap gap-1.5 sm:gap-2 overflow-hidden min-h-[44px]">
+            <div className="flex flex-nowrap gap-1.5 sm:gap-2 overflow-hidden min-h-[40px]">
                 {visibleHistory.map((h, idx) => (
                     <div
                         key={`${h.fight_number}-${idx}`}
-                        className={`${getResultBg(h.result)} relative overflow-hidden rounded-2xl px-2.5 py-1.5 flex-shrink-0 min-w-[84px] sm:min-w-[96px]`}
+                        className={`${getResultBg(h.result)} relative overflow-hidden rounded-2xl px-2.5 py-1 flex-shrink-0 min-w-[80px] sm:min-w-[92px]`}
                     >
                         <div className="text-[9px] sm:text-[10px] text-white/80 uppercase tracking-wide">Fight #{h.fight_number}</div>
-                        <div className="text-sm sm:text-base font-black text-white uppercase leading-tight">{h.result}</div>
+                        <div className="text-sm sm:text-[15px] font-black text-white uppercase leading-tight">{h.result}</div>
                     </div>
                 ))}
             </div>
