@@ -48,27 +48,21 @@ class DashboardController extends Controller
         }
         
         // Overall Statistics (with filters)
+        $declaredFightsIds = (clone $fightsQuery)->where('status', 'result_declared')->pluck('id');
+        $totalCommission = Bet::whereIn('fight_id', $declaredFightsIds)
+            ->where('status', '!=', 'voided')
+            ->get()
+            ->sum(function ($bet) {
+                $fight = \App\Models\Fight::find($bet->fight_id);
+                return $bet->amount * (($fight->commission_percentage ?? 0) / 100);
+            });
+
         $stats = [
             'total_fights' => (clone $fightsQuery)->count(),
-            'active_fights' => (clone $fightsQuery)->whereIn('status', ['standby', 'open', 'lastcall'])->count(),
-            'closed_fights' => (clone $fightsQuery)->where('status', 'closed')->count(),
-            'completed_fights' => (clone $fightsQuery)->where('status', 'result_declared')->count(),
             'total_bets' => (clone $betsQuery)->count(),
             'total_bet_amount' => (clone $betsQuery)->sum('amount') ?: 0,
             'total_payouts' => (clone $betsQuery)->where('status', 'won')->sum('actual_payout') ?: 0,
-            'active_bet_amount' => (clone $betsQuery)->where('status', 'active')->sum('amount') ?: 0,
-            'total_users' => User::count(),
-            'total_tellers' => User::where('role', 'teller')->count(),
-        ];
-
-        // Today's Statistics
-        $todayStats = [
-            'fights_today' => Fight::whereDate('created_at', now()->toDateString())->count(),
-            'bets_today' => Bet::whereDate('created_at', now()->toDateString())->count(),
-            'revenue_today' => Bet::whereDate('created_at', now()->toDateString())->sum('amount') ?: 0,
-            'payouts_today' => Bet::whereDate('created_at', now()->toDateString())
-                                 ->where('status', 'won')
-                                 ->sum('actual_payout') ?: 0,
+            'total_commission' => $totalCommission,
         ];
 
         // Bet Distribution (filtered)
@@ -122,7 +116,6 @@ class DashboardController extends Controller
 
         return Inertia::render('admin/dashboard', [
             'stats' => $stats,
-            'todayStats' => $todayStats,
             'betDistribution' => $betDistribution,
             'recentFights' => $recentFights,
             'dailyRevenue' => $dailyRevenue,
