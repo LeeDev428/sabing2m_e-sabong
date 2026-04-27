@@ -50,20 +50,26 @@ export default function TellerLayout({ children, currentPage }: TellerLayoutProp
             {/* Bottom Navigation - Fixed */}
             <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-gray-700 z-50">
                 <div className="grid grid-cols-5 max-w-2xl mx-auto">
-                    {navItems.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => router.visit(item.route)}
-                            className={`flex flex-col items-center justify-center py-3 transition-colors ${
-                                currentPage === item.id
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                            }`}
-                        >
-                            <span className="text-2xl mb-1">{item.icon}</span>
-                            <span className="text-xs font-medium">{item.label}</span>
-                        </button>
-                    ))}
+                    {navItems.map((item) => {
+                        const isDisabled = item.id === 'cash';
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => !isDisabled && router.visit(item.route)}
+                                disabled={isDisabled}
+                                className={`flex flex-col items-center justify-center py-3 transition-colors ${
+                                    currentPage === item.id
+                                        ? 'bg-blue-600 text-white'
+                                        : isDisabled
+                                        ? 'text-gray-600 opacity-40 cursor-not-allowed'
+                                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                                }`}
+                            >
+                                <span className="text-2xl mb-1">{item.icon}</span>
+                                <span className="text-xs font-medium">{item.label}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
         </div>
