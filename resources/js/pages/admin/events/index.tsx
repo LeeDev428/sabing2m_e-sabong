@@ -34,7 +34,6 @@ export default function EventsIndex({ events }: Props) {
     const [formData, setFormData] = useState({
         name: '',
         event_date: new Date().toISOString().split('T')[0],
-        revolving_funds: '',
         notes: '',
     });
 
@@ -44,7 +43,6 @@ export default function EventsIndex({ events }: Props) {
         if (editingEvent) {
             // Update existing event
             router.put(`/admin/events/${editingEvent.id}`, {
-                revolving_funds: parseFloat(formData.revolving_funds),
                 notes: formData.notes,
             }, {
                 onSuccess: () => {
@@ -70,7 +68,6 @@ export default function EventsIndex({ events }: Props) {
         router.post('/admin/events', {
             name: formData.name,
             event_date: formData.event_date,
-            revolving_funds: parseFloat(formData.revolving_funds),
             notes: formData.notes,
         }, {
             onSuccess: () => {
@@ -89,7 +86,6 @@ export default function EventsIndex({ events }: Props) {
         setFormData({
             name: '',
             event_date: new Date().toISOString().split('T')[0],
-            revolving_funds: '',
             notes: '',
         });
     };
@@ -99,7 +95,6 @@ export default function EventsIndex({ events }: Props) {
         setFormData({
             name: event.name,
             event_date: event.event_date,
-            revolving_funds: event.revolving_funds.toString(),
             notes: event.notes || '',
         });
         setShowCreateModal(true);
@@ -313,20 +308,6 @@ export default function EventsIndex({ events }: Props) {
                                 {editingEvent && (
                                     <p className="text-xs text-gray-500 mt-1">Event date cannot be changed</p>
                                 )}
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-400 mb-2">Revolving Funds</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={formData.revolving_funds}
-                                    onChange={(e) => setFormData({ ...formData, revolving_funds: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                                    placeholder="0.00"
-                                    required
-                                />
                             </div>
 
                             <div>
