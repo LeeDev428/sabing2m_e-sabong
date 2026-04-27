@@ -96,33 +96,7 @@ export default function DeclaratorLayout({ children, title }: DeclaratorLayoutPr
                     >
                         📈 History
                     </button>
-                    <button
-                        onClick={() => {
-                            router.visit('/declarator/cash-transfer');
-                            setSidebarOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
-                    >
-                        💰 Cash Transfers
-                    </button>
-                    <button
-                        onClick={() => {
-                            router.visit('/declarator/teller-balances');
-                            setSidebarOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
-                    >
-                        💸 Teller Balances
-                    </button>
-                    <button
-                        onClick={() => {
-                            router.visit('/declarator/cash-requests');
-                            setSidebarOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-700 rounded-lg text-gray-300"
-                    >
-                        💰 Cash Requests
-                    </button>
+
                     {/* <button
                         onClick={() => {
                             router.visit('/declarator/bet-controls');
