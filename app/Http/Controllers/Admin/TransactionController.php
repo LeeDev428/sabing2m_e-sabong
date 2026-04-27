@@ -49,12 +49,17 @@ class TransactionController extends Controller
             $query->where('teller_id', $request->teller_id);
         }
 
-        // Search
+        // Search by fight number
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('fight', function($q) use ($search) {
                 $q->where('fight_number', 'like', "%{$search}%");
             });
+        }
+
+        // Search by transaction number (bet ID)
+        if ($request->filled('transaction_id')) {
+            $query->where('id', (int) $request->transaction_id);
         }
 
         $transactions = $query->orderBy('created_at', 'desc')
@@ -109,6 +114,9 @@ class TransactionController extends Controller
                 $q->where('fight_number', 'like', "%{$search}%");
             });
         }
+        if ($request->filled('transaction_id')) {
+            $statsQuery->where('id', (int) $request->transaction_id);
+        }
         
         $stats = [
             'total_bets' => (clone $statsQuery)->count(),
@@ -122,7 +130,7 @@ class TransactionController extends Controller
             'tellers' => $tellers,
             'events' => $events,
             'stats' => $stats,
-            'filters' => $request->only(['event', 'type', 'status', 'winnings_status', 'teller_id', 'search']),
+            'filters' => $request->only(['event', 'type', 'status', 'winnings_status', 'teller_id', 'search', 'transaction_id']),
         ]);
     }
 }
