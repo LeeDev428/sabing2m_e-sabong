@@ -70,7 +70,7 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg p-6 min-w-0">
                     <div className="text-purple-200 text-sm mb-2">Total Commission</div>
                     <div className="text-2xl xl:text-3xl font-bold text-white leading-tight break-words">
@@ -81,12 +81,6 @@ export default function CommissionReports({ fights, stats, filters, events = [] 
                     <div className="text-blue-200 text-sm mb-2">Overall Total Bet</div>
                     <div className="text-2xl xl:text-3xl font-bold text-white leading-tight break-words">
                         ₱{stats.total_pot.toLocaleString()}
-                    </div>
-                </div>
-                <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-6 min-w-0">
-                    <div className="text-green-200 text-sm mb-2">Total Fights</div>
-                    <div className="text-2xl xl:text-3xl font-bold text-white leading-tight break-words">
-                        {stats.total_fights}
                     </div>
                 </div>
                 <div className="bg-gradient-to-br from-orange-600 to-orange-800 rounded-lg p-6 min-w-0">
