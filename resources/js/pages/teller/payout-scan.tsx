@@ -64,6 +64,7 @@ export default function PayoutScan({
     const [result, setResult] = useState<string | null>(null);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [isPrinterConnected, setIsPrinterConnected] = useState(false);
+    const [manualTicketId, setManualTicketId] = useState('');
     const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
     const isScanningRef = useRef(false);
 
@@ -295,6 +296,21 @@ export default function PayoutScan({
         }
     };
 
+    const handleManualClaim = () => {
+        const ticketId = manualTicketId.trim();
+        if (!ticketId) {
+            showToast('⚠️ Please enter a ticket ID', 'error', 3000);
+            return;
+        }
+        router.post('/teller/payout-scan/claim', { ticket_id: ticketId }, {
+            preserveScroll: false,
+            onError: (errors) => {
+                const errorMsg = typeof errors === 'object' ? Object.values(errors).join(', ') : String(errors);
+                showToast(`❌ ${errorMsg}`, 'error', 5000);
+            }
+        });
+    };
+
     return (
         <TellerLayout currentPage="payout">
             <Head title="Payout Scanning" />
@@ -352,6 +368,29 @@ export default function PayoutScan({
                                 </button>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* Manual Ticket Search */}
+                {!claimData && !message && (
+                    <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 border border-gray-700">
+                        <h3 className="font-bold text-sm text-gray-300 mb-3">🔍 Manual Search (Type Ticket ID)</h3>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={manualTicketId}
+                                onChange={(e) => setManualTicketId(e.target.value.toUpperCase())}
+                                onKeyDown={(e) => e.key === 'Enter' && handleManualClaim()}
+                                placeholder="e.g. TKT-XXXXXXXX"
+                                className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                            />
+                            <button
+                                onClick={handleManualClaim}
+                                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap"
+                            >
+                                Claim
+                            </button>
+                        </div>
                     </div>
                 )}
 
