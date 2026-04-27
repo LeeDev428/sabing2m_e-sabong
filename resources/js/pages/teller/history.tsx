@@ -84,7 +84,7 @@ interface HistoryProps {
 }
 
 export default function History({ bets, fightResults, summary }: HistoryProps) {
-    const [activeTab, setActiveTab] = useState<'bets' | 'summary'>('summary');
+    const [activeTab, setActiveTab] = useState<'bets' | 'summary'>('bets');
     const [showVoidScanner, setShowVoidScanner] = useState(false);
     const [scanning, setScanning] = useState(false);
     const [isPrinterConnected, setIsPrinterConnected] = useState(false);
@@ -310,16 +310,6 @@ export default function History({ bets, fightResults, summary }: HistoryProps) {
                 {/* Tab Navigation */}
                 <div className="grid grid-cols-2 gap-2 mb-4">
                     <button
-                        onClick={() => setActiveTab('summary')}
-                        className={`py-3 rounded-lg font-semibold transition-colors ${
-                            activeTab === 'summary'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
-                        }`}
-                    >
-                        📊 Summary
-                    </button>
-                    <button
                         onClick={() => setActiveTab('bets')}
                         className={`py-3 rounded-lg font-semibold transition-colors ${
                             activeTab === 'bets'
@@ -328,6 +318,16 @@ export default function History({ bets, fightResults, summary }: HistoryProps) {
                         }`}
                     >
                         🎰 Bets
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('summary')}
+                        className={`py-3 rounded-lg font-semibold transition-colors ${
+                            activeTab === 'summary'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
+                        }`}
+                    >
+                        📊 Summary
                     </button>
                 </div>
 
@@ -480,15 +480,13 @@ export default function History({ bets, fightResults, summary }: HistoryProps) {
                                             </span>
                                         </div>
 
-                                        {/* Print Button - Always show for active bets */}
-                                        {bet.status === 'active' && (
-                                            <button
-                                                onClick={() => handlePrintReceipt(bet)}
-                                                className="w-full mt-3 bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
-                                            >
-                                                <span>🖨️</span> PRINT
-                                            </button>
-                                        )}
+                                        {/* Reprint Button - Always available regardless of status */}
+                                        <button
+                                            onClick={() => handlePrintReceipt(bet)}
+                                            className="w-full mt-3 bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
+                                        >
+                                            <span>🖨️</span> REPRINT
+                                        </button>
                                         
                                         <div className="grid grid-cols-2 gap-4 mb-3">
                                             <div>
