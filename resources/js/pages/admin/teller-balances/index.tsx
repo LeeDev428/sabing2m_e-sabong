@@ -43,6 +43,7 @@ interface Props {
         id: number;
         fight_number: number;
         event_name: string;
+        revolving_funds: number;
     } | null;
     stats?: {
         total_balance: number;
@@ -79,6 +80,18 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight,
             amount: amount,
             remarks: `Admin deducted ₱${amount.toLocaleString()}`,
         });
+    };
+
+    const handleAddRevolvingFunds = () => {
+        const addAmount = prompt('Add Revolving Funds amount:');
+        if (!addAmount) return;
+        const amount = parseFloat(addAmount);
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid amount.');
+            return;
+        }
+        if (!confirm(`Add ₱${amount.toLocaleString()} to Revolving Funds?`)) return;
+        router.post('/admin/teller-balances/revolving-funds/add', { amount });
     };
 
     const handleResetAllBalances = () => {
@@ -133,9 +146,17 @@ export default function TellerBalances({ tellers, recentTransfers, currentFight,
                             <div className="mt-6 pt-6 border-t border-green-400/30 space-y-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-green-100 text-sm">Platform Revolving Balance (Unused):</span>
-                                    <span className="text-2xl font-bold text-yellow-200">
-                                        ₱{((currentFight as any).revolving_funds || 0).toLocaleString()}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl font-bold text-yellow-200">
+                                            ₱{(currentFight.revolving_funds || 0).toLocaleString()}
+                                        </span>
+                                        <button
+                                            onClick={handleAddRevolvingFunds}
+                                            className="px-3 py-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg text-sm"
+                                        >
+                                            + Add Funds
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="text-xs text-green-200/70">
                                     💡 This is the remaining funds available for distribution to tellers
