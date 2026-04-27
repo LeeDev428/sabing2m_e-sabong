@@ -330,4 +330,29 @@ class TellerBalanceController extends Controller
 
         return back()->with('success', 'All teller balances have been reset to ₱0');
     }
+
+    public function addRevolvingFunds(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        $currentFight = \App\Models\Fight::orderBy('id', 'desc')->first();
+
+        if (!$currentFight) {
+            return back()->withErrors(['error' => 'No fights found. Please create a fight first.']);
+        }
+
+        $currentFight->increment('revolving_funds', $request->amount);
+
+        // Also update the Event record revolving_funds
+        $event = \App\Models\Event::where('name', $currentFight->event_name)
+            ->where('status', 'active')
+            ->first();
+        if ($event) {
+            $event->increment('revolving_funds', $request->amount);
+        }
+
+        return back()->with('success', '₱' . number_format($request->amount, 2) . ' added to Revolving Funds.');
+    }
 }
