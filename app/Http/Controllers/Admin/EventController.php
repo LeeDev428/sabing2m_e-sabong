@@ -150,9 +150,9 @@ class EventController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'event_date' => 'required|date',
-            'revolving_funds' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
+        $validated['revolving_funds'] = 0;
 
         DB::beginTransaction();
         try {
@@ -223,35 +223,11 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
-            'revolving_funds' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 
-        DB::beginTransaction();
-        try {
-            $event->update($validated);
-            
-            // IMMEDIATELY update all active fights that belong to this event
-            $affectedFights = Fight::where('event_name', $event->name)
-                ->where('event_date', $event->event_date)
-                ->whereNotIn('status', ['result_declared', 'cancelled'])
-                ->update([
-                    'revolving_funds' => $validated['revolving_funds'],
-                ]);
-            
-            \Log::info("✅ Event revolving funds updated: {$event->name} - ₱{$validated['revolving_funds']}, Affected fights: {$affectedFights}");
-            
-            DB::commit();
-            
-            $message = $affectedFights > 0
-                ? "Event revolving funds updated successfully! Applied to {$affectedFights} active fight(s)."
-                : "Event revolving funds updated successfully!";
-            
-            return redirect()->back()->with('success', $message);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Failed to update event: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['error' => 'Failed to update event: ' . $e->getMessage()]);
-        }
+        $event->update(['notes' => $validated['notes'] ?? $event->notes]);
+
+        return redirect()->back()->with('success', 'Event updated successfully.');
     }
 }
