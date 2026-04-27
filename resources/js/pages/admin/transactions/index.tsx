@@ -59,11 +59,13 @@ interface Props {
         winnings_status?: string;
         teller_id?: number;
         search?: string;
+        transaction_id?: string;
     };
 }
 
 export default function TransactionsIndex({ transactions, tellers, events, stats, filters }: Props) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [transactionIdSearch, setTransactionIdSearch] = useState(filters.transaction_id || '');
     const [eventFilter, setEventFilter] = useState(filters.event || '');
     const [typeFilter, setTypeFilter] = useState(filters.type || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
@@ -73,6 +75,7 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
     const applyFilters = () => {
         router.get('/admin/transactions', {
             search: searchTerm,
+            transaction_id: transactionIdSearch,
             event: eventFilter,
             type: typeFilter,
             status: statusFilter,
@@ -86,6 +89,7 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
 
     const resetFilters = () => {
         setSearchTerm('');
+        setTransactionIdSearch('');
         setEventFilter('');
         setTypeFilter('');
         setStatusFilter('');
@@ -173,7 +177,17 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
             {/* Filters */}
             <div className="bg-gray-800 rounded-lg p-6 mb-6">
                 <h3 className="text-lg font-bold mb-4">Filters</h3>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Transaction #</label>
+                        <input
+                            type="text"
+                            value={transactionIdSearch}
+                            onChange={(e) => setTransactionIdSearch(e.target.value)}
+                            placeholder="Transaction number..."
+                            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg"
+                        />
+                    </div>
                     <div>
                         <label className="block text-sm font-medium mb-2">Event</label>
                         <select
@@ -283,7 +297,7 @@ export default function TransactionsIndex({ transactions, tellers, events, stats
                     <table className="w-full">
                         <thead className="bg-gray-900">
                             <tr>
-                                <th className="px-6 py-4 text-left text-sm font-semibold">Bet ID</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Transaction #</th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold">Fight</th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold">Teller</th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold">Side</th>
