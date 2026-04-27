@@ -668,12 +668,7 @@ export default function DeclaredFights({ declared_fights = [], tellers = [], has
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={() => router.visit(`/declarator/fights/${fight.id}/edit`)}
-                                        className="w-full px-3 py-2.5 bg-blue-700 hover:bg-blue-600 rounded text-sm font-bold text-left"
-                                    >
-                                        Edit Fight
-                                    </button>
+
                                 </div>
                             </div>
                             </div>
