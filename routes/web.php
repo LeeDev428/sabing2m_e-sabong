@@ -87,11 +87,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     
     // Teller Balance Management
     Route::get('teller-balances', [TellerBalanceController::class, 'index'])->name('teller-balances.index');
+    // Static routes MUST come before wildcard {user} routes to avoid route hijacking
+    Route::post('teller-balances/reset-all', [TellerBalanceController::class, 'resetAllBalances'])->name('teller-balances.reset-all');
+    Route::post('teller-balances/revolving-funds/add', [TellerBalanceController::class, 'addRevolvingFunds'])->name('teller-balances.revolving-funds.add');
     Route::post('teller-balances/{user}/set', [TellerBalanceController::class, 'setBalance'])->name('teller-balances.set');
     Route::post('teller-balances/{user}/add', [TellerBalanceController::class, 'addBalance'])->name('teller-balances.add');
     Route::post('teller-balances/{user}/deduct', [TellerBalanceController::class, 'deductBalance'])->name('teller-balances.deduct');
-    Route::post('teller-balances/reset-all', [TellerBalanceController::class, 'resetAllBalances'])->name('teller-balances.reset-all');
-    Route::post('teller-balances/revolving-funds/add', [TellerBalanceController::class, 'addRevolvingFunds'])->name('teller-balances.revolving-funds.add');
     
     // Cash Transfer Monitoring
     Route::get('cash-transfer', [AdminCashTransferController::class, 'index'])->name('cash-transfer.index');
